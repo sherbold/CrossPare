@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="experimentconfig"
+    elementFormDefault="qualified"
+    xmlns="experimentconfig"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:element name="config">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element name="partialconfig" type="pathType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="loader" type="datapathType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="resultspath" type="pathType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="versionfilter" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="testVersionfilter" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="trainVersionfilter" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="setwisepreprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="setwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="setwisepostprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="setwisetrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="preprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="pointwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="postprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="trainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="eval" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="partialconfig" type="pathType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="datapathType">
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="datalocation" type="xs:string" />
+    <xs:attribute name="relative" type="xs:boolean" default="true"/>
+  </xs:complexType>
+  <xs:complexType name="pathType">
+    <xs:attribute name="path" type="xs:string" />
+    <xs:attribute name="relative" type="xs:boolean" default="true"/>
+  </xs:complexType>
+  <xs:complexType name="setupType">
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="param" type="xs:string" />
+  </xs:complexType>
+</xs:schema>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="dist" name="Crosspare">
+	<!-- General Properties -->
+	<property environment="env" />
+	<property name="build.location" value="bin" />
+	<property name="dist.location" value="dist" />
+	<property name="javadoc.location" value="javadoc" />
+	<property name="downloads.location" value="downloads" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+
+	<!-- Crosspare Properties -->
+	<property name="Crosspare.jarname" value="crosspare.jar" />
+	<path id="Crosspare.classpath">
+		<pathelement location="${build.location.eventbenchconsole}" />
+		<pathelement location="lib/commons-collections4-4.0-alpha1.jar" />
+		<pathelement location="lib/commons-io-2.4.jar" />
+		<pathelement location="lib/commons-math3-3.1.jar" />
+		<pathelement location="lib/java-utils-0.0.1.jar" />
+		<pathelement location="lib/weka.jar" />
+	</path>
+
+	<!-- Initialization Targets -->
+	<target name="init.build">
+		<mkdir dir="${build.location}" />
+	</target>
+	<target name="init.dist">
+		<mkdir dir="${dist.location}" />
+	</target>
+	<target name="init.downloads">
+		<mkdir dir="${downloads.location}" />
+	</target>
+	<target name="init.javadoc">
+		<mkdir dir="${javadoc.location}" />
+	</target>
+
+	<!-- Clean-up Targets -->
+	<target name="clean.build">
+		<delete dir="${build.location}" />
+	</target>
+	<target name="clean.dist">
+		<delete dir="${dist.location}" />
+	</target>
+	<target name="clean.javadoc">
+		<delete dir="${javadoc.location}" />
+	</target>
+	<target depends="clean.build,clean.dist,clean.javadoc" name="clean.all" />
+
+	<!-- Build Targets -->
+	<target depends="init.build" name="build">
+		<javac debug="true" debuglevel="${debuglevel}"
+			destdir="${build.location}" source="${source}"
+			target="${target}" includeantruntime="false">
+			<src path="src" />
+			<classpath refid="Crosspare.classpath" />
+		</javac>
+	</target>
+	
+	<!-- Distribution Targets -->
+	<target depends="build,init.dist,javadoc" name="dist">
+		<!-- dist of main components, i.e., the console -->
+		<pathconvert property="dist.libs" pathsep=" ">
+			<mapper>
+				<chainedmapper>
+					<flattenmapper />
+					<globmapper from="*" to="lib/*" />
+				</chainedmapper>
+			</mapper>
+			<path>
+				<fileset dir="lib">
+					<include name="**/*.jar" />
+				</fileset>
+			</path>
+		</pathconvert>
+		<property name="dist.classpath"	value="${dist.libs}"></property>
+		<jar destfile="${dist.location}/${Crosspare.jarname}" basedir="${build.location}">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="de.ugoe.cs.cpdp.Runner" />
+				<attribute name="Class-Path" value="${dist.classpath}" />
+			</manifest>
+		</jar>
+		<copy includeemptydirs="false" todir="${dist.location}/lib">
+			<fileset dir="lib" />
+		</copy>
+		
+		<!-- copy Javadoc to dist -->
+		<copy includeemptydirs="false" todir="${dist.location}/javadoc">
+			<fileset dir="${javadoc.location}" />
+		</copy>
+	</target>
+
+
+	<target depends="init.downloads,dist" name="createDownloads">
+		<zip destfile="${downloads.location}/crosspare.zip">
+			<fileset dir="${dist.location}" />
+		</zip>
+	</target>
+
+	<!-- Javadoc Targets -->
+	<target depends="init.javadoc" name="javadoc"
+		description="o Create Javadocs (Requires Javadoc 1.4+)">
+		<javadoc destdir="${javadoc.location}"
+			additionalparam="-J-Dorg.apache.commons.attributes.javadoc.CATaglet.sources=${basedir}">
+			<classpath refid="Crosspare.classpath" />
+			<link href="http://download.oracle.com/javase/7/docs/api/" />
+			<fileset dir="src" includes="**/*.java" />
+		</javadoc>
+	</target>
+</project>
