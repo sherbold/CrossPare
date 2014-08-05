@@ -1,12 +1,12 @@
 package de.ugoe.cs.cpdp.loader;
 
 /**
- * Implements the {@link AbstractFolderLoader} for the NASA/SOFTLAB/MDP data
- * set.
+ * Implements the {@link AbstractFolderLoader} for standard ARFF files.
  * 
  * @author Steffen Herbold
+ * 
  */
-public class NasaARFFFolderLoader extends AbstractFolderLoader {
+public class ARFFFolderLoader extends AbstractFolderLoader {
 
 	/*
 	 * (non-Javadoc)
@@ -15,7 +15,6 @@ public class NasaARFFFolderLoader extends AbstractFolderLoader {
 	 */
 	@Override
 	protected SingleVersionLoader getSingleLoader() {
-		return new NasaARFFLoader();
+		return new ARFFLoader();
 	}
-
 }
