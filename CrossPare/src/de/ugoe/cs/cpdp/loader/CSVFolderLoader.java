@@ -1,17 +1,21 @@
 package de.ugoe.cs.cpdp.loader;
 
 /**
- * Implements a {@link IVersionLoader} for data from // TODO data reference
- * Each folder contained in the defined location ({@link #setLocation(String)}) represents a project, the data files
- * within the versions.  
+ * Implements the {@link AbstractFolderLoader} for data from the PROMISE
+ * repository mined by Jurezko and Madeyski.
+ * 
  * @author Steffen Herbold
  */
 public class CSVFolderLoader extends AbstractFolderLoader {
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader#getSingleLoader()
+	 */
 	@Override
 	protected SingleVersionLoader getSingleLoader() {
 		return new CSVDataLoader();
 	}
 
-	
 }
