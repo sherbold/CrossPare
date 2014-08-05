@@ -64,6 +64,7 @@ public class NasaARFFLoader implements SingleVersionLoader {
 		attributeNameMap.put("defects",  "bug");
 		attributeNameMap.put("Defective", "bug");
 		attributeNameMap.put("problems", "bug");
+		attributeNameMap.put("label", "bug");
 		
 		// build list with normalized attribute order
 		attributeOrder = new LinkedList<>();
@@ -141,7 +142,7 @@ public class NasaARFFLoader implements SingleVersionLoader {
 			throw new RuntimeException();
 		}
 		if( data.numAttributes()!=attributeOrder.size() ) {
-			throw new RuntimeException("Invalid number of attributes");
+			throw new RuntimeException("Invalid number of attributes; filename: " + file.getName());
 		}
 		
 		// normalize bug nominal values
