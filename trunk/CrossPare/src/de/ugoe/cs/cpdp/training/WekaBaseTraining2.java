@@ -73,7 +73,9 @@ public abstract class WekaBaseTraining2 implements WekaCompatibleTrainer {
 				ps.setClassifier(obj);
 				ps.setNumFolds(5);
 				//ps.addCVParameter("I 5 25 5");
-				ps.addCVParameter(Arrays.asList(cvparam).toString().replaceAll(", ", " ").replaceAll("^\\[|\\]$", ""));
+				for( int i=1 ; i<cvparam.length/4 ; i++ ) {
+					ps.addCVParameter(Arrays.asList(Arrays.copyOfRange(cvparam, 0, 4*i)).toString().replaceAll(", ", " ").replaceAll("^\\[|\\]$", ""));
+				}
 				
 				cl = ps;
 			}
