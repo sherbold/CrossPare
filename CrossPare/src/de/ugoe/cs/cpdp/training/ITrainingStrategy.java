@@ -5,4 +5,6 @@ import weka.core.Instances;
 public interface ITrainingStrategy extends ITrainer {
 	
 	void apply(Instances traindata);
+	
+	String getName();
 }

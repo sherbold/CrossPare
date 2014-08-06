@@ -20,7 +20,7 @@ import weka.core.Instances;
  * For each classifier, the following metrics are calculated:
  * <ul>
  *  <li>Success with recall>0.7, precision>0.5</li>
- *  <li>Success with recall>0.7, precision>0.5</li>
+ *  <li>Success with recall>0.7, precision>0.7</li>
  *  <li>Success with gscore>0.75</li>
  *  <li>Success with gscore>0.6</li>
  *  <li>error rate</li>
@@ -36,6 +36,10 @@ import weka.core.Instances;
  *  <li>false positives</li>
  *  <li>true negatives</li>
  *  <li>false negatives</li>
+ *  <li>training error</li>
+ *  <li>training recall</li>
+ *  <li>training precision</li>
+ *  <li>training success with recall>0.7 and precision>0.5
  * </ul> 
  * @author Steffen Herbold
  */

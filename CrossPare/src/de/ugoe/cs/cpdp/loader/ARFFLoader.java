@@ -28,8 +28,7 @@ public class ARFFLoader implements SingleVersionLoader {
 			data = new Instances(reader);
 			reader.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			throw new RuntimeException(e);
+			throw new RuntimeException("error reading file: " + file.getName(), e);
 		}
 
 		// setting class attribute
