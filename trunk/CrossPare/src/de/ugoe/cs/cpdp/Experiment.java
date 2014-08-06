@@ -120,7 +120,7 @@ public class Experiment implements Runnable {
 					processor.apply(testdata, traindataSet);
 				}
 				for( ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers() ) {
-					Console.traceln(Level.FINE, String.format("[%s] [%02d/%02d] %s: applying setwise trainer %s", config.getExperimentName(), versionCount, testVersionCount, testVersion.getVersion(), setwiseTrainer.getClass().getName()));
+					Console.traceln(Level.FINE, String.format("[%s] [%02d/%02d] %s: applying setwise trainer %s", config.getExperimentName(), versionCount, testVersionCount, testVersion.getVersion(), setwiseTrainer.getName()));
 					setwiseTrainer.apply(traindataSet);
 				}
 				Instances traindata = makeSingleTrainingSet(traindataSet);
@@ -137,7 +137,7 @@ public class Experiment implements Runnable {
 					processor.apply(testdata, traindata);
 				}
 				for( ITrainingStrategy trainer : config.getTrainers() ) {
-					Console.traceln(Level.FINE, String.format("[%s] [%02d/%02d] %s: applying trainer %s", config.getExperimentName(), versionCount, testVersionCount, testVersion.getVersion(), trainer.getClass().getName()));
+					Console.traceln(Level.FINE, String.format("[%s] [%02d/%02d] %s: applying trainer %s", config.getExperimentName(), versionCount, testVersionCount, testVersion.getVersion(), trainer.getName()));
 					trainer.apply(traindata);
 				}
 				File resultsDir = new File(config.getResultsPath());
