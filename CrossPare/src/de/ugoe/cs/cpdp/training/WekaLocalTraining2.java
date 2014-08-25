@@ -25,27 +25,29 @@ import weka.filters.unsupervised.attribute.Remove;
 
 /**
  * ACHTUNG UNFERTIG
- *
  * 
- * Basically a copy of WekaClusterTraining2 with internal classes for the Fastmap and QuadTree implementations
+ * With WekaLocalTraining2 we do the following:
+ * 1) Run the Fastmap algorithm on all training data, let it calculate the 2 most significant 
+ *    dimensions and projections of each instance to these dimensions
+ * 2) With these 2 dimensions we span a QuadTree which gets recursively split on median(x) and median(y) values.
+ * 3) We cluster the QuadTree nodes together if they have similar density (50%)
+ * 4) We save the clusters and their training data
+ * 5) We train a Weka classifier for each cluster with the clusters training data
+ * 5) We classify single instances to a cluster and then classify them using the classifier of the cluster
+ * 
  */
 public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
 	
 	private final TraindatasetCluster classifier = new TraindatasetCluster();
 	
-	// we do not need to keep them around
-	//private final QuadTree q = null;
-	//private final Fastmap f = null;
-	
 	// these values are set later when we have all the information we need
+	
 	/*Stopping rule for tree recursion (Math.sqrt(Instances)*/
 	public static double ALPHA = 0;
 	/*Stopping rule for clustering*/
 	public static double DELTA = 0.5;
 	/*size of the complete set (used for density function)*/
 	public static int SIZE = 0;
-	
-	public static int MIN_INST = 10;
 	
 	// cluster
 	private static ArrayList<ArrayList<QuadTreePayload<Instance>>> cluster = new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
@@ -103,15 +105,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		}
 		
 		/**
-		 * Because Fastmap saves only the image not the values of the attributes
-		 * we can not use it to classify single instances to values
+		 * Because Fastmap saves only the image not the values of the attributes it used
+		 * we can not use it or the QuadTree to classify single instances to clusters.
 		 * 
-		 * TODO: mehr erklärung
-		 * TODO: class lavel filter raus
+		 * To classify a single instance we measure the distance to all instances we have clustered and
+		 * use the cluster where the distance is minimal.
 		 * 
-		 * Finde die am nächsten liegende Instanz zur übergebenen
-		 * dann bestimme den cluster der instanz und führe dann den 
-		 * classifier des clusters aus
+		 * TODO: class attribute filter raus
 		 */
 		@Override
 		public double classifyInstance(Instance instance) {
@@ -189,7 +189,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			
 			// 4. run fastmap for 2 dimensions on the distance matrix
 			Fastmap f = new Fastmap(2, dist);
-			f.calculate(2);
+			f.calculate();
 			double[][] X = f.getX();
 			
 			// quadtree payload generation
@@ -222,7 +222,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    ALPHA = Math.sqrt(train.size());
 		    SIZE = train.size();
 		    
-		    Console.traceln(Level.INFO, String.format("Generate QuadTree with "+ SIZE + " size, Alpha: "+ ALPHA+ ""));
+		    //Console.traceln(Level.INFO, String.format("Generate QuadTree with "+ SIZE + " size, Alpha: "+ ALPHA+ ""));
 		    
 		    // set the size and then split the tree recursively at the median value for x, y
 		    q.setSize(new double[] {small[0], big[0]}, new double[] {small[1], big[1]});
@@ -231,18 +231,15 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    // generate list of nodes sorted by density (childs only)
 		    ArrayList<QuadTree> l = new ArrayList<QuadTree>(q.getList(q));
 		    
-		    // recursive grid clustering (tree pruning), the values are stored in cluster!
+		    // recursive grid clustering (tree pruning), the values are stored in cluster
 		    q.gridClustering(l);
-		    
-		    // after grid clustering we need to remove the clusters with < 2 * ALPHA instances
-		    
-		    // hier müssten wir sowas haben wie welche instanz in welchem cluster ist
-		    // oder wir iterieren durch die cluster und sammeln uns die instanzen daraus
+		 
+		    // wir iterieren durch die cluster und sammeln uns die instanzen daraus
 		    for(int i=0; i < cluster.size(); i++) {
 		    	ArrayList<QuadTreePayload<Instance>> current = cluster.get(i);
 		    	
 		    	// i is the clusternumber
-		    	// we only allow clusters with Instances > ALPHA
+		    	// we only allow clusters with Instances > ALPHA, other clusters are not considered!
 		    	if(current.size() > ALPHA) {
 			    	for(int j=0; j < current.size(); j++ ) {
 			    		if(!ctraindata.containsKey(i)) {
@@ -289,10 +286,9 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		}
 	}
 	
+	
 	/**
 	 * Fastmap implementation
-	 * 
-	 * TODO: only one place to pass dimension!
 	 * 
 	 * Faloutsos, C., & Lin, K. I. (1995). 
 	 * FastMap: A fast algorithm for indexing, data-mining and visualization of traditional and multimedia datasets 
@@ -312,17 +308,21 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		/*column of X currently updated (also the dimension)*/
 		private int col = 0;
 		
+		/*number of dimensions we want*/
+		private int target_dims = 0;
+		
 		public Fastmap(int k, double[][] O) {
 			this.O = O;
-			
 			int N = O.length;
+			
+			this.target_dims = k;
 			
 			this.X = new double[N][k];
 			this.PA = new double[2][k];
 		}
 		
 		/**
-		 * The distance function for eculidean distance
+		 * The distance function for euclidean distance
 		 * 
 		 * Acts according to equation 4 of the fastmap paper
 		 *  
@@ -394,9 +394,9 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		 * 
 		 * @param dims dimensionality
 		 */
-		public void calculate(int dims) {
+		public void calculate() {
 			
-			for(int k=0; k <dims; k++) {
+			for(int k=0; k <this.target_dims; k++) {
 				
 				// 2) choose pivot objects
 				int[] pivots = this.findDistantObjects();
@@ -435,6 +435,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		}
 	}
 
+	
 	/**
 	 * QuadTree implementation
 	 * 
@@ -516,9 +517,8 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return new double[][] {this.x, this.y}; 
 		}
 		
-		
 		/**
-		 * Todo: DRY, median ist immer dasselbe
+		 * TODO: DRY, median ist immer dasselbe
 		 *  
 		 * @return median for x
 		 */
@@ -550,7 +550,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return med_x;
 		}
 		
-		
 		private double getMedianForY() {
 			double med_y =0 ;
 			
@@ -579,7 +578,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return med_y;
 		}
 		
-		
 		/**
 		 * Reurns the number of instances in the payload
 		 * 
@@ -592,7 +590,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			}
 			return number;
 		}
-		
 		
 		/**
 		 * Calculate median values of payload for x, y and split into 4 sectors
@@ -677,9 +674,8 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return new QuadTree[] {this.child_nw, this.child_ne, this.child_se, this.child_sw};
 		}
 		
-		
 		/** 
-		 * Todo: evt. auslagern, eigentlich auch eher ne statische methode
+		 * TODO: evt. auslagern, eigentlich auch eher ne statische methode
 		 * 
 		 * @param q
 		 */
@@ -702,7 +698,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				}
 			}
 		}
-		
 		
 		/**
 		 * returns an list of childs sorted by density
@@ -731,7 +726,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				this.generateList(q.child_sw);
 			}
 		}
-		
 		
 		/**
 		 * Checks if passed QuadTree is neighbouring to us
