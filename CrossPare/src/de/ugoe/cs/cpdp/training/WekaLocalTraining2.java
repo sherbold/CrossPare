@@ -16,7 +16,6 @@ import org.apache.commons.io.output.NullOutputStream;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
-import weka.clusterers.EM;
 import weka.core.DenseInstance;
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
@@ -27,19 +26,26 @@ import weka.filters.unsupervised.attribute.Remove;
 /**
  * ACHTUNG UNFERTIG
  *
+ * 
+ * Basically a copy of WekaClusterTraining2 with internal classes for the Fastmap and QuadTree implementations
  */
 public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
 	
 	private final TraindatasetCluster classifier = new TraindatasetCluster();
-	private final QuadTree q = null;
-	private final Fastmap f = null;
 	
-	/*Stopping rule for tree reqursion (Math.sqrt(Instances)*/
-	public static double ALPHA = 3;
+	// we do not need to keep them around
+	//private final QuadTree q = null;
+	//private final Fastmap f = null;
+	
+	// these values are set later when we have all the information we need
+	/*Stopping rule for tree recursion (Math.sqrt(Instances)*/
+	public static double ALPHA = 0;
 	/*Stopping rule for clustering*/
 	public static double DELTA = 0.5;
-	/*size of the complete set (used for density)*/
+	/*size of the complete set (used for density function)*/
 	public static int SIZE = 0;
+	
+	public static int MIN_INST = 10;
 	
 	// cluster
 	private static ArrayList<ArrayList<QuadTreePayload<Instance>>> cluster = new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
@@ -68,11 +74,8 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		
 		private static final long serialVersionUID = 1L;
 
-		private EM clusterer = null;
-
 		private HashMap<Integer, Classifier> cclassifier = new HashMap<Integer, Classifier>();
 		private HashMap<Integer, Instances> ctraindata = new HashMap<Integer, Instances>(); 
-		
 		
 		
 		private Instance createInstance(Instances instances, Instance instance) {
@@ -99,9 +102,20 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return instCopy;
 		}
 		
-		
+		/**
+		 * Because Fastmap saves only the image not the values of the attributes
+		 * we can not use it to classify single instances to values
+		 * 
+		 * TODO: mehr erklärung
+		 * TODO: class lavel filter raus
+		 * 
+		 * Finde die am nächsten liegende Instanz zur übergebenen
+		 * dann bestimme den cluster der instanz und führe dann den 
+		 * classifier des clusters aus
+		 */
 		@Override
 		public double classifyInstance(Instance instance) {
+			
 			double ret = 0;
 			try {
 				Instances traindata = ctraindata.get(0);
@@ -115,11 +129,34 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				
 				Instance clusterInstance = createInstance(traindata, instance);
 				
-				// 1. classify testdata instance to a cluster number
-				int cnum = clusterer.clusterInstance(clusterInstance);
+				// get distance of this instance to every other instance
+				// if the distance is minimal apply the classifier of the current cluster
+				int cnumber;
+				int min_cluster = -1;
+				double min_distance = 99999999;
+				EuclideanDistance d;
+				Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
+				while ( clusternumber.hasNext() ) {
+					cnumber = clusternumber.next();
+					
+					d = new EuclideanDistance(ctraindata.get(cnumber));
+					for(int i=0; i < ctraindata.get(cnumber).size(); i++) {
+						if(d.distance(clusterInstance, ctraindata.get(cnumber).get(i)) <= min_distance) {
+							min_cluster = cnumber;
+							min_distance = d.distance(clusterInstance, ctraindata.get(cnumber).get(i));
+						}
+					}
+				}
 				
-				// 2. classify testata instance to the classifier
-				ret = cclassifier.get(cnum).classifyInstance(classInstance);
+				// here we have the cluster where an instance has the minimum distance between itself the
+				// instance we want to classify
+				if(min_cluster == -1) {
+					// this is an error condition
+					throw new RuntimeException("min_cluster not found");
+				}
+				
+				// classify the passed instance with the cluster we found
+				ret = cclassifier.get(min_cluster).classifyInstance(classInstance);
 				
 			}catch( Exception e ) {
 				Console.traceln(Level.INFO, String.format("ERROR matching instance to cluster!"));
@@ -127,8 +164,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			}
 			return ret;
 		}
-
-		
 		
 		@Override
 		public void buildClassifier(Instances traindata) throws Exception {
@@ -137,13 +172,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			Instances train = new Instances(traindata);
 			
 			// 2. remove class attribute for clustering
-			Remove filter = new Remove();
-			filter.setAttributeIndices("" + (train.classIndex() + 1));
-			filter.setInputFormat(train);
-			train = Filter.useFilter(train, filter);
+			//Remove filter = new Remove();
+			//filter.setAttributeIndices("" + (train.classIndex() + 1));
+			//filter.setInputFormat(train);
+			//train = Filter.useFilter(train, filter);
 			
 			
-			// 3. calculate distance matrix
+			// 3. calculate distance matrix (needed for Fastmap because it starts at dimension 1)
 			EuclideanDistance d = new EuclideanDistance(train);
 			double[][] dist = new double[train.size()][train.size()];
 			for(int i=0; i < train.size(); i++) {
@@ -152,7 +187,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				}
 			}
 			
-			// 4. run fastmap for 2 dimensions on distance matrix
+			// 4. run fastmap for 2 dimensions on the distance matrix
 			Fastmap f = new Fastmap(2, dist);
 			f.calculate(2);
 			double[][] X = f.getX();
@@ -162,9 +197,9 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    
 			// die max und min brauchen wir für die größenangaben der sektoren
 			double[] big = {0,0};
-			double[] small = {-99999,-99999};
+			double[] small = {9999999,99999999};
 			
-			// set quadtree payload values
+			// set quadtree payload values and get max and min x and y values for size
 		    for(int i=0; i<X.length; i++){
 		    	if(X[i][0] >= big[0]) {
 		    		big[0] = X[i][0];
@@ -187,51 +222,47 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    ALPHA = Math.sqrt(train.size());
 		    SIZE = train.size();
 		    
-		    // split recursively
+		    Console.traceln(Level.INFO, String.format("Generate QuadTree with "+ SIZE + " size, Alpha: "+ ALPHA+ ""));
+		    
+		    // set the size and then split the tree recursively at the median value for x, y
 		    q.setSize(new double[] {small[0], big[0]}, new double[] {small[1], big[1]});
 		    q.recursiveSplit(q);
 		    
-		    // generate list of nodes sorted by density
+		    // generate list of nodes sorted by density (childs only)
 		    ArrayList<QuadTree> l = new ArrayList<QuadTree>(q.getList(q));
 		    
-		    // grid clustering recursive (tree pruning)
+		    // recursive grid clustering (tree pruning), the values are stored in cluster!
 		    q.gridClustering(l);
 		    
+		    // after grid clustering we need to remove the clusters with < 2 * ALPHA instances
 		    
 		    // hier müssten wir sowas haben wie welche instanz in welchem cluster ist
-		    // oder wir iterieren durch die cluster und sammeln uns die instaznen daraus
+		    // oder wir iterieren durch die cluster und sammeln uns die instanzen daraus
 		    for(int i=0; i < cluster.size(); i++) {
 		    	ArrayList<QuadTreePayload<Instance>> current = cluster.get(i);
-		    	for(int j=0; j < current.size(); j++ ) {
-		    		
+		    	
+		    	// i is the clusternumber
+		    	// we only allow clusters with Instances > ALPHA
+		    	if(current.size() > ALPHA) {
+			    	for(int j=0; j < current.size(); j++ ) {
+			    		if(!ctraindata.containsKey(i)) {
+			    			ctraindata.put(i, new Instances(traindata));
+			    			ctraindata.get(i).delete();
+			    		}
+			    		ctraindata.get(i).add(current.get(j).getInst());
+			    	}
 		    	}
 		    }
-		    
-			Instances ctrain = new Instances(train);
-			
-			// get traindata per cluster
-			int cnumber;
-			for ( int j=0; j < ctrain.numInstances(); j++ ) {
-				// get the cluster number from the attributes, subract 1 because if we clusterInstance we get 0-n, and this is 1-n
-				//cnumber = Integer.parseInt(ctrain.get(j).stringValue(ctrain.get(j).numAttributes()-1).replace("cluster", "")) - 1;
-				
-				cnumber = clusterer.clusterInstance(ctrain.get(j));
-				// add training data to list of instances for this cluster number
-				if ( !ctraindata.containsKey(cnumber) ) {
-					ctraindata.put(cnumber, new Instances(traindata));
-					ctraindata.get(cnumber).delete();
-				}
-				ctraindata.get(cnumber).add(traindata.get(j));
-			}
-			
-			// train one classifier per cluster, we get the clusternumber from the traindata
+
+		    // train one classifier per cluster, we get the clusternumber from the traindata
+		    int cnumber;
 			Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
 			while ( clusternumber.hasNext() ) {
 				cnumber = clusternumber.next();			
 				cclassifier.put(cnumber,setupClassifier());
 				cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
-				
 				//Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
+				//Console.traceln(Level.INFO, String.format("" + ctraindata.get(cnumber).size() + " instances in cluster "+cnumber));
 			}
 		}
 	}
@@ -253,13 +284,15 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			this.inst = value;
 		}
 		
-		public T getinst() {
+		public T getInst() {
 			return this.inst;
 		}
 	}
 	
 	/**
 	 * Fastmap implementation
+	 * 
+	 * TODO: only one place to pass dimension!
 	 * 
 	 * Faloutsos, C., & Lin, K. I. (1995). 
 	 * FastMap: A fast algorithm for indexing, data-mining and visualization of traditional and multimedia datasets 
@@ -288,25 +321,10 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			this.PA = new double[2][k];
 		}
 		
-		
-		/*recursive function ALT*/
-		private double dist2(int x, int y, int k) {
-			// basisfall
-			if(k == 0) {
-				return Math.pow(this.O[x][y], 2);
-			}
-			
-			double dist_rec = Math.pow(this.dist(x, y, k-1), 2);
-			double dist_norm = Math.pow(Math.abs(this.X[x][k] - this.X[y][k]), 2); 
-			
-			return Math.sqrt(Math.abs(dist_rec - dist_norm));
-			//return Math.abs(dist_rec - dist_norm);
-		}
-		
 		/**
 		 * The distance function for eculidean distance
 		 * 
-		 * Acts according toequation 4 of the fastmap paper
+		 * Acts according to equation 4 of the fastmap paper
 		 *  
 		 * @param x x index of x image (if k==0 x object)
 		 * @param y y index of y image (if k==0 y object)
@@ -315,11 +333,9 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		 */
 		private double dist(int x, int y, int k) {
 			
-			// objectabstand ist basis
-	
-			// das hier wäre ein abstand zwischen 2 weka instanzen, z.B. euclidischer abstand zwischen den beiden vektoren
+			// basis is object distance, we get this from our distance matrix
+			// alternatively we could provide a distance function that takes 2 vectors
 			double tmp = this.O[x][y] * this.O[x][y]; 
-			
 			
 			// decrease by projections
 			for(int i=0; i < k; i++) {
@@ -332,13 +348,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		}
 		
 		/**
-		 * Find the object furthest from the given index
+		 * Find the object farthest from the given index
 		 * This method is a helper Method for findDistandObjects
 		 * 
 		 * @param index of the object 
-		 * @return index of the furthest object from the given index
+		 * @return index of the farthest object from the given index
 		 */
-		private int findFurthest(int index) {
+		private int findFarthest(int index) {
 			double furthest = -1000000;
 			int ret = 0;
 			
@@ -352,7 +368,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return ret;
 		}
 		
-	
 		/**
 		 * Finds the pivot objects 
 		 * 
@@ -365,98 +380,15 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			Random r = new Random();
 			int obj = r.nextInt(this.O.length);
 			
-			// 2. find furthest object from randomly chooen object
-			int idx1 = this.findFurthest(obj);
+			// 2. find farthest object from randomly chosen object
+			int idx1 = this.findFarthest(obj);
 			
-			// 3. find furthest object from previously furthest object
-			int idx2 = this.findFurthest(idx1);
-			
-			int[] ret = {idx1, idx2};
-			return ret;
+			// 3. find farthest object from previously farthest object
+			int idx2 = this.findFarthest(idx1);
+
+			return new int[] {idx1, idx2};
 		}
 	
-		
-		/**
-		 * Gives image of object (projection on the line between px, py)
-		 * 
-		 * @param index of the object to project
-		 * @param px pivot 1
-		 * @param py pivot 2
-		 * @return projection
-		 */
-		private double project(int index, int px, int py) {
-			
-			double dix = this.dist(index, px, this.col);
-			double diy = this.dist(index, py, this.col);
-			double dxy = this.dist(px, py, this.col);
-			
-			return (dix + dxy - diy) / 2 * Math.sqrt(dxy);
-		}
-	
-	
-		/*recursive function ALT, geht auch sequentiell*/
-		public void calculate2(int k) {
-			
-			// 1) basisfall
-			if(k <= 0) {
-				return;
-			}
-			
-			// 2) choose pivot objects
-			int[] pivots = this.findDistantObjects();
-			
-			// 3) record ids of pivot objects 
-			this.PA[0][this.col] = pivots[0];
-			this.PA[1][this.col] = pivots[1];
-			
-			System.out.println("found pivots with index: " + pivots[0] + ","+ pivots[1]);
-			
-			// 4) inter object distances are zero (this.X is initialized with 0 so we just return)
-			if(this.dist(pivots[0], pivots[1], this.col) == 0) {
-				return;
-			}
-			
-			double dxy = this.dist(pivots[0], pivots[1], this.col);
-			
-			if(dxy == 0) {
-				return;
-			}
-			
-			// 5) project the objects on the line between the pivots
-			for(int i=0; i < this.O.length; i++) {
-				
-				double dix = this.dist(i, pivots[0], this.col);
-				double diy = this.dist(i, pivots[1], this.col);
-	
-				this.X[i][this.col] = (dix + dxy - diy) / 2 * Math.sqrt(dxy);
-				
-				//this.X[i][this.col] = this.project(i, pivots[0], pivots[1]);
-			}
-			
-			this.col += 1;
-			
-			// 6) recurse
-			this.calculate2(k-1);
-		}
-		
-		
-		// test funktion, reproduziert ergebnisse aus dem technical report von fastmap
-		public int[] findDistantObjects2() {
-			int[] ret = {0,0};
-			if(this.col == 0) {
-				ret = new int[] {0,3};
-			}
-			if(this.col == 1) {
-				ret = new int[] {4,1};
-			}
-			if(this.col == 2) {
-				ret = new int[] {2,4};
-			}
-			
-			return ret;
-		}
-		
-		
 		/**
 		 * Calculates the new k-vector values
 		 * 
@@ -487,14 +419,12 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		
 					double tmp = (dix + dxy - diy) / 2 * Math.sqrt(dxy);
 					
-					this.X[i][this.col] = tmp; // / 10000; 
-					//this.X[i][this.col] = this.project(i, pivots[0], pivots[1]);
+					this.X[i][this.col] = tmp;
 				}
 				
 				this.col += 1;
 			}
 		}
-		
 		
 		/**
 		 * returns the result matrix
@@ -505,7 +435,12 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		}
 	}
 
-
+	/**
+	 * QuadTree implementation
+	 * 
+	 * QuadTree gets a list of instances and then recursively split them into 4 childs
+	 * For this it uses the median of the 2 values x,y
+	 */
 	public class QuadTree {
 		
 		// 1 parent or null
@@ -520,7 +455,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		// list (only helps with generate list of childs!)
 		private ArrayList<QuadTree> l = new ArrayList<QuadTree>();
 		
-
+		// level only used for debugging
 		public int level = 0;
 		
 		// size of the quadrant
@@ -532,7 +467,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		// payload, mal sehen ob das geht mit dem generic
 		// evtl. statt ArrayList eigene QuadTreePayloadlist
 		private ArrayList<QuadTreePayload<Instance>> payload;
-		
 		
 		public QuadTree(QuadTree parent, ArrayList<QuadTreePayload<Instance>> payload) {
 			this.parent = parent;
@@ -550,7 +484,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return n;
 		}
 		
-		
 		/**
 		 * Returns the payload, used for clustering
 		 * in the clustering list we only have children with paylod
@@ -566,7 +499,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		 * 
 		 * density = number of instances / global size (all instances)
 		 * 
-		 * @return
+		 * @return density
 		 */
 		public double getDensity() {
 			double dens = 0;
@@ -585,7 +518,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		
 		
 		/**
-		 * Todo: dry, median ist immer dasselbe
+		 * Todo: DRY, median ist immer dasselbe
 		 *  
 		 * @return median for x
 		 */
@@ -662,7 +595,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		
 		
 		/**
-		 * Calculate median values of payload for x, y and split into sectors
+		 * Calculate median values of payload for x, y and split into 4 sectors
 		 * 
 		 * @return Array of QuadTree nodes (4 childs)
 		 * @throws Exception if we would run into an recursive loop
@@ -672,7 +605,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			double medx = this.getMedianForX();
 			double medy = this.getMedianForY();
 			
-			
+			// Payload lists for each child
 			ArrayList<QuadTreePayload<Instance>> nw = new ArrayList<QuadTreePayload<Instance>>();
 			ArrayList<QuadTreePayload<Instance>> sw = new ArrayList<QuadTreePayload<Instance>>();
 			ArrayList<QuadTreePayload<Instance>> ne = new ArrayList<QuadTreePayload<Instance>>();
@@ -709,11 +642,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			
 			// if we assign one child a payload equal to our own (see problem above)
 			// we throw an exceptions which stops the recursion on this node
+			// second error is minimum number of instances
+			//Console.traceln(Level.INFO, String.format("NW: "+ nw.size() + " SW: " + sw.size() + " NE: " + ne.size() + " SE: " + se.size()));
 			if(nw.equals(this.payload)) {
 				throw new Exception("payload equal");
 			}
 			if(sw.equals(this.payload)) {
-				throw new Exception("ayload equal");
+				throw new Exception("payload equal");
 			}
 			if(ne.equals(this.payload)) {
 				throw new Exception("payload equal");
@@ -736,7 +671,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			
 			this.child_se = new QuadTree(this, se);
 			this.child_se.setSize(new double[] {medx, this.x[1]}, new double[] {this.y[0], medy});
-			this.child_se.level = this.level + 1;
+			this.child_se.level = this.level + 1;	
 			
 			this.payload = null;
 			return new QuadTree[] {this.child_nw, this.child_ne, this.child_se, this.child_sw};
@@ -843,15 +778,16 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return is_neighbour;
 		}
 		
-		
-		
 		/**
 		 * Perform Pruning and clustering of the quadtree
 		 * 
 		 * 1) get list of leaf quadrants
 		 * 2) sort by their density
-		 * 3) merge similar densities to new leaf quadrant
-		 * @param q QuadTree
+		 * 3) set stop_rule to 0.5 * highest Density in the list
+		 * 4) merge all nodes with a density > stop_rule to the new cluster and remove all from list
+		 * 5) repeat
+		 * 
+		 * @param q List of QuadTree (children only)
 		 */
 		public void gridClustering(ArrayList<QuadTree> list) {
 			
@@ -884,12 +820,12 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    remove.add(list.size()-1);
 		    //System.out.println("removing "+biggest.getDensity() + " from list");
 		    
-			// while items in list
+			// check the items for their density
 		    for(int i=list.size()-1; i >= 0; i--) {
 		    	current = list.get(i);
 		    	
 				// 2. find neighbours with correct density
-		    	// if density > 0.5 * DELTA and is_neighbour add to cluster
+		    	// if density > stop_rule and is_neighbour add to cluster and remove from list
 		    	if(current.getDensity() > stop_rule && !current.equals(biggest) && current.isNeighbour(biggest)) {
 		    		//System.out.println("adding " + current.getDensity() + " to cluster");
 		    		//System.out.println("removing "+current.getDensity() + " from list");
@@ -922,9 +858,11 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		}
 		
 		/**
+		 * Helper Method to get a sortet list (by density) for all
+		 * children
 		 * 
-		 * @param q
-		 * @return
+		 * @param q QuadTree
+		 * @return Sorted ArrayList of quadtrees
 		 */
 		public ArrayList<QuadTree> getList(QuadTree q) {
 			this.generateList(q);
