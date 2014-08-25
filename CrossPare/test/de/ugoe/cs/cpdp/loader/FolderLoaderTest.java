@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
+// TODO update test
 public class FolderLoaderTest {
 
 	@Test
