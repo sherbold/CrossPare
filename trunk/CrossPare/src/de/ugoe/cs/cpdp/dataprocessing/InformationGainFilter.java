@@ -61,10 +61,10 @@ public class InformationGainFilter implements ISetWiseProcessingStrategy, IProce
 	}
 	
 	/**
-	 * Internal helper function. TODO
-	 * @param testdata
-	 * @param traindata
-	 * @param removeFromTest
+	 * Internal helper function for the application of the filter to both all data set as well as a single data set.
+	 * @param testdata data of the target product
+	 * @param traindata data of the training product
+	 * @param removeFromTest defines whether the attributes shall be removed from the test data as well or not
 	 */
 	private void apply(Instances testdata, Instances traindata, boolean removeFromTest) {
 		final Random rand = new Random(1);

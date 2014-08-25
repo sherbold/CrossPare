@@ -57,7 +57,7 @@ public abstract class BaggingTraining implements ISetWiseTrainingStrategy, WekaC
 		@Override
 		public double classifyInstance(Instance instance) {
 			if( classifiers==null ) {
-				return 0.0; // TODO check how WEKA expects classifyInstance to behave if no classifier exists yet
+				return 0.0;
 			}
 			
 			double classification = 0.0;
