@@ -6,7 +6,11 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
-// TODO comment
+/**
+ * Implements an approach for data weighting suggested after Y. Ma, G. Luo, X. Zeng, and A. Chen: Transfer learning for
+ * cross-company software defect prediction. The instances are weighted higher, the more attributes are within the range they are in the training data. 
+ * @author Steffen Herbold
+ */
 public class DataGravitation implements IProcessesingStrategy, ISetWiseProcessingStrategy {
 
 	/**

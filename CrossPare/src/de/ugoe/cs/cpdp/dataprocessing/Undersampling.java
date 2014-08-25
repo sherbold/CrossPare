@@ -6,7 +6,11 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.supervised.instance.Resample;
 
-// TODO comment
+/**
+ * Implements undersampling, a strategy for handling bias in data. In case there are less positive samples (i.e. defect-prone) samples in the
+ * data than negative samples (i.e. non-defect-prone), the non-defect-prone entities are sampled such thatthe number of defect-prone and non-defect-prone instances is the same afterwards.  
+ * @author Steffen Herbold
+ */
 public class Undersampling implements IProcessesingStrategy,
 		ISetWiseProcessingStrategy {
 
@@ -20,7 +24,10 @@ public class Undersampling implements IProcessesingStrategy,
 		// dummy
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * @see de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy#apply(weka.core.Instances, org.apache.commons.collections4.list.SetUniqueList)
+	 */
 	@Override
 	public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
 		for( Instances traindata : traindataSet ) {
@@ -28,6 +35,10 @@ public class Undersampling implements IProcessesingStrategy,
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+	 */
 	@Override
 	public void apply(Instances testdata, Instances traindata) {
 		
