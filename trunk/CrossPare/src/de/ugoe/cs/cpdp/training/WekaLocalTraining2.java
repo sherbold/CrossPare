@@ -49,6 +49,10 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 	/*size of the complete set (used for density function)*/
 	public static int SIZE = 0;
 	
+	private static QuadTree TREE;
+	private static Fastmap FMAP;
+	private static EuclideanDistance DIST;
+	
 	// cluster
 	private static ArrayList<ArrayList<QuadTreePayload<Instance>>> cluster = new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
 	
@@ -129,8 +133,15 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				
 				Instance clusterInstance = createInstance(traindata, instance);
 				
+				// build temp dist matrix
+				double[][] distmat = new double[3][3];
+				
+				
+				
 				// get distance of this instance to every other instance
 				// if the distance is minimal apply the classifier of the current cluster
+				
+				/*
 				int cnumber;
 				int min_cluster = -1;
 				double min_distance = 99999999;
@@ -154,6 +165,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 					// this is an error condition
 					throw new RuntimeException("min_cluster not found");
 				}
+				*/
 				
 				// classify the passed instance with the cluster we found
 				ret = cclassifier.get(min_cluster).classifyInstance(classInstance);
@@ -179,18 +191,18 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			
 			
 			// 3. calculate distance matrix (needed for Fastmap because it starts at dimension 1)
-			EuclideanDistance d = new EuclideanDistance(train);
+			DIST = new EuclideanDistance(train);
 			double[][] dist = new double[train.size()][train.size()];
 			for(int i=0; i < train.size(); i++) {
 				for(int j=0; j < train.size(); j++) {
-					dist[i][j] = d.distance(train.get(i), train.get(j));
+					dist[i][j] = DIST.distance(train.get(i), train.get(j));
 				}
 			}
 			
 			// 4. run fastmap for 2 dimensions on the distance matrix
-			Fastmap f = new Fastmap(2, dist);
-			f.calculate();
-			double[][] X = f.getX();
+			FMAP = new Fastmap(2, dist);
+			FMAP.calculate();
+			double[][] X = FMAP.getX();
 			
 			// quadtree payload generation
 			ArrayList<QuadTreePayload<Instance>> qtp = new ArrayList<QuadTreePayload<Instance>>();
@@ -218,21 +230,21 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    }
 		    
 		    // 5. generate quadtree
-		    QuadTree q = new QuadTree(null, qtp);
+		    TREE = new QuadTree(null, qtp);
 		    ALPHA = Math.sqrt(train.size());
 		    SIZE = train.size();
 		    
 		    //Console.traceln(Level.INFO, String.format("Generate QuadTree with "+ SIZE + " size, Alpha: "+ ALPHA+ ""));
 		    
 		    // set the size and then split the tree recursively at the median value for x, y
-		    q.setSize(new double[] {small[0], big[0]}, new double[] {small[1], big[1]});
-		    q.recursiveSplit(q);
+		    TREE.setSize(new double[] {small[0], big[0]}, new double[] {small[1], big[1]});
+		    TREE.recursiveSplit(TREE);
 		    
 		    // generate list of nodes sorted by density (childs only)
-		    ArrayList<QuadTree> l = new ArrayList<QuadTree>(q.getList(q));
+		    ArrayList<QuadTree> l = new ArrayList<QuadTree>(TREE.getList(TREE));
 		    
 		    // recursive grid clustering (tree pruning), the values are stored in cluster
-		    q.gridClustering(l);
+		    TREE.gridClustering(l);
 		 
 		    // wir iterieren durch die cluster und sammeln uns die instanzen daraus
 		    for(int i=0; i < cluster.size(); i++) {
@@ -300,7 +312,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		private double[][] X;
 		
 		/*2 x k pivot Array one pair per recursive call*/
-		private double[][] PA;
+		private int[][] PA;
 		
 		/*Objects we got (distance matrix)*/
 		private double[][] O;
@@ -311,14 +323,19 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		/*number of dimensions we want*/
 		private int target_dims = 0;
 		
+		/*3 x k tmp projections array, we need this for later projections*/
+		double[][] tmpX;
+		
+		/**/
 		public Fastmap(int k, double[][] O) {
+			this.tmpX = new double[2*k+1][k];
 			this.O = O;
 			int N = O.length;
 			
 			this.target_dims = k;
 			
 			this.X = new double[N][k];
-			this.PA = new double[2][k];
+			this.PA = new int[2][k];
 		}
 		
 		/**
@@ -347,6 +364,59 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return Math.abs(tmp);
 		}
 		
+		/**
+		 * Distance calculation used for adding an Instance after initialization is complete
+		 * 
+		 * @param x x index of x image (if k==0 x object)
+		 * @param y y index of y image (if k==0 y object)
+		 * @param kdimensionality
+		 * @param distmat temp distmatrix for the instance to be added
+		 * @return distance between x, y
+		 */
+		public double tmpDist(int x, int y, int k, double[][] distmat) {
+			double tmp = distmat[x][y] * distmat[x][y]; 
+			
+			// decrease by projections
+			for(int i=0; i < k; i++) {
+				double tmp2 = (this.tmpX[x][i] - this.tmpX[y][i]);
+				tmp -= tmp2 * tmp2;
+			}
+			
+			//return Math.abs(tmp);
+			return tmp;
+		}
+
+		/**
+		 * Projects an instance after initialization is complete
+		 * 
+		 * This uses the previously saved pivot elements.
+		 * 
+		 * @param distmat distance matrix of the instance and pivot elements (3x3 matrix)
+		 * @return vector of the projection values (k-vector)
+		 */
+		public double[] addInstance(double[][] distmat) {
+
+			for(int k=0; k < this.target_dims; k++) {
+				
+				double dxy = this.dist(this.PA[0][k], this.PA[1][k], k);
+				
+				for(int i=0; i < distmat.length; i++) {
+					
+					double dix = this.tmpDist(i, 2*k+1, k, distmat);
+					double diy = this.tmpDist(i, 2*k+2, k, distmat);
+					
+					// projektion speichern
+					this.tmpX[i][k] = (dix + dxy - diy) / (2 * Math.sqrt(dxy));
+				}
+			}
+			
+			double[] ret = new double[this.target_dims];
+			for(int k=0; k < this.target_dims; k++) {
+				ret[k] = this.tmpX[0][k];
+			}
+			return ret;
+		}
+
 		/**
 		 * Find the object farthest from the given index
 		 * This method is a helper Method for findDistandObjects
@@ -417,7 +487,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 					double dix = this.dist(i, pivots[0], this.col);
 					double diy = this.dist(i, pivots[1], this.col);
 		
-					double tmp = (dix + dxy - diy) / 2 * Math.sqrt(dxy);
+					double tmp = (dix + dxy - diy) / (2 * Math.sqrt(dxy));
 					
 					this.X[i][this.col] = tmp;
 				}
