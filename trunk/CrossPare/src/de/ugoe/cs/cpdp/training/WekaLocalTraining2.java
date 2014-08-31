@@ -52,6 +52,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 	private static QuadTree TREE;
 	private static Fastmap FMAP;
 	private static EuclideanDistance DIST;
+	private static Instances TRAIN;
 	
 	// cluster
 	private static ArrayList<ArrayList<QuadTreePayload<Instance>>> cluster = new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
@@ -133,13 +134,51 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				
 				Instance clusterInstance = createInstance(traindata, instance);
 				
-				// build temp dist matrix
-				double[][] distmat = new double[3][3];
+				// build temp dist matrix (2 Pivot per dimension + 1 instance we want to classify)
+				double[][] distmat = new double[2*FMAP.target_dims+1][2*FMAP.target_dims+1];
 				
+				// vector of instances of pivots + 1 (for the instance we want to classify)
+				int[] tmp = new int[FMAP.PA.length+1];
+ 				
+				Instance tmpi;
+				Instance tmpj;
+				for(int i=0; i < tmp.length; i++) {
+					for(int j=0; j < tmp.length; j++) {
+						if(i==0) {
+							tmpi = instance; 
+						}else{
+							tmpi = TRAIN.get(i);
+						}
+						
+						if(j == 0) {
+							tmpj = instance;
+						}else {
+							tmpj = TRAIN.get(j);
+						}
+						
+						distmat[i][j] = DIST.distance(tmpi, tmpj);
+					}
+				}
+				
+				// this is the projection vector for our instance
+				double[] proj = FMAP.addInstance(distmat);
+				
+				
+				// jetzt suchen wir den cluster in dem wir uns befinden mit den 2 projektionen
 				
 				
 				// get distance of this instance to every other instance
 				// if the distance is minimal apply the classifier of the current cluster
+				
+				int cnumber;
+				Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
+				while ( clusternumber.hasNext() ) {
+					cnumber = clusternumber.next();
+
+					for(int i=0; i < ctraindata.get(cnumber).size(); i++) {
+					}
+				}
+				
 				
 				/*
 				int cnumber;
@@ -189,7 +228,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			//filter.setInputFormat(train);
 			//train = Filter.useFilter(train, filter);
 			
-			
+			TRAIN = train;
 			// 3. calculate distance matrix (needed for Fastmap because it starts at dimension 1)
 			DIST = new EuclideanDistance(train);
 			double[][] dist = new double[train.size()][train.size()];
@@ -841,6 +880,33 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			
 			return is_neighbour;
 		}
+		
+		
+		/**
+		 * todo
+		 */
+		public boolean isInside(double x, double y) {
+			boolean is_inside_x = false;
+			boolean is_inside_y = false;
+			double[][] our_size = this.getSize();
+			
+			
+			if(our_size[0][0] <= x && our_size[0][1] >= x) {
+				is_inside_x = true;
+			}
+			
+			if(our_size[1][0] <= y && our_size[1][1] >= y) {
+				is_inside_y = true;
+			}
+			
+			
+			if(is_inside_y && is_inside_x && this.verbose) {
+				System.out.println(this + " contains: " + x + ", "+ y);
+			}
+			
+			return is_inside_x && is_inside_y;
+		}
+		
 		
 		/**
 		 * Perform Pruning and clustering of the quadtree
