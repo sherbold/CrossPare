@@ -32,30 +32,35 @@ import weka.filters.unsupervised.attribute.Remove;
  * 2) With these 2 dimensions we span a QuadTree which gets recursively split on median(x) and median(y) values.
  * 3) We cluster the QuadTree nodes together if they have similar density (50%)
  * 4) We save the clusters and their training data
- * 5) We train a Weka classifier for each cluster with the clusters training data
- * 5) We classify single instances to a cluster and then classify them using the classifier of the cluster
- * 
+ * 5) We only use clusters with > ALPHA instances (currently Math.sqrt(SIZE)), rest is discarded
+ * 6) We train a Weka classifier for each cluster with the clusters training data
+ * 7) We recalculate Fastmap distances for a single instance and then try to find a cluster containing the coords of the instance.
+ * 7.1.) If we can not find a cluster (due to coords outside of all clusters) we find the nearest cluster.
+ * 8) We classifiy the Instance with the classifier and traindata from the Cluster we found in 7.
  */
 public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
 	
 	private final TraindatasetCluster classifier = new TraindatasetCluster();
 	
-	// these values are set later when we have all the information we need
-	
+	// these values are set later when we have all the information we need (size)
 	/*Stopping rule for tree recursion (Math.sqrt(Instances)*/
 	public static double ALPHA = 0;
-	/*Stopping rule for clustering*/
-	public static double DELTA = 0.5;
 	/*size of the complete set (used for density function)*/
 	public static int SIZE = 0;
+	/*Stopping rule for clustering*/
+	public static double DELTA = 0.5;
 	
+	// we need these references later in the testing
 	private static QuadTree TREE;
 	private static Fastmap FMAP;
 	private static EuclideanDistance DIST;
 	private static Instances TRAIN;
 	
-	// cluster
+	// cluster payloads
 	private static ArrayList<ArrayList<QuadTreePayload<Instance>>> cluster = new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
+	
+	// cluster sizes (index is cluster number, arraylist is list of boxes (x0,y0,x1,y1) 
+	private static HashMap<Integer, ArrayList<Double[][]>> CSIZE = new HashMap<Integer, ArrayList<Double[][]>>();
 	
 	@Override
 	public Classifier getClassifier() {
@@ -117,6 +122,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		 * use the cluster where the distance is minimal.
 		 * 
 		 * TODO: class attribute filter raus
+		 * TODO: werden auf die übergebene Instance ebenfalls die preprocessors angewendet? müsste eigentlich
 		 */
 		@Override
 		public double classifyInstance(Instance instance) {
@@ -162,52 +168,58 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				
 				// this is the projection vector for our instance
 				double[] proj = FMAP.addInstance(distmat);
-				
-				
-				// jetzt suchen wir den cluster in dem wir uns befinden mit den 2 projektionen
-				
-				
-				// get distance of this instance to every other instance
-				// if the distance is minimal apply the classifier of the current cluster
-				
 				int cnumber;
-				Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
-				while ( clusternumber.hasNext() ) {
-					cnumber = clusternumber.next();
-
-					for(int i=0; i < ctraindata.get(cnumber).size(); i++) {
-					}
-				}
-				
-				
-				/*
-				int cnumber;
-				int min_cluster = -1;
-				double min_distance = 99999999;
-				EuclideanDistance d;
-				Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
+				int found_cnumber = -1;
+				Iterator<Integer> clusternumber = CSIZE.keySet().iterator();
 				while ( clusternumber.hasNext() ) {
 					cnumber = clusternumber.next();
 					
-					d = new EuclideanDistance(ctraindata.get(cnumber));
-					for(int i=0; i < ctraindata.get(cnumber).size(); i++) {
-						if(d.distance(clusterInstance, ctraindata.get(cnumber).get(i)) <= min_distance) {
-							min_cluster = cnumber;
-							min_distance = d.distance(clusterInstance, ctraindata.get(cnumber).get(i));
+					// jetzt iterieren wir über die boxen und hoffen wir finden was (cluster könnte auch entfernt worden sein)
+					for ( int box=0; box < CSIZE.get(cnumber).size(); box++ ) { 
+						Double[][] current = CSIZE.get(cnumber).get(box);
+						if(proj[0] <= current[0][0] && proj[0] >= current[0][1] &&  // x 
+						   proj[1] <= current[1][0] && proj[1] >= current[1][1]) {  // y
+							found_cnumber = cnumber;
+						}
+					}
+				}
+				
+				// wenn wir keinen cluster finden, liegen wir außerhalb des bereichs
+				// kann das vorkommen mit fastmap?
+				
+				// ja das kann vorkommen wir suchen also weiterhin den nächsten
+				// müssten mal durchzählen wie oft das vorkommt
+				if ( found_cnumber == -1 ) {
+					//Console.traceln(Level.INFO, String.format("ERROR matching instance to cluster!"));
+					//throw new RuntimeException("no cluster for test instance found!");
+				}
+				
+				// jetzt kann es vorkommen das der cluster gelöscht wurde (weil zuwenig instanzen), jetzt müssen wir den
+				// finden der am nächsten dran ist
+				if( !this.ctraindata.containsKey(found_cnumber) ) { 
+					double min_distance = 99999999;
+					clusternumber = ctraindata.keySet().iterator();
+					while ( clusternumber.hasNext() ) {
+						cnumber = clusternumber.next();
+						for(int i=0; i < ctraindata.get(cnumber).size(); i++) {
+							if(DIST.distance(clusterInstance, ctraindata.get(cnumber).get(i)) <= min_distance) {
+								found_cnumber = cnumber;
+								min_distance = DIST.distance(clusterInstance, ctraindata.get(cnumber).get(i));
+							}
 						}
 					}
 				}
 				
 				// here we have the cluster where an instance has the minimum distance between itself the
 				// instance we want to classify
-				if(min_cluster == -1) {
+				if( found_cnumber == -1 ) {
 					// this is an error condition
+					Console.traceln(Level.INFO, String.format("ERROR matching instance to cluster with full search!"));
 					throw new RuntimeException("min_cluster not found");
 				}
-				*/
 				
 				// classify the passed instance with the cluster we found
-				ret = cclassifier.get(min_cluster).classifyInstance(classInstance);
+				ret = cclassifier.get(found_cnumber).classifyInstance(classInstance);
 				
 			}catch( Exception e ) {
 				Console.traceln(Level.INFO, String.format("ERROR matching instance to cluster!"));
@@ -300,6 +312,8 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			    		ctraindata.get(i).add(current.get(j).getInst());
 			    	}
 		    	}
+		    	
+		    	
 		    }
 
 		    // train one classifier per cluster, we get the clusternumber from the traindata
@@ -626,6 +640,19 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			return new double[][] {this.x, this.y}; 
 		}
 		
+		public Double[][] getSizeDouble() {
+			Double[] tmpX = new Double[2];
+			Double[] tmpY = new Double[2];
+			
+			tmpX[0] = this.x[0];
+			tmpX[1] = this.x[1];
+			
+			tmpY[0] = this.y[0];
+			tmpY[1] = this.y[1];
+			
+			return new Double[][] {tmpX, tmpY}; 
+		}
+		
 		/**
 		 * TODO: DRY, median ist immer dasselbe
 		 *  
@@ -950,6 +977,9 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    remove.add(list.size()-1);
 		    //System.out.println("removing "+biggest.getDensity() + " from list");
 		    
+		    ArrayList<Double[][]> tmpSize = new ArrayList<Double[][]>();
+		    tmpSize.add(biggest.getSizeDouble());
+		    
 			// check the items for their density
 		    for(int i=list.size()-1; i >= 0; i--) {
 		    	current = list.get(i);
@@ -963,6 +993,9 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    		
 		    		// wir können hier nicht removen weil wir sonst den index verschieben
 		    		remove.add(i);
+		    		
+		    		// außerdem brauchen wir die größe
+		    		tmpSize.add(current.getSizeDouble());
 		    	}
 			}
 		    
@@ -974,6 +1007,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			// 4. add to cluster
 		    cluster.add(current_cluster);
 			
+		    // 5. add size of our current (biggest)
+		    // we need that to classify test instances to a cluster
+		    Integer cnumber = new Integer(cluster.size()-1);
+		    if(CSIZE.containsKey(cnumber) == false) {
+		    	CSIZE.put(cnumber, tmpSize);
+		    }
+
 			// recurse
 		    //System.out.println("restlist " + list.size());
 		    this.gridClustering(list);
