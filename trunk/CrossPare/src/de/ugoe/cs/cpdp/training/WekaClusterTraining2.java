@@ -66,8 +66,8 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 
 		private EM clusterer = null;
 
-		private HashMap<Integer, Classifier> cclassifier = new HashMap<Integer, Classifier>();
-		private HashMap<Integer, Instances> ctraindata = new HashMap<Integer, Instances>(); 
+		private HashMap<Integer, Classifier> cclassifier;
+		private HashMap<Integer, Instances> ctraindata; 
 		
 		
 		
@@ -114,6 +114,8 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 				// 1. classify testdata instance to a cluster number
 				int cnum = clusterer.clusterInstance(clusterInstance);
 				
+				//Console.traceln(Level.INFO, String.format("instance is in cluster: " + cnum));
+						
 				// 2. classify testata instance to the classifier
 				ret = cclassifier.get(cnum).classifyInstance(classInstance);
 				
@@ -140,6 +142,9 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 			
 			// 3. cluster data
 			//Console.traceln(Level.INFO, String.format("starting clustering"));
+			
+			cclassifier = new HashMap<Integer, Classifier>();
+			ctraindata = new HashMap<Integer, Instances>();
 			
 			// use standard params for now
 			clusterer = new EM();
@@ -172,6 +177,9 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 				ctraindata.get(cnumber).add(traindata.get(j));
 			}
 			
+			// Debug output
+			//Console.traceln(Level.INFO, String.format("number of clusters: " + clusterer.numberOfClusters()));
+			
 			// train one classifier per cluster, we get the clusternumber from the traindata
 			Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
 			while ( clusternumber.hasNext() ) {
@@ -179,7 +187,7 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 				cclassifier.put(cnumber,setupClassifier());
 				cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
 				
-				//Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
+				//Console.traceln(Level.INFO, String.format("building classifier in cluster "+cnumber + " with " + ctraindata.get(cnumber).size() + " traindata instances"));
 			}
 		}
 	}
