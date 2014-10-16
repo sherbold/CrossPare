@@ -69,16 +69,16 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		private static final long serialVersionUID = 1L;
 		
 		/* classifier per cluster */
-		private HashMap<Integer, Classifier> cclassifier = new HashMap<Integer, Classifier>();
+		private HashMap<Integer, Classifier> cclassifier;
 		
 		/* instances per cluster */
-		private HashMap<Integer, Instances> ctraindata = new HashMap<Integer, Instances>(); 
+		private HashMap<Integer, Instances> ctraindata; 
 		
 		/* holds the instances and indices of the pivot objects of the Fastmap calculation in buildClassifier*/
-		private HashMap<Integer, Instance> cpivots = new HashMap<Integer, Instance>();
+		private HashMap<Integer, Instance> cpivots;
 		
 		/* holds the indices of the pivot objects for x,y and the dimension [x,y][dimension]*/
-		private int[][] cpivotindices = new int[2][2];
+		private int[][] cpivotindices;
 
 		/* holds the sizes of the cluster multiple "boxes" per cluster */
 		private HashMap<Integer, ArrayList<Double[][]>> csize;
@@ -143,7 +143,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				
 				Fastmap FMAP = new Fastmap(2);
 				EuclideanDistance dist = new EuclideanDistance(traindata);
-				
 				
 				// we set our pivot indices [x=0,y=1][dimension]
 				int[][] npivotindices = new int[2][2];
@@ -233,7 +232,6 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			    }
 			    */
 				
-				// TODO: can we be in more cluster than one?
 				// now we iterate over all clusters (well, boxes of sizes per cluster really) and save the number of the 
 				// cluster in which we are
 				int cnumber;
@@ -243,7 +241,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 					cnumber = clusternumber.next();
 					
 					// now iterate over the boxes of the cluster and hope we find one (cluster could have been removed)
-					// or we are too far away from any cluster
+					// or we are too far away from any cluster because of the fastmap calculation with the initial pivot objects
 					for ( int box=0; box < this.csize.get(cnumber).size(); box++ ) { 
 						Double[][] current = this.csize.get(cnumber).get(box);
 						
@@ -255,11 +253,11 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				}
 				
 				// we want to count how often we are really inside a cluster
-				if ( found_cnumber == -1 ) {
-					CNOTFOUND += 1;
-				}else {
-					CFOUND += 1;
-				}
+				//if ( found_cnumber == -1 ) {
+				//	CNOTFOUND += 1;
+				//}else {
+				//	CFOUND += 1;
+				//}
 
 				// now it can happen that we dont find a cluster because we deleted it previously (too few instances)
 				// or we get bigger distance measures from weka so that we are completely outside of our clusters.
@@ -305,6 +303,10 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			//Console.traceln(Level.INFO, String.format("found: "+ CFOUND + ", notfound: " + CNOTFOUND));
 			this.show_biggest = true;
 			
+			cclassifier = new HashMap<Integer, Classifier>();
+			ctraindata = new HashMap<Integer, Instances>();
+			cpivots = new HashMap<Integer, Instance>();
+			cpivotindices = new int[2][2];
 			
 			// 1. copy traindata
 			Instances train = new Instances(traindata);
@@ -338,11 +340,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			cpivotindices = FMAP.getPivots();
 			
 			double[][] X = FMAP.getX();
+			distmat = new double[0][0];
+			System.gc();
 			
 			// quadtree payload generation
 			ArrayList<QuadTreePayload<Instance>> qtp = new ArrayList<QuadTreePayload<Instance>>();
 		    
-			// die max und min brauchen wir für die größenangaben der sektoren
+			// we need these for the sizes of the quadrants
 			double[] big = {0,0};
 			double[] small = {9999999,99999999};
 			
@@ -364,7 +368,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		        qtp.add(tmp);
 		    }
 		    
-		    Console.traceln(Level.INFO, String.format("size for cluster ("+small[0]+","+small[1]+") - ("+big[0]+","+big[1]+")"));
+		    //Console.traceln(Level.INFO, String.format("size for cluster ("+small[0]+","+small[1]+") - ("+big[0]+","+big[1]+")"));
 		    
 		    // 5. generate quadtree
 		    QuadTree TREE = new QuadTree(null, qtp);
@@ -409,7 +413,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    }
 			
 			// here we keep things we need later on
-			// QuadTree sizes for later use
+			// QuadTree sizes for later use (matching new instances)
 			this.csize = new HashMap<Integer, ArrayList<Double[][]>>(QuadTree.csize);
 		
 			// pivot elements
@@ -435,15 +439,19 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    int cnumber;
 			Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
 			//cclassifier.clear();
+			
+			//int traindata_count = 0;
 			while ( clusternumber.hasNext() ) {
 				cnumber = clusternumber.next();
 				cclassifier.put(cnumber,setupClassifier()); // das hier ist der eigentliche trainer 
 				cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
 				//Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
-				//Console.traceln(Level.INFO, String.format("" + ctraindata.get(cnumber).size() + " instances in cluster "+cnumber));
+				//traindata_count += ctraindata.get(cnumber).size();
+				//Console.traceln(Level.INFO, String.format("building classifier in cluster "+cnumber +"  with "+ ctraindata.get(cnumber).size() +" traindata instances"));
 			}
 			
-			//Console.traceln(Level.INFO, String.format("num clusters: "+cclassifier.size()));
+			// add all traindata
+			//Console.traceln(Level.INFO, String.format("traindata in all clusters: " + traindata_count));
 		}
 	}
 	
