@@ -83,9 +83,13 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		/* holds the sizes of the cluster multiple "boxes" per cluster */
 		private HashMap<Integer, ArrayList<Double[][]>> csize;
 		
+		/* debug vars */
+		@SuppressWarnings("unused")
 		private boolean show_biggest = true;
 		
+		@SuppressWarnings("unused")
 		private int CFOUND = 0;
+		@SuppressWarnings("unused")
 		private int CNOTFOUND = 0;
 		
 		
@@ -259,7 +263,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				//	CFOUND += 1;
 				//}
 
-				// now it can happen that we dont find a cluster because we deleted it previously (too few instances)
+				// now it can happen that we do not find a cluster because we deleted it previously (too few instances)
 				// or we get bigger distance measures from weka so that we are completely outside of our clusters.
 				// in these cases we just find the nearest cluster to our instance and use it for classification.
 				// to do that we use the EuclideanDistance again to compare our distance to all other Instances
@@ -279,7 +283,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 					}
 				}
 				
-				// here we have the cluster where an instance has the minimum distance between itself the
+				// here we have the cluster where an instance has the minimum distance between itself and the
 				// instance we want to classify
 				// if we still have not found a cluster we exit because something is really wrong
 				if( found_cnumber == -1 ) {
@@ -435,7 +439,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			}
 			*/
 			
-		    // train one classifier per cluster, we get the clusternumber from the traindata
+		    // train one classifier per cluster, we get the cluster number from the traindata
 		    int cnumber;
 			Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
 			//cclassifier.clear();
@@ -443,7 +447,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 			//int traindata_count = 0;
 			while ( clusternumber.hasNext() ) {
 				cnumber = clusternumber.next();
-				cclassifier.put(cnumber,setupClassifier()); // das hier ist der eigentliche trainer 
+				cclassifier.put(cnumber,setupClassifier());  // this is the classifier used for the cluster 
 				cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
 				//Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
 				//traindata_count += ctraindata.get(cnumber).size();

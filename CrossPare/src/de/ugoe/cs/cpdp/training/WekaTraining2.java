@@ -9,7 +9,7 @@ import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
 
 /**
- * Programmatic WekaBaggingTraining
+ * Programmatic WekaTraining
  *
  * first parameter is Trainer Name.
  * second parameter is class name

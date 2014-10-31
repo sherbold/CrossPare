@@ -22,19 +22,18 @@ import weka.filters.unsupervised.attribute.Remove;
 /**
  * WekaClusterTraining2
  * 
- * 1. Cluster traindata
- * 2. for each cluster train a classifier with traindata from cluster
- * 3. match testdata instance to a cluster, then classify with classifier from the cluster
+ * Currently supports only EM Clustering.
  * 
- * XML config:
+ * 1. Cluster training data
+ * 2. for each cluster train a classifier with training data from cluster
+ * 3. match test data instance to a cluster, then classify with classifier from the cluster
+ * 
+ * XML configuration:
  * <!-- because of clustering -->
  * <preprocessor name="Normalization" param=""/>
  * 
  * <!-- cluster trainer -->
  * <trainer name="WekaClusterTraining2" param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
- * 
- * Questions:
- * - how do we configure the clustering params?
  */
 public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
 
@@ -44,7 +43,6 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 	public Classifier getClassifier() {
 		return classifier;
 	}
-	
 	
 	@Override
 	public void apply(Instances traindata) {
@@ -70,7 +68,14 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 		private HashMap<Integer, Instances> ctraindata; 
 		
 		
-		
+		/**
+		 * Helper method that gives us a clean instance copy with 
+		 * the values of the instancelist of the first parameter. 
+		 * 
+		 * @param instancelist with attributes
+		 * @param instance with only values
+		 * @return copy of the instance
+		 */
 		private Instance createInstance(Instances instances, Instance instance) {
 			// attributes for feeding instance to classifier
 			Set<String> attributeNames = new HashSet<>();
@@ -95,28 +100,27 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 			return instCopy;
 		}
 		
-		
 		@Override
 		public double classifyInstance(Instance instance) {
 			double ret = 0;
 			try {
+				// 1. copy the instance (keep the class attribute)
 				Instances traindata = ctraindata.get(0);
 				Instance classInstance = createInstance(traindata, instance);
 				
-				// remove class attribute before clustering
+				// 2. remove class attribute before clustering
 				Remove filter = new Remove();
 				filter.setAttributeIndices("" + (traindata.classIndex() + 1));
 				filter.setInputFormat(traindata);
 				traindata = Filter.useFilter(traindata, filter);
 				
+				// 3. copy the instance (without the class attribute) for clustering
 				Instance clusterInstance = createInstance(traindata, instance);
 				
-				// 1. classify testdata instance to a cluster number
+				// 4. match instance without class attribute to a cluster number
 				int cnum = clusterer.clusterInstance(clusterInstance);
 				
-				//Console.traceln(Level.INFO, String.format("instance is in cluster: " + cnum));
-						
-				// 2. classify testata instance to the classifier
+				// 5. classify instance with class attribute to the classifier of that cluster number
 				ret = cclassifier.get(cnum).classifyInstance(classInstance);
 				
 			}catch( Exception e ) {
@@ -126,12 +130,10 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 			return ret;
 		}
 
-		
-		
 		@Override
 		public void buildClassifier(Instances traindata) throws Exception {
 			
-			// 1. copy traindata
+			// 1. copy training data
 			Instances train = new Instances(traindata);
 			
 			// 2. remove class attribute for clustering
@@ -140,35 +142,30 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 			filter.setInputFormat(train);
 			train = Filter.useFilter(train, filter);
 			
-			// 3. cluster data
-			//Console.traceln(Level.INFO, String.format("starting clustering"));
-			
+			// new objects
 			cclassifier = new HashMap<Integer, Classifier>();
 			ctraindata = new HashMap<Integer, Instances>();
 			
+			// 3. cluster data
 			// use standard params for now
 			clusterer = new EM();
+			// we can set options like so:
 			//String[] params = {"-N", "100"};
 			//clusterer.setOptions(params);
-			clusterer.buildClusterer(train);
-			// set max num to traindata size
-			clusterer.setMaximumNumberOfClusters(train.size());
 			
-			// 4. get cluster membership of our traindata
-			//AddCluster cfilter = new AddCluster();
-			//cfilter.setClusterer(clusterer);
-			//cfilter.setInputFormat(train);
-			//Instances ctrain = Filter.useFilter(train, cfilter);
+			// set max num of clusters to train data size (although we do not want that)
+			clusterer.setMaximumNumberOfClusters(train.size());
+						
+			// build clusterer
+			clusterer.buildClusterer(train);
 			
 			Instances ctrain = new Instances(train);
 			
-			// get traindata per cluster
+			// get train data per cluster
 			int cnumber;
 			for ( int j=0; j < ctrain.numInstances(); j++ ) {
-				// get the cluster number from the attributes, subract 1 because if we clusterInstance we get 0-n, and this is 1-n
-				//cnumber = Integer.parseInt(ctrain.get(j).stringValue(ctrain.get(j).numAttributes()-1).replace("cluster", "")) - 1;
-				
 				cnumber = clusterer.clusterInstance(ctrain.get(j));
+				
 				// add training data to list of instances for this cluster number
 				if ( !ctraindata.containsKey(cnumber) ) {
 					ctraindata.put(cnumber, new Instances(traindata));
@@ -177,17 +174,14 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 				ctraindata.get(cnumber).add(traindata.get(j));
 			}
 			
-			// Debug output
-			//Console.traceln(Level.INFO, String.format("number of clusters: " + clusterer.numberOfClusters()));
-			
-			// train one classifier per cluster, we get the clusternumber from the traindata
+			// train one classifier per cluster, we get the cluster number from the training data
 			Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
 			while ( clusternumber.hasNext() ) {
 				cnumber = clusternumber.next();			
 				cclassifier.put(cnumber,setupClassifier());
 				cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
 				
-				//Console.traceln(Level.INFO, String.format("building classifier in cluster "+cnumber + " with " + ctraindata.get(cnumber).size() + " traindata instances"));
+				//Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
 			}
 		}
 	}

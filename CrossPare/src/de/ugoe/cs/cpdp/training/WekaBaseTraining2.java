@@ -4,10 +4,20 @@ import java.util.Arrays;
 import java.util.logging.Level;
 
 import de.ugoe.cs.util.console.Console;
+
 import weka.core.OptionHandler;
 import weka.classifiers.Classifier;
 import weka.classifiers.meta.CVParameterSelection;
 
+/**
+ * WekaBaseTraining2
+ * 
+ * Allows specification of the Weka classifier and its params in the XML experiment configuration.
+ * 
+ * Important conventions of the XML format: 
+ * Cross Validation params come always last and are prepended with -CVPARAM
+ * Example: <trainer name="WekaClusterTraining2" param="RandomForestLocal weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5"/>
+ */
 public abstract class WekaBaseTraining2 implements WekaCompatibleTrainer {
 	
 	protected Classifier classifier = null;
@@ -19,15 +29,15 @@ public abstract class WekaBaseTraining2 implements WekaCompatibleTrainer {
 	public void setParameter(String parameters) {
 		String[] params = parameters.split(" ");
 
-		// first is classifierName
+		// first part of the params is the classifierName (e.g. SMORBF)
 		classifierName = params[0];
 		
-		// all following parameters can be copied from weka!
+		// the following parameters can be copied from weka!
 		
-		// second param is classifierClassName
+		// second param is classifierClassName (e.g. weka.classifiers.functions.SMO)
 		classifierClassName = params[1];
 	
-		// rest are params to the specified classifier
+		// rest are params to the specified classifier (e.g. -K weka.classifiers.functions.supportVector.RBFKernel)
 		classifierParams = Arrays.copyOfRange(params, 2, params.length);
 		
 		classifier = setupClassifier();
@@ -45,7 +55,7 @@ public abstract class WekaBaseTraining2 implements WekaCompatibleTrainer {
 			Class c = Class.forName(classifierClassName);
 			Classifier obj = (Classifier) c.newInstance();
 			
-			// Filter -CVPARAM
+			// Filter out -CVPARAM, these are special because they do not belong to the Weka classifier class as parameters
 			String[] param = Arrays.copyOf(classifierParams, classifierParams.length);
 			String[] cvparam = {};
 			boolean cv = false;
@@ -67,7 +77,7 @@ public abstract class WekaBaseTraining2 implements WekaCompatibleTrainer {
 			cl = obj;
 			
 			// we have cross val params
-			// cant check on cvparam.length may not be initialized			
+			// cant check on cvparam.length here, it may not be initialized			
 			if(cv) {
 				final CVParameterSelection ps = new CVParameterSelection();
 				ps.setClassifier(obj);
