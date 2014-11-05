@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -145,39 +146,54 @@ public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITraining
 			// new objects
 			cclassifier = new HashMap<Integer, Classifier>();
 			ctraindata = new HashMap<Integer, Instances>();
-			
-			// 3. cluster data
-			// use standard params for now
-			clusterer = new EM();
-			// we can set options like so:
-			//String[] params = {"-N", "100"};
-			//clusterer.setOptions(params);
-			
-			// set max num of clusters to train data size (although we do not want that)
-			clusterer.setMaximumNumberOfClusters(train.size());
 						
-			// build clusterer
-			clusterer.buildClusterer(train);
-			
-			Instances ctrain = new Instances(train);
-			
-			// get train data per cluster
-			int cnumber;
-			for ( int j=0; j < ctrain.numInstances(); j++ ) {
-				cnumber = clusterer.clusterInstance(ctrain.get(j));
+			Instances ctrain;
+			int maxNumClusters = train.size();
+			boolean sufficientInstancesInEachCluster;
+			do { // while(onlyTarget)
+				sufficientInstancesInEachCluster = true;
+				clusterer = new EM();
+				clusterer.setMaximumNumberOfClusters(maxNumClusters);
+				clusterer.buildClusterer(train);
 				
-				// add training data to list of instances for this cluster number
-				if ( !ctraindata.containsKey(cnumber) ) {
-					ctraindata.put(cnumber, new Instances(traindata));
-					ctraindata.get(cnumber).delete();
+				// 4. get cluster membership of our traindata
+				//AddCluster cfilter = new AddCluster();
+				//cfilter.setClusterer(clusterer);
+				//cfilter.setInputFormat(train);
+				//Instances ctrain = Filter.useFilter(train, cfilter);
+				
+				ctrain = new Instances(train);
+				ctraindata = new HashMap<>();
+				
+				// get traindata per cluster
+				for ( int j=0; j < ctrain.numInstances(); j++ ) {
+					// get the cluster number from the attributes, subract 1 because if we clusterInstance we get 0-n, and this is 1-n
+					//cnumber = Integer.parseInt(ctrain.get(j).stringValue(ctrain.get(j).numAttributes()-1).replace("cluster", "")) - 1;
+					
+					int cnumber = clusterer.clusterInstance(ctrain.get(j));
+					// add training data to list of instances for this cluster number
+					if ( !ctraindata.containsKey(cnumber) ) {
+						ctraindata.put(cnumber, new Instances(traindata));
+						ctraindata.get(cnumber).delete();
+					}
+					ctraindata.get(cnumber).add(traindata.get(j));
 				}
-				ctraindata.get(cnumber).add(traindata.get(j));
-			}
+				
+				for( Entry<Integer,Instances> entry : ctraindata.entrySet() ) {
+					Instances instances = entry.getValue();
+					int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
+					for( int count : counts ) {
+						sufficientInstancesInEachCluster &= count>0;
+					}
+					sufficientInstancesInEachCluster &= instances.numInstances()>=5;
+				}
+				maxNumClusters = clusterer.numberOfClusters()-1;
+			} while(!sufficientInstancesInEachCluster);
 			
 			// train one classifier per cluster, we get the cluster number from the training data
 			Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
 			while ( clusternumber.hasNext() ) {
-				cnumber = clusternumber.next();			
+				int cnumber = clusternumber.next();			
 				cclassifier.put(cnumber,setupClassifier());
 				cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
 				
