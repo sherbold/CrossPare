@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 import weka.core.Instance;
-import de.ugoe.cs.cpdp.training.WekaLocalTraining2.QuadTreePayload;
+import de.ugoe.cs.cpdp.training.WekaLocalFQTraining.QuadTreePayload;
 
 /**
  * QuadTree implementation

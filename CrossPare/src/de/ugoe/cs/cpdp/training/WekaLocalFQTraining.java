@@ -41,7 +41,7 @@ import weka.filters.unsupervised.attribute.Remove;
  * 7.1.) If we can not find a cluster (due to coords outside of all clusters) we find the nearest cluster.
  * 8) We classify the Instance with the classifier and traindata from the Cluster we found in 7.
  */
-public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
+public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingStrategy {
 	
 	private final TraindatasetCluster classifier = new TraindatasetCluster();
 	
