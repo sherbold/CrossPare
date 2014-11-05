@@ -21,8 +21,9 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
 /**
- * WekaClusterTraining2
+ * WekaLocalEMTraining
  * 
+ * Local Trainer with EM Clustering for data partitioning.
  * Currently supports only EM Clustering.
  * 
  * 1. Cluster training data
@@ -34,7 +35,7 @@ import weka.filters.unsupervised.attribute.Remove;
  * <preprocessor name="Normalization" param=""/>
  * 
  * <!-- cluster trainer -->
- * <trainer name="WekaClusterTraining2" param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
+ * <trainer name="WekaLocalEMTraining" param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
  */
 public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingStrategy {
 
