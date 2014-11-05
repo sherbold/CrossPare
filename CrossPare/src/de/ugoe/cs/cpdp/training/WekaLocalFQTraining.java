@@ -29,7 +29,7 @@ import weka.filters.unsupervised.attribute.Remove;
  * "Local versus Global Lessons for Defect Prediction and Effort Estimation," 
  * IEEE Transactions on Software Engineering, vol. 39, no. 6, pp. 822-834, June, 2013  
  * 
- * With WekaLocalTraining2 we do the following:
+ * With WekaLocalFQTraining we do the following:
  * 1) Run the Fastmap algorithm on all training data, let it calculate the 2 most significant 
  *    dimensions and projections of each instance to these dimensions
  * 2) With these 2 dimensions we span a QuadTree which gets recursively split on median(x) and median(y) values.

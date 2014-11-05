@@ -22,13 +22,14 @@ import weka.core.Instances;
  * second parameter is class name
  * 
  * all subsequent parameters are configuration params (for example for trees)
+ * Cross Validation params always come last and are prepended with -CVPARAM
  * 
  * XML Configurations for Weka Classifiers:
  * <pre>
  * {@code
  * <!-- examples -->
- * <setwisetrainer name="WekaBaggingTraining2" param="NaiveBayesBagging weka.classifiers.bayes.NaiveBayes" />
- * <setwisetrainer name="WekaBaggingTraining2" param="LogisticBagging weka.classifiers.functions.Logistic -R 1.0E-8 -M -1" />
+ * <setwisetrainer name="WekaBaggingTraining" param="NaiveBayesBagging weka.classifiers.bayes.NaiveBayes" />
+ * <setwisetrainer name="WekaBaggingTraining" param="LogisticBagging weka.classifiers.functions.Logistic -R 1.0E-8 -M -1" />
  * }
  * </pre>
  * 

@@ -15,8 +15,8 @@ import weka.classifiers.meta.CVParameterSelection;
  * Allows specification of the Weka classifier and its params in the XML experiment configuration.
  * 
  * Important conventions of the XML format: 
- * Cross Validation params come always last and are prepended with -CVPARAM
- * Example: <trainer name="WekaClusterTraining2" param="RandomForestLocal weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5"/>
+ * Cross Validation params always come last and are prepended with -CVPARAM
+ * Example: <trainer name="WekaTraining" param="RandomForestLocal weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5"/>
  */
 public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
 	
