@@ -270,7 +270,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 				// then we take the cluster of the closest weka instance
 				dist = new EuclideanDistance(traindata2);
 				if( !this.ctraindata.containsKey(found_cnumber) ) { 
-					double min_distance = 99999999;
+					double min_distance = Double.MAX_VALUE;
 					clusternumber = ctraindata.keySet().iterator();
 					while ( clusternumber.hasNext() ) {
 						cnumber = clusternumber.next();
@@ -352,7 +352,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		    
 			// we need these for the sizes of the quadrants
 			double[] big = {0,0};
-			double[] small = {9999999,99999999};
+			double[] small = {Double.MAX_VALUE,Double.MAX_VALUE};
 			
 			// set quadtree payload values and get max and min x and y values for size
 		    for( int i=0; i<X.length; i++ ){
@@ -580,7 +580,7 @@ public class WekaLocalTraining2 extends WekaBaseTraining2 implements ITrainingSt
 		 * @return index of the farthest object from the given index
 		 */
 		private int findFarthest(int index) {
-			double furthest = -1000000;
+			double furthest = Double.MIN_VALUE;
 			int ret = 0;
 			
 			for( int i=0; i < O.length; i++ ) {
