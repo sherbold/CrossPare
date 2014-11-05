@@ -26,7 +26,7 @@ import weka.core.Instances;
  * </pre>
  * 
  */
-public class WekaTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
+public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy {
 
 	@Override
 	public void apply(Instances traindata) {

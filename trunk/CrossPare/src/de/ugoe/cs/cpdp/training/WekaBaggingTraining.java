@@ -33,7 +33,7 @@ import weka.core.Instances;
  * </pre>
  * 
  */
-public class WekaBaggingTraining2 extends WekaBaseTraining2 implements ISetWiseTrainingStrategy {
+public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTrainingStrategy {
 
 	private final TraindatasetBagging classifier = new TraindatasetBagging();
 	

@@ -36,7 +36,7 @@ import weka.filters.unsupervised.attribute.Remove;
  * <!-- cluster trainer -->
  * <trainer name="WekaClusterTraining2" param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
  */
-public class WekaClusterTraining2 extends WekaBaseTraining2 implements ITrainingStrategy {
+public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingStrategy {
 
 	private final TraindatasetCluster classifier = new TraindatasetCluster();
 	
