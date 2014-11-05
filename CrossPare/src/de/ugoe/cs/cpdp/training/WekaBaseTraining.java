@@ -18,7 +18,7 @@ import weka.classifiers.meta.CVParameterSelection;
  * Cross Validation params come always last and are prepended with -CVPARAM
  * Example: <trainer name="WekaClusterTraining2" param="RandomForestLocal weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5"/>
  */
-public abstract class WekaBaseTraining implements WekaCompatibleTrainer {
+public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
 	
 	protected Classifier classifier = null;
 	protected String classifierClassName;

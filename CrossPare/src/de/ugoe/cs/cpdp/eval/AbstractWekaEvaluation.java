@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.ugoe.cs.cpdp.training.ITrainer;
-import de.ugoe.cs.cpdp.training.WekaCompatibleTrainer;
+import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.util.StringTools;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -70,8 +70,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
 			boolean writeHeader) {
 		final List<Classifier> classifiers = new LinkedList<Classifier>();
 		for( ITrainer trainer : trainers ) {
-			if( trainer instanceof WekaCompatibleTrainer ) {
-				classifiers.add(((WekaCompatibleTrainer) trainer).getClassifier());
+			if( trainer instanceof IWekaCompatibleTrainer ) {
+				classifiers.add(((IWekaCompatibleTrainer) trainer).getClassifier());
 			} else {
 				throw new RuntimeException("The selected evaluator only support Weka classifiers");
 			}
@@ -80,28 +80,28 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
 		if( writeHeader ) {
 			output.append("version,size_test,size_training");
 			for( ITrainer trainer : trainers ) {
-				output.append(",succHe_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",succZi_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",succG75_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",succG60_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",error_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",recall_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",precision_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",fscore_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",gscore_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",mcc_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",auc_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",aucec_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",tpr_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",tnr_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",tp_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",fn_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",tn_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",fp_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",trainerror_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",trainrecall_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",trainprecision_" + ((WekaCompatibleTrainer) trainer).getName());
-				output.append(",trainsuccHe_" + ((WekaCompatibleTrainer) trainer).getName());
+				output.append(",succHe_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",succZi_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",succG75_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",succG60_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",error_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",recall_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",precision_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",fscore_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",gscore_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",mcc_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",auc_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",aucec_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",tpr_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",tnr_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",tp_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",fn_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",tn_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",fp_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",trainerror_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",trainrecall_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",trainprecision_" + ((IWekaCompatibleTrainer) trainer).getName());
+				output.append(",trainsuccHe_" + ((IWekaCompatibleTrainer) trainer).getName());
 			}
 			output.append(StringTools.ENDLINE);
 		}
