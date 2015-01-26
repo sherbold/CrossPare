@@ -6,7 +6,7 @@ import weka.core.Instances;
  * Data class for software versions. 
  * @author Steffen Herbold
  */
-public class SoftwareVersion {
+public class SoftwareVersion implements Comparable<SoftwareVersion> {
 
 	/**
 	 * name of the project
@@ -57,5 +57,22 @@ public class SoftwareVersion {
 	 */
 	public Instances getInstances() {
 		return new Instances(instances);
+	}
+
+	/** 
+	 * Compares first based on project name and then based on version. Only string comparisons are performed. 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(SoftwareVersion o) {
+		int projectStrCmp = 0;
+		if( project!=null ) {
+			projectStrCmp = project.compareTo(o.project);
+		} 
+		if( projectStrCmp==0 && version!=null ) {
+			return version.compareTo(o.version);			
+		} else {
+			return projectStrCmp;
+		}
 	}
 }

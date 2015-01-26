@@ -1,6 +1,7 @@
 package de.ugoe.cs.cpdp;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -88,6 +89,9 @@ public class Experiment implements Runnable {
 				testVersionCount++;
 			}
 		}
+		
+		// sort versions
+		Collections.sort(versions);
 		
 		for( SoftwareVersion testVersion : versions ) {
 			if( isVersion(testVersion, config.getTestVersionFilters()) ) {
