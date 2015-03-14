@@ -27,8 +27,8 @@ class CSVMockusDataLoader implements SingleVersionLoader {
 		final ArrayList<Attribute> atts = new ArrayList<Attribute>();
 
 		String[] lineSplit = lines[0].split(",");
-		for (int j = 0; j < lineSplit.length - 5; j++) {
-			atts.add(new Attribute(lineSplit[j + 4]));
+		for (int j = 0; j < lineSplit.length - 3; j++) {
+			atts.add(new Attribute(lineSplit[j + 2]));
 		}
 		
 		final ArrayList<String> classAttVals = new ArrayList<String>();
@@ -43,9 +43,9 @@ class CSVMockusDataLoader implements SingleVersionLoader {
 		// fetch data
 		for (int i = 1; i < lines.length; i++) {
 			lineSplit = lines[i].split(",");
-			double[] values = new double[lineSplit.length - 4];
+			double[] values = new double[lineSplit.length - 2];
 			for (int j = 0; j < values.length - 1; j++) {
-				values[j] = Double.parseDouble(lineSplit[j + 4].trim());
+				values[j] = Double.parseDouble(lineSplit[j + 2].trim());
 			}
 			values[values.length - 1] = lineSplit[lineSplit.length - 1].trim()
 					.equals("0") ? 0 : 1;
