@@ -25,4 +25,5 @@ public interface IVersionLoader {
 	 * @return the data
 	 */
 	public List<SoftwareVersion> load();
+
 }

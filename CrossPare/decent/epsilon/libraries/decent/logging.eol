@@ -1,0 +1,25 @@
+
+operation String log(level : Integer) {
+	var levelLimit = 1;
+	//TODO: check if this has performance implications -> minor ~3-5% depending on density of logging
+	var logSetting = Native("java.lang.System").getProperty("epsilon.logLevel");
+	if (logSetting.isDefined()) {
+		levelLimit = logSetting.asInteger();
+	}
+	if (level <= levelLimit) {
+		var system = Native("java.lang.System");
+		var t = system.currentTimeMillis();
+		(t+ " : " + level + " : " + self).println();
+		var logToFile = Native("java.lang.System").getProperty("epsilon.logToFile");
+		var logFileAvailable = Native("java.lang.System").getProperty("epsilon.logFileAvailable");
+		if (logToFile.isDefined() and logToFile = 'true' 
+			and logFileAvailable.isDefined() 
+			and logFileAvailable = 'true') {
+			var i = new LOG!LogItem();
+			i.time = t.asInteger();
+			i.level = level;
+			i.message = self;
+			//LOG!LogModel.allInstances().first().items.add(i);
+		}
+	}
+}

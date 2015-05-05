@@ -1,0 +1,43 @@
+operation ARFFx!Instance addValue(content : String, attribute : String) {
+	var value = new ARFFx!Value();
+	value.ofAttribute = attribute.getARFFAttribute(self.eContainer());
+	value.content = content;
+	self.values.add(value);	    	
+}
+
+
+operation ARFFx!Instance updateValue(content : String, attribute : String) {
+	var value = self.values.select(v|v.ofAttribute.name = attribute).first();
+	if (value.isUndefined()) {
+		value = new ARFFx!Value();
+		value.ofAttribute = attribute.getARFFAttribute(self.eContainer());
+		self.values.add(value);	    	
+	}
+	value.content = content;
+}
+
+
+@cached
+operation String getARFFAttribute(arffx : ARFFx!Model) : ARFFx!Attribute {
+	var attribute = arffx.attributes.select(a|a.name = self).first();
+	if (attribute.isUndefined()) {
+		attribute = new ARFFx!Attribute();
+		attribute.name = self;
+		arffx.attributes.add(attribute);
+	}
+	return attribute;
+}
+
+operation String getSelectedAttributes() : Sequence {
+	var file = new Native("java.io.File")(self);
+	var content = new Native("org.apache.commons.io.FileUtils").readLines(file);
+	
+	
+	content = content.select(x|not x.startsWith("#")).closure(x|x.trim());
+	return content;
+}
+
+@cached
+operation ARFFx!Instance getValue(attribute : ARFFx!Attribute) : String {
+	return self.values.select(v|v.ofAttribute = attribute).first().content;
+}

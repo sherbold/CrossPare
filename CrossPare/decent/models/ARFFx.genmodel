@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/ARRFx.Model/src" modelPluginID="ARFFx" modelName="ARFFx"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="7.0" copyrightFields="false" language="" operationReflection="true"
+    importOrganizing="true">
+  <foreignModel>ARFFx.ecore</foreignModel>
+  <genPackages prefix="ARFFx" disposableProviderFactory="true" ecorePackage="ARFFx.ecore#/">
+    <genClasses ecoreClass="ARFFx.ecore#//Model">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ARFFx.ecore#//Model/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Model/attributes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Model/rows"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Model/dimensions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Model/types"/>
+    </genClasses>
+    <genClasses ecoreClass="ARFFx.ecore#//Attribute">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ARFFx.ecore#//Attribute/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Attribute/type"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Attribute/dimension"/>
+    </genClasses>
+    <genClasses ecoreClass="ARFFx.ecore#//Row">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Row/values"/>
+    </genClasses>
+    <genClasses ecoreClass="ARFFx.ecore#//Value">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference ARFFx.ecore#//Value/ofAttribute"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ARFFx.ecore#//Value/content"/>
+    </genClasses>
+    <genClasses ecoreClass="ARFFx.ecore#//Dimension">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ARFFx.ecore#//Dimension/name"/>
+    </genClasses>
+    <genClasses ecoreClass="ARFFx.ecore#//Type">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ARFFx.ecore#//Type/name"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/LOG.Model/src" modelPluginID="LOG.Model" modelName="LOG"
+    modelPluginClass="" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="7.0" copyrightFields="false"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>LOG.ecore</foreignModel>
+  <genPackages prefix="LOG" resource="XMI" disposableProviderFactory="true" ecorePackage="LOG.ecore#/">
+    <genClasses ecoreClass="LOG.ecore#//LogModel">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LOG.ecore#//LogModel/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LOG.ecore#//LogModel/items"/>
+    </genClasses>
+    <genClasses ecoreClass="LOG.ecore#//LogItem">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LOG.ecore#//LogItem/time"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LOG.ecore#//LogItem/level"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LOG.ecore#//LogItem/name"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

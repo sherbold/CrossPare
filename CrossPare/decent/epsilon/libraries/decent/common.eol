@@ -1,0 +1,384 @@
+operation Any addValue(attribute : DECENT!Attribute, content : Any, value : DECENT!Value) : DECENT!Value {
+    value.name = attribute.name;
+    value.content = content;
+    self.values.add(value);
+    //if the is to be kept this should be moved too
+    value.ofAttribute = attribute;
+    //TODO: outsource these
+//    self.artifact.attributes.add(attribute);
+//    attribute.artifactTypes.add(self.artifact.type);
+    return value;
+}
+
+operation getProfiler(activated : Boolean) : Any {
+	if (activated) {
+		var profiler : new Native("org.eclipse.epsilon.eol.tools.ProfilerTool");
+		return profiler;
+	} else {
+		return null;
+	}
+}
+
+operation Any startProfiling(target : String) {
+	if (self.isDefined()) {
+		self.start(target);
+	}
+}
+
+operation Any stopProfiling() {
+	if (self.isDefined()) {
+		self.stop();
+	}
+}
+
+operation Any startProfiling(target : String, data : Any) {
+	if (self.isDefined()) {
+		self.start(target,data);
+	}
+}
+
+operation Any getValue(attribute : DECENT!Attribute) : DECENT!Value {
+    return self.values.select(v|v.ofAttribute = attribute).first();
+}
+
+operation Any getValue(attribute : String) : DECENT!Value {
+    return self.values.select(v|v.ofAttribute.name = attribute).first();
+}
+
+
+@cached
+operation String getAttribute() : DECENT!Attribute {
+    return DECENT!Attribute.allInstances().select(a|a.name = self).first();
+}
+
+@cached
+operation String getArtifactType() : DECENT!ArtifactType {
+    return DECENT!ArtifactType.allInstances().select(a|a.name = self).first();
+}
+
+
+operation Any addValue(attribute : DECENT!Attribute, content : String) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!StringValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+operation DECENT!DECENT::Model addStep(name : String, duration : Real) {
+	var step : new DECENT!Step();
+	step.name = name;
+	step.duration = duration.toString();
+	self.steps.add(step);
+}
+
+
+//NOTE: order matters, otherwise integers are mistakenly treated as reals
+operation Any addValue(attribute : DECENT!Attribute, content : Integer) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!IntegerValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+operation Any addValue(attribute : DECENT!Attribute, content : Real) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!DoubleValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+operation Any addValue(attribute : DECENT!Attribute, content : Collection) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!ListValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+operation Any addStringCollectionValue(attribute : DECENT!Attribute, content : Collection(String)) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!StringListValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+operation Any addIntegerCollectionValue(attribute : DECENT!Attribute, content : Collection(Integer)) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!IntegerListValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+operation Any addDoubleCollectionValue(attribute : DECENT!Attribute, content : Collection(Real)) : DECENT!Value {
+	var value = self.getValue(attribute);
+	if (value.isUndefined()) {
+    	value = new DECENT!DoubleListValue;
+	}
+    return self.addValue(attribute, content, value);
+}
+
+
+operation DECENT!Activity addDelta(attribute : DECENT!Attribute) : DECENT!Delta {
+    return self.addDelta(attribute, self.targetState.values.select(v|v.ofAttribute = attribute).first());
+}
+
+operation DECENT!Activity getDelta(attribute : DECENT!Attribute) : DECENT!Delta {
+    return self.deltas.select(d|d.onAttribute = attribute).first();
+}
+
+operation DECENT!Activity addDelta(attribute : DECENT!Attribute, value : DECENT!Value) : DECENT!Delta {
+	var delta = self.getDelta(attribute);
+	if (delta.isUndefined()) {
+	    delta = new DECENT!Delta;
+	    delta.onAttribute = attribute;
+	}
+
+	//TODO: see if there is any impact of removing these
+	// probably only on loading and saving times
+	// ***slighly negative performance impact for whatever reason*** 
+    //delta.targetValue = value;
+	var p = self.state;
+	while (p.isDefined() and not p.isHit()) {
+		//TODO: what if more than one?
+		p = p.previous.first();
+	}
+    if (p.isDefined()){
+    	//delta.sourceValue = self.state.getValue(attribute);
+    	//delta.change = delta.targetValue.content - delta.sourceValue.content;
+    	//(self.targetState.artifact.name+":"+p.ID + "->"+self.targetState.ID + ":" + attribute.name+"="+p.getValue(attribute)).println();
+        delta.change = (value.content - p.getValue(attribute).content).asDouble();
+    } else {
+    	//delta.change = delta.targetValue.content;
+        delta.change = value.content.asDouble();
+    }
+    self.deltas.add(delta);
+    return delta;
+}
+
+operation Any toDays() : Real {
+	return self.asDouble() / (3600*1000*24);
+}
+
+operation Any toMinutes() : Real {
+	return self.asDouble() / (60*1000);
+}
+
+operation Real round(places : Integer) : Real {
+	var factor = 10.pow(places).asDouble();
+	return (self.asDouble() * factor).round() / factor;
+}
+
+
+//TODO: reuse in famix2decent, dude2decent and elsewhere
+@cached
+operation Integer getMGStatesForID() : Collection {
+	//this makes a huge difference!
+	//return DECENT!State.allInstances().select(x|x.artifact.isMGType() and x.ID = self);
+	return DECENT!Artifact.allInstances().select(x|x.isMGType()).collect(y|y.states).flatten().select(z|z.ID = self);
+}
+
+@cached
+operation Integer getCodeStatesForID() : Collection {
+	//this makes a huge difference!
+	//return DECENT!State.allInstances().select(x|x.artifact.isCodeType() and x.ID = self);
+	return DECENT!Artifact.allInstances().select(x|x.isCodeType()).collect(y|y.states).flatten().select(z|z.ID = self);
+}
+
+@cached
+operation Integer getFAMIXStatesForID() : Collection {
+	//this makes a huge difference!
+	//return DECENT!State.allInstances().select(x|x.artifact.isCodeType() and x.ID = self);
+	return DECENT!Artifact.allInstances().select(x|x.isFAMIXType()).collect(y|y.states).flatten().select(z|z.ID = self);
+}
+
+@cached
+operation Integer getHitFAMIXStatesForID() : Collection {
+	//this makes a huge difference!
+	//return DECENT!State.allInstances().select(x|x.artifact.isCodeType() and x.ID = self);
+	return self.getFAMIXStatesForID().select(x|x.isHit());
+}
+
+@cached
+operation DECENT!State isHit() : Boolean {
+	if (self.artifact.isMGType()) {
+		return true;
+	}
+	var pre = self.getValue("LinesPostHits".getAttribute());
+	var post = self.getValue("LinesPreHits".getAttribute());
+	return ((pre.isDefined() and pre.content.isDefined() and pre.content.size() > 0) 
+	     or (post.isDefined() and post.content.isDefined() and post.content.size() > 0));
+}
+
+@cached
+operation Collection getMatchingStateForPath(filePath : String) : Collection {
+	return self.select(x|x.getValue(FilePathAttribute).content = filePath);
+}
+
+
+operation DECENT!Activity setActivityType(type : String) {
+	var t = DECENT!ActivityType.allInstances().select(a|a.name = type).first();
+	if (t.isUndefined()) {
+		t = new DECENT!ActivityType();
+		t.name = type;
+		DECENT!Model.allInstances().first().activityTypes.add(t);
+	}
+	self.type.add(t);
+}
+
+
+operation addAttribute(name : String) : DECENT!Attribute {
+	return addAttribute(name, "");
+}
+
+operation String printlno(writer) {
+    writer.write(self+"\n");
+    writer.flush();
+}	
+
+operation addArtifactType(name : String) : DECENT!ArtifactType {
+	var type = DECENT!ArtifactType.allInstances().select(x|x.name = name).first();
+	if (type.isUndefined()) {
+	  	type = new DECENT!ArtifactType;
+	  	type.name = name;
+  	}
+  	return type;
+}
+
+
+operation addAttribute(name : String, description : String) : DECENT!Attribute {
+	var attribute = Model.attributePool.attributes.select(att|att.name = name).first();
+	if (attribute.isUndefined()) {
+	  	attribute = new DECENT!Attribute;
+	  	attribute.name = name;
+	  	attribute.description = description;
+      	Model.attributePool.attributes.add(attribute);
+  	}
+  	return attribute;
+}
+
+operation addAttribute(name : String, description : String, dimension : String) : DECENT!Attribute {
+	var attribute = addAttribute(name, description);
+	var Dimension = Model.dimensions.select(x|x.name = dimension).first();
+	if (Dimension.isUndefined()) {
+	  	Dimension = new DECENT!Dimension;
+	  	Dimension.name = dimension;
+      	Model.dimensions.add(Dimension);
+  	}
+  	attribute.dimension = Dimension;
+  	return attribute;
+}
+
+operation DECENT!DECENT::Model addAttributes(attributes : Map) {
+	for (a in attributes.keySet()) {
+    	if (self.attributePool.attributes.select(att|att.name = a).size() = 0) {
+		  	var Attribute = new DECENT!Attribute;
+		  	Attribute.name = a;
+		  	Attribute.description = attributes.get(a);
+	      	self.attributePool.attributes.add(Attribute);
+      	}
+  	}
+}
+
+operation Real normalize(min : Real, max : Real) : Real {
+	return ((self - min) / (max - min))*(1-0) + 0;
+}
+
+operation Real normalize(min : Real, max : Real,new_min : Real, new_max : Real) : Real {
+	return ((self - min) / (max - min))*(new_max - new_min) + new_min;
+}
+
+
+@cached
+operation DECENT!Artifact isMGType() : Boolean {
+	return self.type.name = "code" or 
+		self.type.name = "documentation" or 
+		self.type.name = "image" or 
+		self.type.name = "devel-doc" or 
+		self.type.name = "unknown" or 
+		self.type.name = "build" or 
+		self.type.name = "ui";
+}
+
+@cached
+operation DECENT!Artifact isFAMIXType() : Boolean {
+	return self.type.name = "Class" or
+		self.type.name = "ParameterizableClass" or 
+		self.type.name = "Method" or 
+		self.type.name = "Function" or 
+		self.type.name = "Module";
+}
+
+
+@cached
+operation DECENT!Artifact isCodeType() : Boolean {
+	return self.type.name = "code";
+}
+
+operation Collection getMean() : Real {
+	if (self.size <= 1) {
+	    //mean for a set of 1 elememts shall be 0
+		return 0.asReal();
+	}
+    var n = 0.asReal();
+    var sum1 = 0.asReal();
+    for (x in self){
+        n = n + 1;
+        sum1 = sum1 + x;
+    }
+    var mean = sum1/n;
+	return mean;
+}
+
+@cached
+operation Real getSqrt() : Real {
+	return Native("java.lang.Math").sqrt(self);
+}
+
+operation Collection getMin() : Real {
+	return Native("java.util.Collections").min(self);
+}
+
+operation Collection getMax() : Real {
+	return Native("java.util.Collections").max(self);
+}
+
+operation Collection normalizeMinMax(new_min : Real, new_max : Real) {
+	var min = self.getMin();
+	var max = self.getMax();
+	return self.collect(i|i.normalize(min, max, new_min, new_max));
+}
+
+
+operation Collection getStandardDeviation() : Real {
+	return self.getVariance().getSqrt();
+}
+
+operation Collection getVariance() : Real {
+	if (self.size <= 1) {
+	    //variance for a set of 1 elememts shall be 0
+		return 0.asReal();
+	}
+	
+    var n = 0.asReal();
+    var sum1 = 0.asReal();
+    for (x in self){
+        n = n + 1;
+        sum1 = sum1 + x;
+    }
+    var mean = sum1/n;
+ 
+    var sum2 = 0.asReal();
+    var sum3 = 0.asReal();
+    for (x in self){
+        sum2 = sum2 + ((x - mean) * (x - mean));
+        sum3 = sum3 + (x - mean);
+    
+    }
+    var variance = (sum2 - (sum3*sum3)/n)/(n - 1);
+    return variance;
+}
