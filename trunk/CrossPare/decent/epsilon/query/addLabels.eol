@@ -1,0 +1,170 @@
+import "../libraries/arff/common.eol";
+import "../libraries/decent/common.eol";
+import "../libraries/decent/logging.eol";
+
+"Running addlabels".log(1);
+var start = Native("java.lang.System").currentTimeMillis();
+
+
+var s = ",";
+var targetAttributes = new Map;
+//TODO: export options
+targetAttributes.put("Artifact.Target.BugFix.AverageWeight",0.1);
+
+/*
+targetAttributes.put("Artifact.Target.Refactoring.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Fix.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.IssueCount.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.IssueReference.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.UsersPerIssue.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.CommentsPerIssue.AverageWeight",0.1);
+
+targetAttributes.put("Artifact.Target.BugFix.Shared.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Refactoring.Shared.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Fix.Shared.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.IssueReference.Shared.AverageWeight",0.1);
+
+targetAttributes.put("Artifact.Target.BugFix.Churn.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Refactoring.Churn.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Fix.Churn.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.IssueReference.Churn.AverageWeight",0.1);
+
+targetAttributes.put("Artifact.Target.BugFix.Size.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Refactoring.Size.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.Fix.Size.AverageWeight",0.1);
+targetAttributes.put("Artifact.Target.IssueReference.Size.AverageWeight",0.1);
+*/
+
+//does not work with binary resources
+//var modelFile = new Native("java.io.File") (ARFFx.getModelFile());
+var modelFile = new Native("java.io.File") (ARFFx.getModelImpl().getURI().toString().replaceAll("^file:",""));
+
+//var CONFIDENCE = "CONFIDENCE".getARFFAttribute();
+//var LABEL = "LABEL".getARFFAttribute();
+
+//TODO: move to common
+//TODO: remove once established at earlier steps
+var nestedAnonymousClassFilter = "\"[\\w]+\\$[\\d]+.*\"";
+
+var threshold = 100;
+
+//ARTIFACTS
+for (arffx in ARFFx!Model.allInstances().select(x|x.data.size() > 0)) {
+	arffx.checkTargetAttributes(targetAttributes);
+	arffx.checkForCompleteness();
+
+	//these will be recalculated for the bags..
+	arffx.setConfidenceThresholds(targetAttributes);
+	arffx.assignClassAndConfidence(targetAttributes);
+
+}
+
+
+var end = Native("java.lang.System").currentTimeMillis();
+var duration = end - start;
+("Duration: "+duration.toMinutes().round(5)).log(1);
+
+
+operation ARFFx!Model checkTargetAttributes(targetAttributes : Map) {
+	var notFound = targetAttributes.keySet().select(x|not self.attributes.exists(a|a.name = x));
+	for (a in notFound) {
+		targetAttributes.remove(a);
+	}
+}
+
+//slow? 
+operation ARFFx!Model assignClassAndConfidence(targetAttributes : Map) {
+	for (baseAttribute in targetAttributes.keySet()) {
+		for (i in self.data) {
+			i.assignClassAndConfidence(baseAttribute, targetAttributes.get(baseAttribute));
+		}
+	}
+}
+
+operation ARFFx!Model setConfidenceThresholds(targetAttributes : Map) {
+	//self.name.println();	
+	//TODO: store as meta data
+	//TODO: store mean divisor as meta-data	
+	for (a in targetAttributes.keySet) {
+		//("  "+a +" -> "+ targetAttributes.get(a)).println();
+		var v = self.data.collect(x|x.getValue(a.getARFFAttribute(self)).asDouble());
+		//v = v.normalizeMinMax(0.asDouble(), 1.asDouble());
+		//("  "+v.getMin()+" : "+v.getMax()+" : "+v.getMean()+" : "+v.getVariance()+" : "+v.getStandardDeviation()).println();
+		var t = (v.getMean()/2).round(4);
+		//("  "+a +" -> "+ t).println();
+		targetAttributes.put(a,t);
+		//("  Non-zero:\t\t"+v.select(x|x <> 0).size()).println();
+		//("  Above threshold:\t"+v.select(x|x > t).size()).println();
+	}
+	//"  updated".println();
+	//("    "+targetAttributes).println();
+}
+
+operation Collection setConfidenceThresholds(targetAttributes : Map) {
+	//TODO: store as meta data
+	//TODO: store mean divisor as meta-data	
+	for (a in targetAttributes.keySet) {
+		var v = new Sequence();
+		for (arffx in self) {
+			v.addAll(arffx.data.collect(x|x.getValue(a.getARFFAttribute(arffx)).asDouble()));
+		}
+		//v = v.normalizeMinMax(0.asDouble(), 1.asDouble());
+		//("  "+v.getMin()+" : "+v.getMax()+" : "+v.getMean()+" : "+v.getVariance()+" : "+v.getStandardDeviation()).println();
+		var t = (v.getMean()/2).round(4);
+		targetAttributes.put(a,t);
+		//("  Non-zero:\t\t"+v.select(x|x <> 0).size()).println();
+		//("  Above threshold:\t"+v.select(x|x > t).size()).println();
+	}
+}
+
+
+operation ARFFx!Model checkForCompleteness() {
+	var line = 1;
+	var NameAttribute = "Artifact.Name".getARFFAttribute(self);		
+	for (i in self.data.select(x|not x.getValue(NameAttribute).matches(nestedAnonymousClassFilter))) {
+	//for (i in self.data) {
+		line = line+1;
+		if (i.values.size() <> self.attributes.size()) {
+			(self.name+" : Line "+line+" : Value and attribute counts do not match : " + i.values.size() +" vs "+ self.attributes.size()).log(1);
+			(i.getValues(s).substring(1)).log(1);
+			i.printMissingAttributes();
+		}
+	}
+}
+
+operation ARFFx!Instance printMissingAttributes() {
+	for (a in self.eContainer.attributes) {
+		if (not self.values.exists(v|v.ofAttribute = a)) {
+			("  Missing attribute: "+a.name).log(1);
+		}
+	}
+}
+
+
+operation ARFFx!Instance assignClassAndConfidence(baseAttribute : String, threshold : Real) : OrderedSet {
+	var confidenceAttribute = "CONFIDENCE."+baseAttribute;
+	var labelAttribute = "LABEL."+baseAttribute;
+	
+	//TODO: add attributes to filter
+	var base = self.getValue(baseAttribute.getARFFAttribute(self.eContainer()));
+	var label = "false";
+	var confidence = "high";
+	if (base.asDouble() > threshold) {
+		label = "true";
+	}
+	//TODO: also export as parameters
+	if (base.asDouble() < 1.01*threshold and base.asDouble() > 0.09*threshold) {
+		confidence = "low";
+	}
+	self.updateValue(confidence, confidenceAttribute);
+	self.updateValue(label, labelAttribute);
+}
+
+operation ARFFx!Instance getValues(s : String) : String {
+	var line = "";
+	for (v in self.values) {
+		line = line  + s + v.content;
+		//line = line  + s + v.ofAttribute.name+"="+v.content;
+	}
+	return line.replace("NaN","0.0").substring(0); //Substring? why?
+}

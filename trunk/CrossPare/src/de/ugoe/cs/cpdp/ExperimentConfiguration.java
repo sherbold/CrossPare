@@ -120,6 +120,18 @@ public class ExperimentConfiguration  extends DefaultHandler {
 	private List<IEvaluationStrategy> evaluators;
 	
 	/**
+	 * indicates, if the classifier should be saved
+	 */
+	private Boolean saveClassifier = null;
+	
+	/**
+	 * indicates, which execution strategy to choose
+	 * (e.g. CrossProjectExperiment, ClassifierCreationExecution).
+	 * Default is CrossProjectExperiment.
+	 */
+	private String executionStrategy = "CrossProjectExperiment";
+	
+	/**
 	 * Constructor. Creates a new configuration from a given file. 
 	 * @param filename name of the file from the configuration is loaded.
 	 * @throws ExperimentConfigurationException thrown if there is an error creating the configuration
@@ -314,6 +326,22 @@ public class ExperimentConfiguration  extends DefaultHandler {
 		return evaluators;
 	}
 	
+	/**
+	 * returns boolean, if classifier should be saved
+	 * @return boolean
+	 */
+	public boolean getSaveClassifier() {
+		return saveClassifier;
+	}
+	
+	/**
+	 * returns the execution strategy
+	 * @return String execution strategy
+	 */
+	public String getExecutionStrategy() {
+		return executionStrategy;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
@@ -393,6 +421,12 @@ public class ExperimentConfiguration  extends DefaultHandler {
 				final IEvaluationStrategy evaluator = (IEvaluationStrategy) Class.forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).newInstance();
 				evaluators.add(evaluator);
 			}
+			else if( qName.equals("saveClassifier")) {
+				saveClassifier = true;
+			}
+			else if( qName.equals("executionStrategy")) {
+				executionStrategy = attributes.getValue("name");
+			}
 			else if( qName.equals("partialconfig") ) {
 				String path = attributes.getValue("path");
 				try {
@@ -422,8 +456,9 @@ public class ExperimentConfiguration  extends DefaultHandler {
 	 * <br><br>
 	 * If the current data path is the empty string (&quot;&quot;), it is override by the datapath of the other configuration. Otherwise, the current data path is kept.
 	 * @param other experiment whose information is added
+	 * @throws ExperimentConfigurationException 
 	 */
-	private void addConfigurations(ExperimentConfiguration other) {
+	private void addConfigurations(ExperimentConfiguration other) throws ExperimentConfigurationException {
 		if( "results".equals(resultsPath) ) {
 			resultsPath = other.resultsPath;
 		}
@@ -440,6 +475,18 @@ public class ExperimentConfiguration  extends DefaultHandler {
 		postprocessors.addAll(other.postprocessors);
 		trainers.addAll(other.trainers);
 		evaluators.addAll(other.evaluators);
+		
+		if(!executionStrategy.equals(other.executionStrategy)) {
+			throw new ExperimentConfigurationException("Executionstrategies must be the same, if config files should be added.");
+		}
+		
+		/* Only if saveClassifier is not set in the main config and
+		 * the other configs saveClassifier is true, it must be set.
+		 */
+		if(saveClassifier == null && other.saveClassifier == true) {
+			saveClassifier = other.saveClassifier;
+		}
+
 	}
 	
 	/* (non-Javadoc)
@@ -463,7 +510,9 @@ public class ExperimentConfiguration  extends DefaultHandler {
 		builder.append("Pointwise postprocessors: " + postprocessors.toString() + StringTools.ENDLINE);
 		builder.append("Pointwise trainers: " + trainers.toString() + StringTools.ENDLINE);
 		builder.append("Evaluators: " + evaluators.toString() + StringTools.ENDLINE);
-		
+		builder.append("Save Classifier?: " + saveClassifier + StringTools.ENDLINE);
+		builder.append("Execution Strategy: " + executionStrategy + StringTools.ENDLINE);
+				
 		return builder.toString();
 	}
 }

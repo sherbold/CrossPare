@@ -1,0 +1,178 @@
+import "../libraries/decent/common.eol";
+import "../libraries/decent/logging.eol";
+import "../libraries/arff/common.eol";
+
+var selectedType = Native("java.lang.System").getProperty("epsilon.transformation.decent2arffx.type");
+var skipSource = Native("java.lang.System").getProperty("epsilon.transformation.decent2arffx.skipSource").asBoolean();
+
+var Type = DECENT!ArtifactType.allInstances().select(a|a.name = selectedType).first();
+if (Type.isUndefined()) {
+	//handle wrong arguments here ?
+}
+
+var types = new OrderedSet();
+types.add("code");
+//types.add("Class");
+//types.add("Method");
+//types.add("Function");
+//types.add("Module");
+
+//TODO: move to common, use for tagging states?
+var nestedAnonymousClassFilter = "\"[\\w]+\\$[\\d]+.*\"";
+
+var Model = DECENT!Model.allInstances().first();
+
+var TouchCountAttribute = addAttribute("TouchCount", "Number of touches to an artifact");
+var ArtifactCountAttribute = addAttribute("ArtifactCount", "Number of known artifacts of the same type");
+var AuthorCountAttribute = addAttribute("AuthorCount", "Number of known authors for an artifact up to the current state");
+var GlobalAuthorCountAttribute = addAttribute("GlobalAuthorCount", "Number of known authors for all artifacts up to the current state");
+var FileCountAttribute = addAttribute("FileCount", "Number of existing artifacts up to the current state");
+
+"Running preprocess".log(1);
+var start = Native("java.lang.System").currentTimeMillis();
+
+for (type in types) {
+	("Processing type "+type).log(1);
+	preprocessArtifacts(type);
+}
+updateDeltas();
+
+
+var end = Native("java.lang.System").currentTimeMillis();
+var duration = end - start;
+("Duration: "+duration.toMinutes().round(5)).log(1);
+
+
+operation updateDeltas() {
+	for (a in DECENT!Artifact.allInstances()) {
+	  	(""+a.name).log(3);
+	  	for (s in a.states.select(x|x.isHit())) {
+	  		for (v in s.values.select(v|v.isTypeOf(DoubleValue) or v.isTypeOf(IntegerValue))) {
+		  		("["+a.type.name+"]"+a.name+"@"+s.ID+"::"+v.ofAttribute.name).log(4);
+	  			s.fromActivity.get(0).addDelta(v.ofAttribute);
+	  		}
+	  	}
+	}
+}
+
+operation preprocessArtifacts(typeName : String) {
+	var type = DECENT!ArtifactType.allInstances().select(t|t.name = typeName).first();
+	if (type.isUndefined()) {
+		//TODO: check that type is set
+		//handle wrong arguments here ?
+		return;
+	}
+	
+	var artifacts = Artifact.allInstances().select(x|x.type = type and not x.name.matches(nestedAnonymousClassFilter)).sortBy(x|x.name);
+
+	var artifactDevelopers = new Set();
+
+
+	for (a in artifacts) {
+		var sCount = 0;
+	    for (s in a.states.select(x|x.isHit()).sortBy(x|x.ID)) {
+	    	("Processing ["+a.type.name+"]"+a.name+"@"+s.ID).log(4);
+	    	sCount = sCount+1; 
+	        s.addValue(TouchCountAttribute, sCount);
+	        
+	        
+	        
+	        
+	        
+	        // Count artifacts and put existing ones in filecount value
+	        var existingArtifacts = artifacts.select(x|x.states.select(y|y.fromActivity.first().date.time <= s.fromActivity.first().date.time).size() > 0);
+			var fileCount = existingArtifacts.size();
+			s.addValue(FileCountAttribute, fileCount);
+	        
+	        //this refers more to the state of the project at a given point in time 
+	        //thus the information will be identical in all states of artifacts with the same state.ID
+	        //perhaps it should be calculated during the export rather than stored in the model
+	        //(note however that it is still artifact type related) 
+	        var aCount = artifacts.select(x|x.states.select(y|y.fromActivity.first().date <= s.fromActivity.first().date).size() > 0).size();
+	        //(a.name+"@"+s.ID+ " -> Number of known artifacts of type "+a.type.name+": "+aCount).println();
+	        s.addValue(ArtifactCountAttribute, aCount);
+	        
+	        //author count, could also be calculated from all the activities for an artifact up to a point 
+	        artifactDevelopers.add(s.fromActivity.first().agent);
+	        var dCount = artifactDevelopers.size();
+	        s.addValue(AuthorCountAttribute, dCount);
+	        
+	        //number of all known developers up to the point
+	        //NOT restricted to the type of interest!!!
+	        DECENT!Agent.allInstances().select(x|x.activities.select(y|y.date <= s.fromActivity.first().date).size() > 0).size();
+	        var gdCount = artifactDevelopers.size();
+	        s.addValue(GlobalAuthorCountAttribute, gdCount);
+	    }
+	    artifactDevelopers.clear();
+	}
+	
+	("Processing to arffx ...").log(2);
+	
+	var arffx = new ARFFx!Model();
+	arffx.name = Model.name+"-artifacts-"+type.name;
+	arffx.meta.put("DECENT.ArtifactType", type.name);
+	arffx.meta.put("ARFFx.Type", "artifact");
+	
+	for (a in artifacts) {
+		("  Artifact " +a.name).log(3);
+		
+		//we exclude first and last states!
+		//careful with the filtering here...
+		// for (s in a.states.excluding(a.states.first()).excluding(a.states.last()).select(x|x.isHit() and x.next.first().isHit()).sortBy(x|x.ID)) {
+	    for (s in a.states.excluding(a.states.first()).select(x|x.isHit()).sortBy(x|x.ID)) {
+			s.processTargetState(arffx);
+	    }
+	}
+	
+	//on transformation to Weka instances - either transform to ARFFx and then use Java EMF API on ARFFx 
+	//or use Java EMF API on DECENT
+}
+
+
+operation DECENT!State processTargetState (arffx : ARFFx!Model) {
+	var p = self.previous.first();
+	while (p.isDefined() and not p.isHit()) {
+		//TODO: what if more than one?
+		p = p.previous.first();
+	}
+	if (p.isDefined() or skipSource){
+
+    	var i = new ARFFx!Instance();
+		arffx.data.add(i);
+
+		i.addValue('\"'+self.artifact.name.asString()+'\"', "Artifact.Name");
+		i.addValue(self.ID.asString(), "Artifact.Target.StateID");
+		i.addValue('\"'+self.fromActivity.first().agent.name+'\"', "Agent.Name");
+			    	
+    	for (v in self.values.select(x|x.isTypeOf(DECENT!DoubleValue) or x.isTypeOf(DECENT!IntegerValue))) {
+			i.addValue(v.content.asString(), "Artifact.Target."+v.name);
+    	}
+
+        var ax = self.fromActivity.first();
+
+    	//TODO: add activity meta-data
+    	for (v in ax.values.select(x|x.isTypeOf(DECENT!DoubleValue) or x.isTypeOf(DECENT!IntegerValue))) {
+			i.addValue(v.content.asString(), "Activity."+v.name);
+    	}
+
+    	for (v in ax.deltas) {
+			i.addValue(v.change.asString(), "Artifact.Delta."+v.onAttribute.name);
+    	}
+
+    	//TODO: these are notably missing in several places!
+    	if (ax.agentState.isDefined()) {
+	    	for (v in ax.agentState.values.select(x|x.isTypeOf(DECENT!DoubleValue) or x.isTypeOf(DECENT!IntegerValue))) {
+				//i.addValue(v.content.asString(), "Agent."+v.name);
+	    	}
+    	}
+
+		if (not skipSource) {
+			i.addValue(p.ID.asString(), "Artifact.Source.StateID");
+	    	
+	    	for (v in p.values.select(x|x.isTypeOf(DECENT!DoubleValue) or x.isTypeOf(DECENT!IntegerValue))) {
+				i.addValue(v.content.asString(), "Artifact.Source."+v.name);
+	    	}
+		}
+	} else {
+	}
+}

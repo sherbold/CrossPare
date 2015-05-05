@@ -9,6 +9,8 @@
       <xs:sequence minOccurs="1" maxOccurs="1">
         <xs:element name="partialconfig" type="pathType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="loader" type="datapathType" minOccurs="0" maxOccurs="1"/>
+		<xs:element name="executionStrategy" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		<xs:element name="saveClassifier" type="xs:string" minOccurs="0" maxOccurs="1" />
         <xs:element name="resultspath" type="pathType" minOccurs="0" maxOccurs="1"/>
         <xs:element name="versionfilter" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="testVersionfilter" type="setupType" minOccurs="0" maxOccurs="unbounded"/>

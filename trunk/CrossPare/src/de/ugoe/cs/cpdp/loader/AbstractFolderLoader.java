@@ -20,7 +20,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
 	/**
 	 * Path of the data.
 	 */
-	private String path = "";
+	protected String path = "";
 
 	/**
 	 * @see de.ugoe.cs.cpdp.loader.IVersionLoader#setLocation(java.lang.String)
