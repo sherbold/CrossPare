@@ -107,40 +107,6 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
 		
 			
 			
-			// Get bug/non bug (TODO)
-			int traindataBug = 0;
-			int traindataNonBug = 0;
-						
-			for(int i=0; i<traindata.numInstances(); i++) {
-				double wekaInstanceValue = traindata.instance(i).classValue();
-							
-				if(wekaInstanceValue == 1.0) {
-					traindataBug++;
-				} else {
-					traindataNonBug++;
-				}
-			}
-						
-			System.out.println("Traindata Bug: "+traindataBug);
-			System.out.println("Traindata Non Bug: "+traindataNonBug);
-						
-			int testdataBug = 0;
-			int testdataNonBug = 0;
-						
-			for(int i=0; i<testdata.numInstances(); i++) {
-				double wekaInstanceValue = testdata.instance(i).classValue();
-							
-				if(wekaInstanceValue == 1.0) {
-					testdataBug++;
-				} else {
-					testdataNonBug++;
-				}
-			}
-						
-			System.out.println("Testdata Bug: "+testdataBug);
-			System.out.println("Testdata Non Bug: "+testdataNonBug);
-
-			
 			// Trainerlist for evaluation later on
 			List<ITrainer> allTrainers = new LinkedList<>();
 			
