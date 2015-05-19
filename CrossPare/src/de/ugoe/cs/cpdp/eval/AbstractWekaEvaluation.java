@@ -19,27 +19,27 @@ import weka.core.Instances;
  * Base class for the evaluation of results of classifiers compatible with the {@link Classifier} interface.
  * For each classifier, the following metrics are calculated:
  * <ul>
- *  <li>Success with recall>0.7, precision>0.5</li>
- *  <li>Success with recall>0.7, precision>0.7</li>
- *  <li>Success with gscore>0.75</li>
- *  <li>Success with gscore>0.6</li>
- *  <li>error rate</li>
+ *  <li>succHe: Success with recall>0.7, precision>0.5</li>
+ *  <li>succZi: Success with recall>0.7, precision>0.7</li>
+ *  <li>succG75: Success with gscore>0.75</li>
+ *  <li>succG60: Success with gscore>0.6</li>
+ *  <li>error</li>
  *  <li>recall</li>
  *  <li>precision</li>
  *  <li>fscore</li>
  *  <li>gscore</li>
  *  <li>AUC</li>
  *  <li>AUCEC (weighted by LOC, if applicable; 0.0 if LOC not available)</li>
- *  <li>true positive rate</li>
- *  <li>true negative rate</li>
- *  <li>true positives</li>
- *  <li>false positives</li>
- *  <li>true negatives</li>
- *  <li>false negatives</li>
- *  <li>training error</li>
- *  <li>training recall</li>
- *  <li>training precision</li>
- *  <li>training success with recall>0.7 and precision>0.5
+ *  <li>tpr: true positive rate</li>
+ *  <li>tnr: true negative rate</li>
+ *  <li>tp: true positives</li>
+ *  <li>fp: false positives</li>
+ *  <li>tn: true negatives</li>
+ *  <li>fn: false negatives</li>
+ *  <li>errortrain: training error</li>
+ *  <li>recalltrain: training recall</li>
+ *  <li>precisiontrain: training precision</li>
+ *  <li>succHetrain: training success with recall>0.7 and precision>0.5
  * </ul> 
  * @author Steffen Herbold
  */
