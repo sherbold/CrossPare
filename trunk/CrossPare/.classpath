@@ -10,5 +10,9 @@
 	<classpathentry kind="lib" path="lib/java-utils-0.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="lib" path="lib/RBFNetwork.jar"/>
+	<classpathentry kind="lib" path="lib/epsilon-1.2-kitchensink.jar"/>
+	<classpathentry kind="lib" path="lib/org.antlr.runtime_3.1.b1_3.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.ocl.common_1.1.0.v20130531-0544.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.ocl.ecore_3.3.0.v20130520-1222.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

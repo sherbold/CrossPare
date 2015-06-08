@@ -12,8 +12,8 @@ import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
 import org.eclipse.epsilon.eol.models.IModel;
 
-import ARFFx.ARFFxPackage;
-import DECENT.DECENTPackage;
+import de.ugoe.cs.cpdp.decentApp.models.arffx.ARFFxPackage;
+import de.ugoe.cs.cpdp.decentApp.models.decent.DECENTPackage;
 
 /**
  * Class for handling decent and arffx model files.
