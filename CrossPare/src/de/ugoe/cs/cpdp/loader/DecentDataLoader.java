@@ -25,9 +25,9 @@ import org.eclipse.epsilon.eol.IEolExecutableModule;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.etl.EtlModule;
 
-import ARFFx.Instance;
-import ARFFx.Model;
-import ARFFx.Value;
+import de.ugoe.cs.cpdp.decentApp.models.arffx.Instance;
+import de.ugoe.cs.cpdp.decentApp.models.arffx.Model;
+import de.ugoe.cs.cpdp.decentApp.models.arffx.Value;
 import de.ugoe.cs.cpdp.decentApp.ARFFxResourceTool;
 import de.ugoe.cs.cpdp.decentApp.DECENTEpsilonModelHandler;
 import de.ugoe.cs.util.console.Console;
@@ -312,7 +312,7 @@ public class DecentDataLoader implements SingleVersionLoader{
 		
 		// Bad solution, can be enhanced (continue in for loop)
 		ArrayList<Attribute> datasetAttributes = new  ArrayList<Attribute>();
-		for(ARFFx.Attribute attribute :m.getAttributes()) {
+		for(de.ugoe.cs.cpdp.decentApp.models.arffx.Attribute attribute :m.getAttributes()) {
 			String attributeName = attribute.getName();
 
 			if(attributeFilter.contains(attributeName)) {

@@ -3,8 +3,8 @@ package de.ugoe.cs.cpdp.decentApp;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.emf.ecore.util.EObjectValidator;
 
-import ARFFx.ARFFxPackage;
-import ARFFx.impl.ARFFxPackageImpl;
+import de.ugoe.cs.cpdp.decentApp.models.arffx.ARFFxPackage;
+import de.ugoe.cs.cpdp.decentApp.models.arffx.impl.ARFFxPackageImpl;
 
 /**
  * Class for handling arffx model files

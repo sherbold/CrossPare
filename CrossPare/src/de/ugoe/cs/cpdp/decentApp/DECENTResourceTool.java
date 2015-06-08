@@ -3,9 +3,9 @@ package de.ugoe.cs.cpdp.decentApp;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.emf.ecore.util.EObjectValidator;
 
-import DECENT.DECENTPackage;
-import DECENT.impl.DECENTPackageImpl;
-import DECENT.util.DECENTResourceFactoryImpl;
+import de.ugoe.cs.cpdp.decentApp.models.decent.DECENTPackage;
+import de.ugoe.cs.cpdp.decentApp.models.decent.impl.DECENTPackageImpl;
+import de.ugoe.cs.cpdp.decentApp.models.decent.util.DECENTResourceFactoryImpl;
 
 /**
  * Class for handling decent model files
