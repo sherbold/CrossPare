@@ -1,9 +1,7 @@
 package de.ugoe.cs.cpdp.training;
 
 import java.util.Random;
-import java.util.logging.Level;
 
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.Instance;

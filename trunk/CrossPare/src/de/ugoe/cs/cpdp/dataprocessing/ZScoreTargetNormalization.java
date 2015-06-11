@@ -43,7 +43,7 @@ public class ZScoreTargetNormalization implements ISetWiseProcessingStrategy, IP
 		// preprocess test data
 		for( int i=0 ; i<testdata.numInstances() ; i++ ) {
 			Instance instance = testdata.instance(i);
-			for( int j=0 ; j<testdata.numInstances() ; j++ ) {
+			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
 				if( testdata.attribute(j)!=classAttribute ) {
 					instance.setValue(j, instance.value(j)-meanTest[j]/stddevTest[j]);
 				}
@@ -84,7 +84,7 @@ public class ZScoreTargetNormalization implements ISetWiseProcessingStrategy, IP
 		// preprocess test data
 		for( int i=0 ; i<testdata.numInstances() ; i++ ) {
 			Instance instance = testdata.instance(i);
-			for( int j=0 ; j<testdata.numInstances() ; j++ ) {
+			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
 				if( testdata.attribute(j)!=classAttribute ) {
 					instance.setValue(j, instance.value(j)-meanTest[j]/stddevTest[j]);
 				}

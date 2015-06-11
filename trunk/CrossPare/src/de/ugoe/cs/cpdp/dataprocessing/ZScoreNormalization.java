@@ -43,6 +43,7 @@ public class ZScoreNormalization implements ISetWiseProcessingStrategy, IProcess
 	}
 	
 	private void normalize(Instances instances) {
+		instances.toString();
 		final Attribute classAttribute = instances.classAttribute();
 		
 		final double[] means = new double[instances.numAttributes()];
@@ -55,13 +56,15 @@ public class ZScoreNormalization implements ISetWiseProcessingStrategy, IProcess
 				stddevs[j] = Math.sqrt(instances.variance(j));
 			}
 		}
-		
 		for( int i=0 ; i<instances.numAttributes(); i++) {
 			if( !instances.attribute(i).equals(classAttribute) ) {
-				for( int j=0 ; j<instances.numAttributes() ; j++ ) {
+				for( int j=0 ; j<instances.numInstances() ; j++ ) {
 					Instance inst = instances.get(i);
-					double newValue = (inst.value(j)-means[j])/stddevs[j];
-					inst.setValue(j, newValue);
+					double newValue = (inst.value(i)-means[i])/stddevs[i];
+					if( newValue==Double.NaN ) {
+						System.out.println("foooooo");
+					}
+					inst.setValue(i, newValue);
 				}
 			}
 		}
