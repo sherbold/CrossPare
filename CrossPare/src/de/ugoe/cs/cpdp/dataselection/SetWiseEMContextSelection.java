@@ -27,7 +27,6 @@ import weka.filters.unsupervised.attribute.Normalize;
  */
 public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy {
 	
-	private String parameters;
 	private String[] project_context_factors; // = new String[]{"TND", "TNC", "TNF", "TLOC"};
 	
 	@Override
