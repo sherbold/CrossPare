@@ -34,8 +34,12 @@ public class LogarithmTransform implements ISetWiseProcessingStrategy, IProcesse
 		for( int i=0 ; i<testdata.numInstances() ; i++ ) {
 			Instance instance = testdata.instance(i);
 			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-				if( testdata.attribute(j)!=classAttribute ) {
-					instance.setValue(j, Math.log(1+instance.value(j)));
+				if( testdata.attribute(j)!=classAttribute && testdata.attribute(j).isNumeric() ) {
+					if( instance.value(j) < 0 ) {
+						instance.setValue(j, (-1*(Math.log(-1*instance.value(j)))));
+					}else {
+						instance.setValue(j, Math.log(1+instance.value(j)));
+					}
 				}
 			}
 		}
@@ -45,8 +49,12 @@ public class LogarithmTransform implements ISetWiseProcessingStrategy, IProcesse
 			for( int i=0 ; i<traindata.numInstances() ; i++ ) {
 				Instance instance = traindata.instance(i);
 				for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-					if( testdata.attribute(j)!=classAttribute ) {
-						instance.setValue(j, Math.log(1+instance.value(j)));
+					if( traindata.attribute(j)!=classAttribute && traindata.attribute(j).isNumeric() ) {
+						if( instance.value(j) < 0 ) {
+							instance.setValue(j, (-1*(Math.log(-1*instance.value(j)))));
+						}else {
+							instance.setValue(j, Math.log(1+instance.value(j)));
+						}
 					}
 				}
 			}
@@ -64,8 +72,12 @@ public class LogarithmTransform implements ISetWiseProcessingStrategy, IProcesse
 		for( int i=0 ; i<testdata.numInstances() ; i++ ) {
 			Instance instance = testdata.instance(i);
 			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-				if( testdata.attribute(j)!=classAttribute ) {
-					instance.setValue(j, Math.log(1+instance.value(j)));
+				if( testdata.attribute(j)!=classAttribute && testdata.attribute(j).isNumeric() ) {
+					if( instance.value(j) < 0 ) {
+						instance.setValue(j, (-1*(Math.log(-1*instance.value(j)))));
+					}else {
+						instance.setValue(j, Math.log(1+instance.value(j)));
+					}
 				}
 			}
 		}
@@ -74,8 +86,12 @@ public class LogarithmTransform implements ISetWiseProcessingStrategy, IProcesse
 		for( int i=0 ; i<traindata.numInstances() ; i++ ) {
 			Instance instance = traindata.instance(i);
 			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-				if( testdata.attribute(j)!=classAttribute ) {
-					instance.setValue(j, Math.log(1+instance.value(j)));
+				if( traindata.attribute(j)!=classAttribute && traindata.attribute(j).isNumeric() ) {
+					if( instance.value(j) < 0 ) {
+						instance.setValue(j, (-1*(Math.log(-1*instance.value(j)))));
+					}else {
+						instance.setValue(j, Math.log(1+instance.value(j)));
+					}
 				}
 			}
 		}
