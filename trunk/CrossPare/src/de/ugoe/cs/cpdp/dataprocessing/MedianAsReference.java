@@ -9,7 +9,7 @@ import weka.core.Instances;
 /**
  * Median as reference transformation after Carmargo Cruz and Ochimizu: Towards Logistic Regression Models for Predicting Fault-prone Code across Software Projects
  * <br><br>
- * For each attribute value x, the new value is x-median of the test data
+ * For each attribute value x, the new value is x + (median of the test data - median of the current project)
  * @author Steffen Herbold
  */
 public class MedianAsReference implements ISetWiseProcessingStrategy, IProcessesingStrategy {
@@ -29,8 +29,11 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
 	@Override
 	public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
 		final Attribute classAttribute = testdata.classAttribute();
-		
 		final double[] median = new double[testdata.numAttributes()];
+		
+		// test and train have the same number of attributes
+		Attribute traindataClassAttribute;
+		double[] currentmedian = new double[testdata.numAttributes()];
 		
 		// get medians
 		for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
@@ -39,23 +42,20 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
 			}
 		}
 		
-		// update testdata
-		for( int i=0 ; i<testdata.numInstances() ; i++ ) {
-			Instance instance = testdata.instance(i);
-			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-				if( testdata.attribute(j)!=classAttribute ) {
-					instance.setValue(j, instance.value(j)-median[j]);
-				}
-			}
-		}
-		
 		// preprocess training data
 		for( Instances traindata : traindataSet ) {
+			// get median of current training set 
+			traindataClassAttribute = traindata.classAttribute();
+			for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
+				if( traindata.attribute(j)!=traindataClassAttribute && traindata.attribute(j).isNumeric()) {
+					currentmedian[j] = traindata.kthSmallestValue(j, (traindata.numInstances()+1)>>1); // (>>2 -> /2)
+				}
+			}
 			for( int i=0 ; i<traindata.numInstances() ; i++ ) {
 				Instance instance = traindata.instance(i);
-				for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-					if( testdata.attribute(j)!=classAttribute ) {
-						instance.setValue(j, instance.value(j)-median[j]);
+				for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
+					if( traindata.attribute(j)!=classAttribute && traindata.attribute(j).isNumeric() ) {
+						instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
 					}
 				}
 			}
@@ -68,8 +68,11 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
 	@Override
 	public void apply(Instances testdata, Instances traindata) {
 		final Attribute classAttribute = testdata.classAttribute();
-		
+		final Attribute traindataClassAttribute = traindata.classAttribute();
 		final double[] median = new double[testdata.numAttributes()];
+
+		// test and train have the same number of attributes
+		double[] currentmedian = new double[testdata.numAttributes()];
 		
 		// get medians
 		for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
@@ -77,23 +80,20 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
 				median[j] = testdata.kthSmallestValue(j, (testdata.numInstances()+1)>>1); // (>>2 -> /2)
 			}
 		}
-		
-		// update testdata
-		for( int i=0 ; i<testdata.numInstances() ; i++ ) {
-			Instance instance = testdata.instance(i);
-			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-				if( testdata.attribute(j)!=classAttribute ) {
-					instance.setValue(j, instance.value(j)-median[j]);
-				}
+
+		// get median of current training set 
+		for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
+			if( traindata.attribute(j)!=traindataClassAttribute && traindata.attribute(j).isNumeric() ) {
+				currentmedian[j] = traindata.kthSmallestValue(j, (traindata.numInstances()+1)>>1); // (>>2 -> /2)
 			}
 		}
 		
 		// preprocess training data
 		for( int i=0 ; i<traindata.numInstances() ; i++ ) {
 			Instance instance = traindata.instance(i);
-			for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-				if( testdata.attribute(j)!=classAttribute ) {
-					instance.setValue(j, instance.value(j)-median[j]);
+			for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
+				if( traindata.attribute(j)!=classAttribute  && traindata.attribute(j).isNumeric() ) {
+					instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
 				}
 			}
 		}
