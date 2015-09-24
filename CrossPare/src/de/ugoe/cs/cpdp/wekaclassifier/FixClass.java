@@ -1,5 +1,18 @@
-package de.ugoe.cs.cpdp.wekaclassifier;
+// Copyright 2015 Georg-August-Universität Göttingen, Germany
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
 
+package de.ugoe.cs.cpdp.wekaclassifier;
 
 import weka.classifiers.AbstractClassifier;
 import weka.core.Capabilities;
@@ -15,55 +28,55 @@ import weka.core.Capabilities.Capability;
  */
 public class FixClass extends AbstractClassifier {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private double fixedClassValue = 0.0d;
+    private double fixedClassValue = 0.0d;
 
-	public FixClass() {
-		// TODO Auto-generated constructor stub
-	}
+    public FixClass() {
+        // TODO Auto-generated constructor stub
+    }
 
-	/**
-	 * Returns default capabilities of the classifier.
-	 * 
-	 * @return the capabilities of this classifier
-	 */
-	@Override
-	public Capabilities getCapabilities() {
-		Capabilities result = super.getCapabilities();
-		result.disableAll();
+    /**
+     * Returns default capabilities of the classifier.
+     * 
+     * @return the capabilities of this classifier
+     */
+    @Override
+    public Capabilities getCapabilities() {
+        Capabilities result = super.getCapabilities();
+        result.disableAll();
 
-		// attributes
-		result.enable(Capability.NOMINAL_ATTRIBUTES);
-		result.enable(Capability.NUMERIC_ATTRIBUTES);
-		result.enable(Capability.DATE_ATTRIBUTES);
-		result.enable(Capability.STRING_ATTRIBUTES);
-		result.enable(Capability.RELATIONAL_ATTRIBUTES);
-		result.enable(Capability.MISSING_VALUES);
+        // attributes
+        result.enable(Capability.NOMINAL_ATTRIBUTES);
+        result.enable(Capability.NUMERIC_ATTRIBUTES);
+        result.enable(Capability.DATE_ATTRIBUTES);
+        result.enable(Capability.STRING_ATTRIBUTES);
+        result.enable(Capability.RELATIONAL_ATTRIBUTES);
+        result.enable(Capability.MISSING_VALUES);
 
-		// class
-		result.enable(Capability.NOMINAL_CLASS);
-		result.enable(Capability.NUMERIC_CLASS);
-		result.enable(Capability.MISSING_CLASS_VALUES);
+        // class
+        result.enable(Capability.NOMINAL_CLASS);
+        result.enable(Capability.NUMERIC_CLASS);
+        result.enable(Capability.MISSING_CLASS_VALUES);
 
-		// instances
-		result.setMinimumNumberInstances(0);
+        // instances
+        result.setMinimumNumberInstances(0);
 
-		return result;
-	}
+        return result;
+    }
 
-	@Override
-	public void setOptions(String[] options) throws Exception {
-		fixedClassValue = Double.parseDouble(Utils.getOption('C', options));
-	}
+    @Override
+    public void setOptions(String[] options) throws Exception {
+        fixedClassValue = Double.parseDouble(Utils.getOption('C', options));
+    }
 
-	@Override
-	public double classifyInstance(Instance instance) {
-		return fixedClassValue;
-	}
+    @Override
+    public double classifyInstance(Instance instance) {
+        return fixedClassValue;
+    }
 
-	@Override
-	public void buildClassifier(Instances traindata) throws Exception {
-		// do nothing
-	}
+    @Override
+    public void buildClassifier(Instances traindata) throws Exception {
+        // do nothing
+    }
 }

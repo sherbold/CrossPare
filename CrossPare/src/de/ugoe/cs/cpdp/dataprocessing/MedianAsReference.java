@@ -1,3 +1,17 @@
+// Copyright 2015 Georg-August-Universität Göttingen, Germany
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
 package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
@@ -7,96 +21,119 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Median as reference transformation after Carmargo Cruz and Ochimizu: Towards Logistic Regression Models for Predicting Fault-prone Code across Software Projects
- * <br><br>
- * For each attribute value x, the new value is x + (median of the test data - median of the current project)
+ * Median as reference transformation after Carmargo Cruz and Ochimizu: Towards Logistic Regression
+ * Models for Predicting Fault-prone Code across Software Projects <br>
+ * <br>
+ * For each attribute value x, the new value is x + (median of the test data - median of the current
+ * project)
+ * 
  * @author Steffen Herbold
  */
 public class MedianAsReference implements ISetWiseProcessingStrategy, IProcessesingStrategy {
 
-	/**
-	 * Does not have parameters. String is ignored.
-	 * @param parameters ignored
-	 */
-	@Override
-	public void setParameter(String parameters) {
-		// dummy
-	}
+    /**
+     * Does not have parameters. String is ignored.
+     * 
+     * @param parameters
+     *            ignored
+     */
+    @Override
+    public void setParameter(String parameters) {
+        // dummy
+    }
 
-	/**
-	 * @see de.ugoe.cs.cpdp.dataprocessing.SetWiseProcessingStrategy#apply(weka.core.Instances, org.apache.commons.collections4.list.SetUniqueList)
-	 */
-	@Override
-	public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-		final Attribute classAttribute = testdata.classAttribute();
-		final double[] median = new double[testdata.numAttributes()];
-		
-		// test and train have the same number of attributes
-		Attribute traindataClassAttribute;
-		double[] currentmedian = new double[testdata.numAttributes()];
-		
-		// get medians
-		for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-			if( testdata.attribute(j)!=classAttribute ) {
-				median[j] = testdata.kthSmallestValue(j, (testdata.numInstances()+1)>>1); // (>>2 -> /2)
-			}
-		}
-		
-		// preprocess training data
-		for( Instances traindata : traindataSet ) {
-			// get median of current training set 
-			traindataClassAttribute = traindata.classAttribute();
-			for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
-				if( traindata.attribute(j)!=traindataClassAttribute && traindata.attribute(j).isNumeric()) {
-					currentmedian[j] = traindata.kthSmallestValue(j, (traindata.numInstances()+1)>>1); // (>>2 -> /2)
-				}
-			}
-			for( int i=0 ; i<traindata.numInstances() ; i++ ) {
-				Instance instance = traindata.instance(i);
-				for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
-					if( traindata.attribute(j)!=classAttribute && traindata.attribute(j).isNumeric() ) {
-						instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
-					}
-				}
-			}
-		}
-	}
+    /**
+     * @see de.ugoe.cs.cpdp.dataprocessing.SetWiseProcessingStrategy#apply(weka.core.Instances,
+     *      org.apache.commons.collections4.list.SetUniqueList)
+     */
+    @Override
+    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
+        final Attribute classAttribute = testdata.classAttribute();
+        final double[] median = new double[testdata.numAttributes()];
 
-	/**
-	 * @see de.ugoe.cs.cpdp.dataprocessing.ProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
-	 */
-	@Override
-	public void apply(Instances testdata, Instances traindata) {
-		final Attribute classAttribute = testdata.classAttribute();
-		final Attribute traindataClassAttribute = traindata.classAttribute();
-		final double[] median = new double[testdata.numAttributes()];
+        // test and train have the same number of attributes
+        Attribute traindataClassAttribute;
+        double[] currentmedian = new double[testdata.numAttributes()];
 
-		// test and train have the same number of attributes
-		double[] currentmedian = new double[testdata.numAttributes()];
-		
-		// get medians
-		for( int j=0 ; j<testdata.numAttributes() ; j++ ) {
-			if( testdata.attribute(j)!=classAttribute ) {
-				median[j] = testdata.kthSmallestValue(j, (testdata.numInstances()+1)>>1); // (>>2 -> /2)
-			}
-		}
+        // get medians
+        for (int j = 0; j < testdata.numAttributes(); j++) {
+            if (testdata.attribute(j) != classAttribute) {
+                median[j] = testdata.kthSmallestValue(j, (testdata.numInstances() + 1) >> 1); // (>>2
+                                                                                              // ->
+                                                                                              // /2)
+            }
+        }
 
-		// get median of current training set 
-		for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
-			if( traindata.attribute(j)!=traindataClassAttribute && traindata.attribute(j).isNumeric() ) {
-				currentmedian[j] = traindata.kthSmallestValue(j, (traindata.numInstances()+1)>>1); // (>>2 -> /2)
-			}
-		}
-		
-		// preprocess training data
-		for( int i=0 ; i<traindata.numInstances() ; i++ ) {
-			Instance instance = traindata.instance(i);
-			for( int j=0 ; j<traindata.numAttributes() ; j++ ) {
-				if( traindata.attribute(j)!=classAttribute  && traindata.attribute(j).isNumeric() ) {
-					instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
-				}
-			}
-		}
-	}
+        // preprocess training data
+        for (Instances traindata : traindataSet) {
+            // get median of current training set
+            traindataClassAttribute = traindata.classAttribute();
+            for (int j = 0; j < traindata.numAttributes(); j++) {
+                if (traindata.attribute(j) != traindataClassAttribute &&
+                    traindata.attribute(j).isNumeric())
+                {
+                    currentmedian[j] =
+                        traindata.kthSmallestValue(j, (traindata.numInstances() + 1) >> 1); // (>>2
+                                                                                            // ->
+                                                                                            // /2)
+                }
+            }
+            for (int i = 0; i < traindata.numInstances(); i++) {
+                Instance instance = traindata.instance(i);
+                for (int j = 0; j < traindata.numAttributes(); j++) {
+                    if (traindata.attribute(j) != classAttribute &&
+                        traindata.attribute(j).isNumeric())
+                    {
+                        instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @see de.ugoe.cs.cpdp.dataprocessing.ProcessesingStrategy#apply(weka.core.Instances,
+     *      weka.core.Instances)
+     */
+    @Override
+    public void apply(Instances testdata, Instances traindata) {
+        final Attribute classAttribute = testdata.classAttribute();
+        final Attribute traindataClassAttribute = traindata.classAttribute();
+        final double[] median = new double[testdata.numAttributes()];
+
+        // test and train have the same number of attributes
+        double[] currentmedian = new double[testdata.numAttributes()];
+
+        // get medians
+        for (int j = 0; j < testdata.numAttributes(); j++) {
+            if (testdata.attribute(j) != classAttribute) {
+                median[j] = testdata.kthSmallestValue(j, (testdata.numInstances() + 1) >> 1); // (>>2
+                                                                                              // ->
+                                                                                              // /2)
+            }
+        }
+
+        // get median of current training set
+        for (int j = 0; j < traindata.numAttributes(); j++) {
+            if (traindata.attribute(j) != traindataClassAttribute &&
+                traindata.attribute(j).isNumeric())
+            {
+                currentmedian[j] =
+                    traindata.kthSmallestValue(j, (traindata.numInstances() + 1) >> 1); // (>>2 ->
+                                                                                        // /2)
+            }
+        }
+
+        // preprocess training data
+        for (int i = 0; i < traindata.numInstances(); i++) {
+            Instance instance = traindata.instance(i);
+            for (int j = 0; j < traindata.numAttributes(); j++) {
+                if (traindata.attribute(j) != classAttribute && traindata.attribute(j).isNumeric())
+                {
+                    instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
+                }
+            }
+        }
+    }
 
 }
