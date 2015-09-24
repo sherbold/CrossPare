@@ -1,3 +1,17 @@
+// Copyright 2015 Georg-August-Universität Göttingen, Germany
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
 package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
@@ -14,271 +28,280 @@ import de.ugoe.cs.util.FileTools;
 
 /**
  * TODO
+ * 
  * @author sherbold
- *
+ * 
  */
 class AUDIChangeLoader implements SingleVersionLoader {
-	
-	private class EntityRevisionPair implements Comparable<EntityRevisionPair> {
-		private final String entity;
-		private final int revision;
-		
-		public EntityRevisionPair(String entity, int revision) {
-			this.entity = entity;
-			this.revision = revision;
-		}
-		
-		@Override
-		public boolean equals(Object other) {
-			if( !(other instanceof EntityRevisionPair) ) {
-				return false;
-			} else {
-				return compareTo((EntityRevisionPair) other)==0;
-			}
-		}
-		
-		@Override
-		public int hashCode() {
-			return entity.hashCode()+revision;
-		}
 
-		@Override
-		public int compareTo(EntityRevisionPair other) {
-			int strCmp = this.entity.compareTo(other.entity);
-			if( strCmp!=0 ) {
-				return strCmp;
-			}
-			return Integer.compare(revision, other.revision);
-		}
-		
-		@Override
-		public String toString() {
-			return entity+"@"+revision;
-		}
-	}
+    private class EntityRevisionPair implements Comparable<EntityRevisionPair> {
+        private final String entity;
+        private final int revision;
 
-	@Override
-	public Instances load(File file) {
-		final String[] lines;
-		String[] lineSplit;
-		String[] lineSplitBug;
-		
-		try {
-			lines = FileTools.getLinesFromFile(file.getAbsolutePath());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		
-		// information about bugs are in another file
-		String path = file.getAbsolutePath();
-		path = path.substring(0, path.length()-14) + "repro.csv";
-		final String[] linesBug;
-		try {
-			linesBug = FileTools.getLinesFromFile(path);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		
-		int revisionIndex=-1;
-		int bugIndex=-1;
-		lineSplitBug = linesBug[0].split(";");
-		for( int j=0; j<lineSplitBug.length ; j++ ) {
-			if( lineSplitBug[j].equals("svnrev") ) {
-				revisionIndex=j;
-			}
-			if( lineSplitBug[j].equals("num_bugs_trace") ) {
-				bugIndex=j;
-			}
-		}
-		if( revisionIndex<0 ) {
-			throw new RuntimeException("could not find SVN revisions");
-		}
-		if( bugIndex<0 ) {
-			throw new RuntimeException("could not find bug information");
-		}
-		
-		int metricsStartIndex=-1;
-		int metricsEndIndex=-1;
-		lineSplit = lines[0].split(";");
-		for( int j=0; j<lineSplit.length ; j++ ) {
-			if( lineSplit[j].equals("lm_LOC") ) {
-				metricsStartIndex=j;
-			}
-			if( lineSplit[j].equals("h_E") ) {
-				metricsEndIndex=j;
-			}
-		}
-		if( metricsStartIndex<0 ) {
-			throw new RuntimeException("could not find first metric, i.e., lm_LOC");
-		}
-		if( metricsEndIndex<0 ) {
-			throw new RuntimeException("could not find last metric, i.e., h_E");
-		}
-		int numMetrics = metricsEndIndex-metricsStartIndex+1;
-		
-		// create sets of all filenames and revisions
-		SortedMap<EntityRevisionPair, Integer> entityRevisionPairs = new TreeMap<>();
-		for( int i=1; i<linesBug.length ; i++ ) {
-			lineSplitBug = linesBug[i].split(";");
-			entityRevisionPairs.put(new EntityRevisionPair(lineSplitBug[0], Integer.parseInt(lineSplitBug[revisionIndex])), i);
-		}
-		
-		
-		// prepare weka instances
-		final ArrayList<Attribute> atts = new ArrayList<Attribute>();
-		lineSplit = lines[0].split(";"); 
-		for (int j = metricsStartIndex; j<=metricsEndIndex; j++) {
-			atts.add(new Attribute(lineSplit[j]+"_delta"));
-		}
-		for (int j = metricsStartIndex; j<=metricsEndIndex; j++) {
-			atts.add(new Attribute(lineSplit[j]+"_abs"));
-		}
-		final ArrayList<String> classAttVals = new ArrayList<String>();
-		classAttVals.add("0");
-		classAttVals.add("1");
-		final Attribute classAtt = new Attribute("bug", classAttVals);
-		atts.add(classAtt);
+        public EntityRevisionPair(String entity, int revision) {
+            this.entity = entity;
+            this.revision = revision;
+        }
 
-		final Instances data = new Instances(file.getName(), atts, 0);
-		data.setClass(classAtt);
-		
-		// create data
-		String lastFile = null;
-		double[] lastValues = null;
-		int lastNumBugs = 0;
-		for( Entry<EntityRevisionPair, Integer> entry : entityRevisionPairs.entrySet() ) {
-			try {
-				// first get values
-				lineSplit = lines[entry.getValue()].split(";");
-				lineSplitBug = linesBug[entry.getValue()].split(";");
-				int i=0;
-				double[] values = new double[numMetrics];
-				for(int j=metricsStartIndex ; j<=metricsEndIndex ; j++ ) {
-					values[i] = Double.parseDouble(lineSplit[j]);
-					i++;
-				}
-				int numBugs = Integer.parseInt(lineSplitBug[bugIndex]);
-				
-				// then check if an entity must be created
-				if( entry.getKey().entity.equals(lastFile)) {
-					// create new instance
-					double[] instanceValues = new double[2*numMetrics+1];
-					for( int j=0; j<numMetrics; j++ ) {
-						instanceValues[j] = values[j]-lastValues[j];
-						instanceValues[j+numMetrics]= values[j];
-					}
-					// check if any value>0
-					boolean changeOccured = false;
-					for( int j=0; j<numMetrics; j++ ) {
-						if( instanceValues[j]>0 ) {
-							changeOccured = true;
-						}
-					}
-					if( changeOccured ) {
-						instanceValues[instanceValues.length-1] = numBugs<=lastNumBugs ? 0 : 1;
-						data.add(new DenseInstance(1.0, instanceValues));
-					}
-				}
-				lastFile = entry.getKey().entity;
-				lastValues = values;
-				lastNumBugs = numBugs;
-			} catch(IllegalArgumentException e) {
-				System.err.println("error in line " + entry.getValue() + ": " + e.getMessage());
-				System.err.println("metrics line: " + lines[entry.getValue()]);
-				System.err.println("bugs line: " + linesBug[entry.getValue()]);
-				System.err.println("line is ignored");
-			}
-		}
-		
-		return data;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load(
-	 * java.io.File)
-	 */
-	
-	public Instances load(File file, String dummy) {
-		final String[] lines;
-		try {
-			lines = FileTools.getLinesFromFile(file.getAbsolutePath());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		
-		// information about bugs are in another file
-		String path = file.getAbsolutePath();
-		path = path.substring(0, path.length()-14) + "repro.csv";
-		final String[] linesBug;
-		try {
-			linesBug = FileTools.getLinesFromFile(path);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		
-		// configure Instances
-		final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof EntityRevisionPair)) {
+                return false;
+            }
+            else {
+                return compareTo((EntityRevisionPair) other) == 0;
+            }
+        }
 
-		String[] lineSplit = lines[0].split(";");
-		// ignore first three/four and last two columns
-		int offset;
-		if( lineSplit[3].equals("project_rev") ) {
-			offset = 4;
-		} else {
-			offset = 3;
-		}
-		for (int j = 0; j < lineSplit.length - (offset+2); j++) {
-			atts.add(new Attribute(lineSplit[j + offset]));
-		}
-		final ArrayList<String> classAttVals = new ArrayList<String>();
-		classAttVals.add("0");
-		classAttVals.add("1");
-		final Attribute classAtt = new Attribute("bug", classAttVals);
-		atts.add(classAtt);
+        @Override
+        public int hashCode() {
+            return entity.hashCode() + revision;
+        }
 
-		final Instances data = new Instances(file.getName(), atts, 0);
-		data.setClass(classAtt);
+        @Override
+        public int compareTo(EntityRevisionPair other) {
+            int strCmp = this.entity.compareTo(other.entity);
+            if (strCmp != 0) {
+                return strCmp;
+            }
+            return Integer.compare(revision, other.revision);
+        }
 
-		// fetch data
-		for (int i = 1; i < lines.length; i++) {
-			boolean validInstance = true;
-			lineSplit = lines[i].split(";");
-			String[] lineSplitBug = linesBug[i].split(";");
-			double[] values = new double[data.numAttributes()];
-			for (int j = 0; validInstance && j < values.length-1; j++) {
-				if( lineSplit[j + offset].trim().isEmpty() ) {
-					validInstance = false;
-				} else {
-					values[j] = Double.parseDouble(lineSplit[j + offset].trim());
-				}
-			}
-			if( offset==3 ) {
-				values[values.length - 1] = lineSplitBug[7].equals("0") ? 0 : 1;
-			} else {
-				values[values.length - 1] = lineSplitBug[8].equals("0") ? 0 : 1;
-			}
-			
-			if( validInstance ) {
-				data.add(new DenseInstance(1.0, values));
-			} else {
-				System.out.println("instance " + i + " is invalid");
-			}
-		}
-		return data;
-	}
+        @Override
+        public String toString() {
+            return entity + "@" + revision;
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#
-	 * filenameFilter(java.lang.String)
-	 */
-	@Override
-	public boolean filenameFilter(String filename) {
-		return filename.endsWith("src.csv");
-	}
+    @Override
+    public Instances load(File file) {
+        final String[] lines;
+        String[] lineSplit;
+        String[] lineSplitBug;
+
+        try {
+            lines = FileTools.getLinesFromFile(file.getAbsolutePath());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // information about bugs are in another file
+        String path = file.getAbsolutePath();
+        path = path.substring(0, path.length() - 14) + "repro.csv";
+        final String[] linesBug;
+        try {
+            linesBug = FileTools.getLinesFromFile(path);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int revisionIndex = -1;
+        int bugIndex = -1;
+        lineSplitBug = linesBug[0].split(";");
+        for (int j = 0; j < lineSplitBug.length; j++) {
+            if (lineSplitBug[j].equals("svnrev")) {
+                revisionIndex = j;
+            }
+            if (lineSplitBug[j].equals("num_bugs_trace")) {
+                bugIndex = j;
+            }
+        }
+        if (revisionIndex < 0) {
+            throw new RuntimeException("could not find SVN revisions");
+        }
+        if (bugIndex < 0) {
+            throw new RuntimeException("could not find bug information");
+        }
+
+        int metricsStartIndex = -1;
+        int metricsEndIndex = -1;
+        lineSplit = lines[0].split(";");
+        for (int j = 0; j < lineSplit.length; j++) {
+            if (lineSplit[j].equals("lm_LOC")) {
+                metricsStartIndex = j;
+            }
+            if (lineSplit[j].equals("h_E")) {
+                metricsEndIndex = j;
+            }
+        }
+        if (metricsStartIndex < 0) {
+            throw new RuntimeException("could not find first metric, i.e., lm_LOC");
+        }
+        if (metricsEndIndex < 0) {
+            throw new RuntimeException("could not find last metric, i.e., h_E");
+        }
+        int numMetrics = metricsEndIndex - metricsStartIndex + 1;
+
+        // create sets of all filenames and revisions
+        SortedMap<EntityRevisionPair, Integer> entityRevisionPairs = new TreeMap<>();
+        for (int i = 1; i < linesBug.length; i++) {
+            lineSplitBug = linesBug[i].split(";");
+            entityRevisionPairs.put(new EntityRevisionPair(lineSplitBug[0], Integer
+                                        .parseInt(lineSplitBug[revisionIndex])), i);
+        }
+
+        // prepare weka instances
+        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        lineSplit = lines[0].split(";");
+        for (int j = metricsStartIndex; j <= metricsEndIndex; j++) {
+            atts.add(new Attribute(lineSplit[j] + "_delta"));
+        }
+        for (int j = metricsStartIndex; j <= metricsEndIndex; j++) {
+            atts.add(new Attribute(lineSplit[j] + "_abs"));
+        }
+        final ArrayList<String> classAttVals = new ArrayList<String>();
+        classAttVals.add("0");
+        classAttVals.add("1");
+        final Attribute classAtt = new Attribute("bug", classAttVals);
+        atts.add(classAtt);
+
+        final Instances data = new Instances(file.getName(), atts, 0);
+        data.setClass(classAtt);
+
+        // create data
+        String lastFile = null;
+        double[] lastValues = null;
+        int lastNumBugs = 0;
+        for (Entry<EntityRevisionPair, Integer> entry : entityRevisionPairs.entrySet()) {
+            try {
+                // first get values
+                lineSplit = lines[entry.getValue()].split(";");
+                lineSplitBug = linesBug[entry.getValue()].split(";");
+                int i = 0;
+                double[] values = new double[numMetrics];
+                for (int j = metricsStartIndex; j <= metricsEndIndex; j++) {
+                    values[i] = Double.parseDouble(lineSplit[j]);
+                    i++;
+                }
+                int numBugs = Integer.parseInt(lineSplitBug[bugIndex]);
+
+                // then check if an entity must be created
+                if (entry.getKey().entity.equals(lastFile)) {
+                    // create new instance
+                    double[] instanceValues = new double[2 * numMetrics + 1];
+                    for (int j = 0; j < numMetrics; j++) {
+                        instanceValues[j] = values[j] - lastValues[j];
+                        instanceValues[j + numMetrics] = values[j];
+                    }
+                    // check if any value>0
+                    boolean changeOccured = false;
+                    for (int j = 0; j < numMetrics; j++) {
+                        if (instanceValues[j] > 0) {
+                            changeOccured = true;
+                        }
+                    }
+                    if (changeOccured) {
+                        instanceValues[instanceValues.length - 1] = numBugs <= lastNumBugs ? 0 : 1;
+                        data.add(new DenseInstance(1.0, instanceValues));
+                    }
+                }
+                lastFile = entry.getKey().entity;
+                lastValues = values;
+                lastNumBugs = numBugs;
+            }
+            catch (IllegalArgumentException e) {
+                System.err.println("error in line " + entry.getValue() + ": " + e.getMessage());
+                System.err.println("metrics line: " + lines[entry.getValue()]);
+                System.err.println("bugs line: " + linesBug[entry.getValue()]);
+                System.err.println("line is ignored");
+            }
+        }
+
+        return data;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load( java.io.File)
+     */
+
+    public Instances load(File file, String dummy) {
+        final String[] lines;
+        try {
+            lines = FileTools.getLinesFromFile(file.getAbsolutePath());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // information about bugs are in another file
+        String path = file.getAbsolutePath();
+        path = path.substring(0, path.length() - 14) + "repro.csv";
+        final String[] linesBug;
+        try {
+            linesBug = FileTools.getLinesFromFile(path);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // configure Instances
+        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+
+        String[] lineSplit = lines[0].split(";");
+        // ignore first three/four and last two columns
+        int offset;
+        if (lineSplit[3].equals("project_rev")) {
+            offset = 4;
+        }
+        else {
+            offset = 3;
+        }
+        for (int j = 0; j < lineSplit.length - (offset + 2); j++) {
+            atts.add(new Attribute(lineSplit[j + offset]));
+        }
+        final ArrayList<String> classAttVals = new ArrayList<String>();
+        classAttVals.add("0");
+        classAttVals.add("1");
+        final Attribute classAtt = new Attribute("bug", classAttVals);
+        atts.add(classAtt);
+
+        final Instances data = new Instances(file.getName(), atts, 0);
+        data.setClass(classAtt);
+
+        // fetch data
+        for (int i = 1; i < lines.length; i++) {
+            boolean validInstance = true;
+            lineSplit = lines[i].split(";");
+            String[] lineSplitBug = linesBug[i].split(";");
+            double[] values = new double[data.numAttributes()];
+            for (int j = 0; validInstance && j < values.length - 1; j++) {
+                if (lineSplit[j + offset].trim().isEmpty()) {
+                    validInstance = false;
+                }
+                else {
+                    values[j] = Double.parseDouble(lineSplit[j + offset].trim());
+                }
+            }
+            if (offset == 3) {
+                values[values.length - 1] = lineSplitBug[7].equals("0") ? 0 : 1;
+            }
+            else {
+                values[values.length - 1] = lineSplitBug[8].equals("0") ? 0 : 1;
+            }
+
+            if (validInstance) {
+                data.add(new DenseInstance(1.0, values));
+            }
+            else {
+                System.out.println("instance " + i + " is invalid");
+            }
+        }
+        return data;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#
+     * filenameFilter(java.lang.String)
+     */
+    @Override
+    public boolean filenameFilter(String filename) {
+        return filename.endsWith("src.csv");
+    }
 
 }
