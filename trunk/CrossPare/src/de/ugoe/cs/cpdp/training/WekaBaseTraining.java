@@ -55,7 +55,7 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         // weka.classifiers.functions.supportVector.RBFKernel)
         classifierParams = Arrays.copyOfRange(params, 2, params.length);
 
-        classifier = setupClassifier();
+        //classifier = setupClassifier();
     }
 
     @Override
@@ -63,7 +63,7 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         return classifier;
     }
 
-    public Classifier setupClassifier() {
+    protected Classifier setupClassifier() {
         Classifier cl = null;
         try {
             @SuppressWarnings("rawtypes")
