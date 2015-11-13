@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import org.apache.commons.io.output.NullOutputStream;
 
 import de.ugoe.cs.util.console.Console;
+import weka.classifiers.rules.ZeroR;
 import weka.core.Instances;
 
 /**
@@ -45,6 +46,7 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
 
     @Override
     public void apply(Instances traindata) {
+        classifier = setupClassifier();
         PrintStream errStr = System.err;
         System.setErr(new PrintStream(new NullOutputStream()));
         try {
@@ -54,7 +56,21 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
             classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
-            throw new RuntimeException(e);
+            if (e.getMessage().contains("Not enough training instances with class labels")) {
+                Console.traceln(Level.SEVERE,
+                                "failure due to lack of instances: " + e.getMessage());
+                Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
+                classifier = new ZeroR();
+                try {
+                    classifier.buildClassifier(traindata);
+                }
+                catch (Exception e2) {
+                    throw new RuntimeException(e2);
+                }
+            }
+            else {
+                throw new RuntimeException(e);
+            }
         }
         finally {
             System.setErr(errStr);
