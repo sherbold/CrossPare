@@ -137,6 +137,11 @@ public class CLAMIProcessor implements IProcessesingStrategy {
 
         int violationCutoff = violationCountInterator.next();
         // now we filter the data;
+        // this is first tried with the metrics with fewest violations. if no buggy/bugfree
+        // instances remain, this is repeated with the next metrics with second fewest violations,
+        // and so on.
+        // this part is a bit unclear from the description in the paper, but I confirmed with the
+        // author that this is how they implemented it
         boolean[] cleanInstances = new boolean[data.numInstances()];
         int numCleanBuggyInstances = 0;
         int numCleanBugfreeInstances = 0;
@@ -149,7 +154,7 @@ public class CLAMIProcessor implements IProcessesingStrategy {
                 int currentViolations = 0;
                 Instance currentInstance = data.get(i);
                 for (int j = 0; j < data.numAttributes(); j++) {
-                    if (j != data.classIndex() && numMetricViolations[j] <= violationCutoff) {
+                    if (j != data.classIndex() && numMetricViolations[j] == violationCutoff) {
                         if (clusterNumber[i] > medianClusterNumber) {
                             // "buggy"
                             if (currentInstance.value(j) <= medians[j]) {
@@ -179,19 +184,19 @@ public class CLAMIProcessor implements IProcessesingStrategy {
             }
         }
         while (numCleanBuggyInstances == 0 || numCleanBugfreeInstances == 0);
-        
+
         // output some interesting information to provide insights into the CLAMI model
         Console.traceln(Level.FINE, "Selected Metrics and Median-threshold: ");
-        for( int j=0 ; j<data.numAttributes(); j++) {
-            if( j!=data.classIndex() && numMetricViolations[j]<=violationCutoff ) {
+        for (int j = 0; j < data.numAttributes(); j++) {
+            if (j != data.classIndex() && numMetricViolations[j] == violationCutoff) {
                 Console.traceln(Level.FINE, "\t" + data.attribute(j).name() + ": " + medians[j]);
             }
         }
-        
+
         // finally modify the instances
         // drop the metrics (also from the testdata)
         for (int j = data.numAttributes() - 1; j >= 0; j--) {
-            if (j != data.classIndex() && numMetricViolations[j] > violationCutoff) {
+            if (j != data.classIndex() && numMetricViolations[j] != violationCutoff) {
                 data.deleteAttributeAt(j);
                 testdata.deleteAttributeAt(j);
             }
