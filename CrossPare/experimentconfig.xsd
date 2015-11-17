@@ -8,7 +8,7 @@
     <xs:complexType>
       <xs:sequence minOccurs="1" maxOccurs="1">
         <xs:element name="partialconfig" type="pathType" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element name="loader" type="datapathType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="loader" type="datapathType" minOccurs="0" maxOccurs="unbounded"/>
 		<xs:element name="executionStrategy" type="xs:string" minOccurs="0" maxOccurs="1"/>
 		<xs:element name="saveClassifier" type="xs:string" minOccurs="0" maxOccurs="1" />
         <xs:element name="resultspath" type="pathType" minOccurs="0" maxOccurs="1"/>
@@ -19,6 +19,7 @@
         <xs:element name="setwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="setwisepostprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="setwisetrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="setwisetestdataawaretrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="preprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="pointwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="postprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
