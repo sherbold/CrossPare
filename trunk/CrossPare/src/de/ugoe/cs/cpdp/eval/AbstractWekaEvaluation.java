@@ -122,10 +122,10 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 output.append(",fn_" + ((IWekaCompatibleTrainer) trainer).getName());
                 output.append(",tn_" + ((IWekaCompatibleTrainer) trainer).getName());
                 output.append(",fp_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",trainerror_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",trainrecall_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",trainprecision_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",trainsuccHe_" + ((IWekaCompatibleTrainer) trainer).getName());
+                //output.append(",trainerror_" + ((IWekaCompatibleTrainer) trainer).getName());
+                //output.append(",trainrecall_" + ((IWekaCompatibleTrainer) trainer).getName());
+                //output.append(",trainprecision_" + ((IWekaCompatibleTrainer) trainer).getName());
+                //output.append(",trainsuccHe_" + ((IWekaCompatibleTrainer) trainer).getName());
             }
             output.append(StringTools.ENDLINE);
         }
@@ -135,10 +135,10 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         output.append("," + traindata.numInstances());
 
         Evaluation eval = null;
-        Evaluation evalTrain = null;
+        //Evaluation evalTrain = null;
         for (Classifier classifier : classifiers) {
             eval = createEvaluator(testdata, classifier);
-            evalTrain = createEvaluator(traindata, classifier);
+            //evalTrain = createEvaluator(traindata, classifier);
 
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
@@ -194,7 +194,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             output.append("," + eval.numFalseNegatives(1));
             output.append("," + eval.numTrueNegatives(1));
             output.append("," + eval.numFalsePositives(1));
-            output.append("," + evalTrain.errorRate());
+            /*output.append("," + evalTrain.errorRate());
             output.append("," + evalTrain.recall(1));
             output.append("," + evalTrain.precision(1));
             if (evalTrain.recall(1) >= 0.7 && evalTrain.precision(1) >= 0.5) {
@@ -202,7 +202,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
             else {
                 output.append(",0");
-            }
+            }*/
         }
 
         output.append(StringTools.ENDLINE);

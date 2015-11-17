@@ -16,7 +16,7 @@
 		<pathelement location="${build.location.eventbenchconsole}" />
 		<pathelement location="lib/commons-collections4-4.0-alpha1.jar" />
 		<pathelement location="lib/commons-io-2.4.jar" />
-		<pathelement location="lib/commons-math3-3.1.jar" />
+		<pathelement location="lib/commons-math3-3.5.jar" />
 		<pathelement location="lib/java-utils-0.0.1.jar" />
 		<pathelement location="lib/weka.jar" />
 	</path>

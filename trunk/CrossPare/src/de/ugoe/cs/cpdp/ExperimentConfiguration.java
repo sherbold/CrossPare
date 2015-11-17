@@ -1,4 +1,4 @@
-// Copyright 2015 Georg-August-Universität Göttingen, Germany
+// Copyright 2015 Georg-August-Universitï¿½t Gï¿½ttingen, Germany
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
+import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
@@ -113,6 +114,12 @@ public class ExperimentConfiguration extends DefaultHandler {
     private List<ISetWiseTrainingStrategy> setwiseTrainers;
 
     /**
+     * setwise testdata aware trainers, i.e., trainers that require the selected training data to be separate from
+     * each other and the current testdata 
+     */
+    private List<ISetWiseTestdataAwareTrainingStrategy> setwiseTestdataAwareTrainers;
+    
+    /**
      * data processors that are applied before the pointwise data selection
      */
     private List<IProcessesingStrategy> preprocessors;
@@ -177,6 +184,7 @@ public class ExperimentConfiguration extends DefaultHandler {
         setwiseselectors = new LinkedList<>();
         setwisepostprocessors = new LinkedList<>();
         setwiseTrainers = new LinkedList<>();
+        setwiseTestdataAwareTrainers = new LinkedList<>();
         preprocessors = new LinkedList<>();
         pointwiseselectors = new LinkedList<>();
         postprocessors = new LinkedList<>();
@@ -324,6 +332,15 @@ public class ExperimentConfiguration extends DefaultHandler {
     }
 
     /**
+     * returns the setwise training algorithms
+     * 
+     * @return setwise training algorithms
+     */
+    public List<ISetWiseTestdataAwareTrainingStrategy> getSetWiseTestdataAwareTrainers() {
+        return setwiseTestdataAwareTrainers;
+    }
+    
+    /**
      * returns the processors applied before the pointwise data selection
      * 
      * @return processors applied before the pointwise data selection
@@ -465,6 +482,14 @@ public class ExperimentConfiguration extends DefaultHandler {
                 trainer.setParameter(attributes.getValue("param"));
                 setwiseTrainers.add(trainer);
             }
+            else if (qName.equals("setwisetestdataawaretrainer")) {
+                final ISetWiseTestdataAwareTrainingStrategy trainer =
+                    (ISetWiseTestdataAwareTrainingStrategy) Class.forName("de.ugoe.cs.cpdp.training." +
+                                                                 attributes.getValue("name"))
+                        .newInstance();
+                trainer.setParameter(attributes.getValue("param"));
+                setwiseTestdataAwareTrainers.add(trainer);
+            }
             else if (qName.equals("preprocessor")) {
                 final IProcessesingStrategy processor =
                     (IProcessesingStrategy) Class.forName("de.ugoe.cs.cpdp.dataprocessing." +
@@ -565,6 +590,7 @@ public class ExperimentConfiguration extends DefaultHandler {
         setwiseselectors.addAll(other.setwiseselectors);
         setwisepostprocessors.addAll(other.setwisepostprocessors);
         setwiseTrainers.addAll(other.setwiseTrainers);
+        setwiseTestdataAwareTrainers.addAll(other.setwiseTestdataAwareTrainers);
         preprocessors.addAll(other.preprocessors);
         pointwiseselectors.addAll(other.pointwiseselectors);
         postprocessors.addAll(other.postprocessors);
@@ -608,6 +634,7 @@ public class ExperimentConfiguration extends DefaultHandler {
         builder.append("Setwise postprocessors: " + setwisepostprocessors.toString() +
             StringTools.ENDLINE);
         builder.append("Setwise trainers: " + setwiseTrainers.toString() + StringTools.ENDLINE);
+        builder.append("Setwise Testdata Aware trainers: " + setwiseTestdataAwareTrainers.toString() + StringTools.ENDLINE);
         builder
             .append("Pointwise preprocessors: " + preprocessors.toString() + StringTools.ENDLINE);
         builder.append("Pointwise selectors: " + pointwiseselectors.toString() +

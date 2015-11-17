@@ -30,6 +30,7 @@ import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
+import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
@@ -167,6 +168,13 @@ public class CrossProjectExperiment implements IExecutionStrategy {
                                 testVersion.getVersion(), setwiseTrainer.getName()));
                     setwiseTrainer.apply(traindataSet);
                 }
+                for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config.getSetWiseTestdataAwareTrainers()) {
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying testdata aware setwise trainer %s",
+                                config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), setwiseTestdataAwareTrainer.getName()));
+                    setwiseTestdataAwareTrainer.apply(traindataSet, testdata);
+                }
                 Instances traindata = makeSingleTrainingSet(traindataSet);
                 for (IProcessesingStrategy processor : config.getPreProcessors()) {
                     Console.traceln(Level.FINE, String
@@ -209,6 +217,9 @@ public class CrossProjectExperiment implements IExecutionStrategy {
                     List<ITrainer> allTrainers = new LinkedList<>();
                     for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
                         allTrainers.add(setwiseTrainer);
+                    }
+                    for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config.getSetWiseTestdataAwareTrainers()) {
+                        allTrainers.add(setwiseTestdataAwareTrainer);
                     }
                     for (ITrainingStrategy trainer : config.getTrainers()) {
                         allTrainers.add(trainer);
