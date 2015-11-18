@@ -22,9 +22,9 @@ import java.util.logging.Level;
 import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
-import org.apache.commons.math3.stat.inference.ChiSquareTest;  
-import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;  // spearman ist drin
-import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest; // kolmogorov nicht in der 3.1 
+import org.apache.commons.math3.stat.inference.ChiSquareTest;
+import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
@@ -41,6 +41,8 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
     private MetricMatch mm;
     private final Classifier classifier = new MetricMatchingClassifier();
     
+    private String method;
+    private float threshold;
     
     /**
      * We wrap the classifier here because of classifyInstance
@@ -51,14 +53,26 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
         return this.classifier;
     }
     
-    /*
+    
     @Override
     public String getName() {
-        return "MetricMatching_" + this.classifier.getName();
-    }*/
+        return "MetricMatching_" + classifierName;
+    }
+
+
+    @Override
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+
+    @Override
+    public void setThreshold(String threshold) {
+        this.threshold = Float.parseFloat(threshold);
+    }
 
 	/**
-	 * We need the testdata instances to do a metric matching so in this special case we get this data
+	 * We need the testdata instances to do a metric matching, so in this special case we get this data
 	 * before evaluation
 	 */
 	@Override
@@ -75,9 +89,15 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			tmp = new MetricMatch(traindata, testdata);
 			//tmp.kolmogorovSmirnovTest(0.05);
 			
-			tmp.spearmansRankCorrelation(0.5);
-			
-			//Console.traceln(Level.INFO, "Tested traindata set " + num + " for matching attributes, found " + tmp.getRank() + " matches");
+			if( this.method.equals("spearman") ) {
+			    tmp.spearmansRankCorrelation(this.threshold);
+			}
+			else if( this.method.equals("kolmogorov") ) {
+			    tmp.kolmogorovSmirnovTest(this.threshold);
+			}
+			else {
+			    throw new RuntimeException("unknown method");
+			}
 
 			// we only select the training data from our set with the most matching attributes
 			if(tmp.getRank() > rank) {
@@ -128,7 +148,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			this.classifier = setupClassifier();  // parent method from WekaBase
 			this.classifier.buildClassifier(traindata);
 		}
-		
+
 		public void setMetricMatching(MetricMatch mm) {
 			this.mm = mm;
 		}
@@ -399,6 +419,4 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			//Console.traceln(Level.INFO, "Found " + this.attmatch.size() + " matching attributes");
 		}
 	 }
-
-
 }
