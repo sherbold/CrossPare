@@ -19,7 +19,7 @@
         <xs:element name="setwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="setwisepostprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="setwisetrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element name="setwisetestdataawaretrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="setwisetestdataawaretrainer" type="metricMatchingType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="preprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="pointwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="postprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
@@ -41,5 +41,11 @@
   <xs:complexType name="setupType">
     <xs:attribute name="name" type="xs:string" />
     <xs:attribute name="param" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="metricMatchingType">
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="param" type="xs:string" />
+    <xs:attribute name="method" type="xs:string" />
+    <xs:attribute name="threshold" type="xs:float" />
   </xs:complexType>
 </xs:schema>

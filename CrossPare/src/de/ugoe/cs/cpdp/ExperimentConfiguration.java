@@ -488,6 +488,8 @@ public class ExperimentConfiguration extends DefaultHandler {
                                                                  attributes.getValue("name"))
                         .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
+                trainer.setMethod(attributes.getValue("method"));
+                trainer.setThreshold(attributes.getValue("threshold"));
                 setwiseTestdataAwareTrainers.add(trainer);
             }
             else if (qName.equals("preprocessor")) {

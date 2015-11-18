@@ -8,4 +8,7 @@ public interface ISetWiseTestdataAwareTrainingStrategy extends ITrainer {
     void apply(SetUniqueList<Instances> traindataSet, Instances testdata);
 
     String getName();
+    
+    void setMethod(String method);
+    void setThreshold(String threshold);
 }
