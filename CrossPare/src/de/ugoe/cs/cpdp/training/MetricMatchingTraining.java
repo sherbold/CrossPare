@@ -1,4 +1,4 @@
-// Copyright 2015 Georg-August-Universität Göttingen, Germany
+// Copyright 2015 Georg-August-Universitï¿½t Gï¿½ttingen, Germany
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	public void apply(SetUniqueList<Instances> traindataSet, Instances testdata) {
 		this.traindataSet = traindataSet;
 
-		int rank = 5; // we want at least 5 matching attributes
+		int rank = 0; // we want at least 5 matching attributes
 		int num = 0;
 		int biggest_num = 0;
 		MetricMatch tmp;
@@ -92,12 +92,13 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		for (Instances traindata : this.traindataSet) {
 			num++;
 			tmp = new MetricMatch(traindata, testdata);
-			//tmp.kolmogorovSmirnovTest(0.05);
-			
+
+			// metric selection may create error, continue to next training set
 			try {
 				tmp.attributeSelection();
 			}catch(Exception e) {
-				
+				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 			
 			if (this.method.equals("spearman")) {
@@ -126,7 +127,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		
 		this.mm = biggest;
 		Instances ilist = this.mm.getMatchedTrain();
-		Console.traceln(Level.INFO, "Chosing the trainingdata set num "+biggest_num +" with " + rank + " matching attributs, " + ilist.size() + " instances out of a possible set of " + traindataSet.size() + " sets");
+		Console.traceln(Level.INFO, "Chosing the trainingdata set num "+biggest_num +" with " + rank + " matching attributes, " + ilist.size() + " instances out of a possible set of " + traindataSet.size() + " sets");
 		
 		// replace traindataSEt
 		//traindataSet = new SetUniqueList<Instances>();
@@ -205,8 +206,8 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		 }
 		 
 		 public MetricMatch(Instances train, Instances test) {
-			 this.train = train;
-			 this.test = test;
+			 this.train = new Instances(train);  // expensive! but we are dropping the attributes
+			 this.test = new Instances(test);
 			 
 			 // 1. convert metrics of testdata and traindata to later use in test
 			 this.train_values = new ArrayList<double[]>();
@@ -326,8 +327,12 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		 * we perform attribute significance tests and drop attributes
 		 */
 		public void attributeSelection() throws Exception {
+			//Console.traceln(Level.INFO, "Attribute Selection on Training Attributes ("+this.train.numAttributes()+")");
 			this.attributeSelection(this.train);
+			//Console.traceln(Level.INFO, "-----");
+			//Console.traceln(Level.INFO, "Attribute Selection on Test Attributes ("+this.test.numAttributes()+")");
 			this.attributeSelection(this.test);
+			//Console.traceln(Level.INFO, "-----");
 		}
 		
 		private void attributeSelection(Instances which) throws Exception {
@@ -337,35 +342,50 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			SignificanceAttributeEval et = new SignificanceAttributeEval();
 			et.buildEvaluator(which);
 			//double tmp[] = new double[this.train.numAttributes()];
-			HashMap<Integer,Double> saeval = new HashMap<Integer,Double>();
+			HashMap<String,Double> saeval = new HashMap<String,Double>();
 			// evaluate all training attributes
 			// select top 15% of metrics
-			for(int i=0; i < which.numAttributes() - 1; i++) { 
-				//tmp[i] = et.evaluateAttribute(i);
-				saeval.put(i, et.evaluateAttribute(i));
+			for(int i=0; i < which.numAttributes(); i++) { 
+				if(which.classIndex() != i) {
+					saeval.put(which.attribute(i).name(), et.evaluateAttribute(i));
+				}
 				//Console.traceln(Level.SEVERE, "Significance Attribute Eval: " + tmp);
 			}
 			
-			HashMap<Integer, Double> sorted = sortByValues(saeval);
+			HashMap<String, Double> sorted = sortByValues(saeval);
 			
 			// die letzen 15% wollen wir haben
-			int last = (saeval.size() / 100) * 15;
-			int drop_first = saeval.size() - last;
+			float last = ((float)saeval.size() / 100) * 15;
+			int drop_first = saeval.size() - (int)last;
 			
-			// drop attributes above last
+			//Console.traceln(Level.INFO, "Dropping "+ drop_first + " of " + sorted.size() + " attributes (we only keep the best 15% "+last+")");
+			/*
 			Iterator it = sorted.entrySet().iterator();
 		    while (it.hasNext()) {
 		    	Map.Entry pair = (Map.Entry)it.next();
-		    	if(drop_first > 0) {
-		    		which.deleteAttributeAt((int)pair.getKey());
-		    	}
-		    	drop_first--;
-		    }   
+		    	Console.traceln(Level.INFO, "key: "+(int)pair.getKey()+", value: " + (double)pair.getValue() + "");
+		    }*/
+			
+			// drop attributes above last
+			Iterator it = sorted.entrySet().iterator();
+		    while (drop_first > 0) {
+	    		Map.Entry pair = (Map.Entry)it.next();
+	    		if(which.attribute((String)pair.getKey()).index() != which.classIndex()) {
+	    			
+	    			which.deleteAttributeAt(which.attribute((String)pair.getKey()).index());
+	    			//Console.traceln(Level.INFO, "dropping attribute: "+ (String)pair.getKey());
+	    		}
+		    	drop_first-=1;
+		 
+		    
+		    }
+//		    //Console.traceln(Level.INFO, "Now we have " + which.numAttributes() + " attributes left (incl. class attribute!)");
 		}
+		
 		
 		private HashMap sortByValues(HashMap map) {
 	       List list = new LinkedList(map.entrySet());
-	       // Defined Custom Comparator here
+
 	       Collections.sort(list, new Comparator() {
 	            public int compare(Object o1, Object o2) {
 	               return ((Comparable) ((Map.Entry) (o1)).getValue())
@@ -373,8 +393,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	            }
 	       });
 
-	       // Here I am copying the sorted list in HashMap
-	       // using LinkedHashMap to preserve the insertion order
+
 	       HashMap sortedHashMap = new LinkedHashMap();
 	       for (Iterator it = list.iterator(); it.hasNext();) {
 	              Map.Entry entry = (Map.Entry) it.next();
