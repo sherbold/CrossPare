@@ -15,10 +15,19 @@
 package de.ugoe.cs.cpdp.training;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
+import javax.management.RuntimeErrorException;
+
 import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
@@ -27,6 +36,7 @@ import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import de.ugoe.cs.util.console.Console;
+import weka.attributeSelection.SignificanceAttributeEval;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
@@ -34,6 +44,7 @@ import weka.core.DenseInstance;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
+
 
 public class MetricMatchingTraining extends WekaBaseTraining implements ISetWiseTestdataAwareTrainingStrategy {
 
@@ -51,12 +62,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
     @Override
     public Classifier getClassifier() {
         return this.classifier;
-    }
-    
-    
-    @Override
-    public String getName() {
-        return "MetricMatching_" + classifierName;
     }
 
 
@@ -89,10 +94,16 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			tmp = new MetricMatch(traindata, testdata);
 			//tmp.kolmogorovSmirnovTest(0.05);
 			
-			if( this.method.equals("spearman") ) {
+			try {
+				tmp.attributeSelection();
+			}catch(Exception e) {
+				
+			}
+			
+			if (this.method.equals("spearman")) {
 			    tmp.spearmansRankCorrelation(this.threshold);
 			}
-			else if( this.method.equals("kolmogorov") ) {
+			else if (this.method.equals("kolmogorov")) {
 			    tmp.kolmogorovSmirnovTest(this.threshold);
 			}
 			else {
@@ -100,14 +111,14 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			}
 
 			// we only select the training data from our set with the most matching attributes
-			if(tmp.getRank() > rank) {
+			if (tmp.getRank() > rank) {
 				rank = tmp.getRank();
 				biggest = tmp;
 				biggest_num = num;
 			}
 		}
 		
-		if( biggest == null ) {
+		if (biggest == null) {
 		    throw new RuntimeException("not enough matching attributes found");
 		}
 
@@ -117,11 +128,16 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		Instances ilist = this.mm.getMatchedTrain();
 		Console.traceln(Level.INFO, "Chosing the trainingdata set num "+biggest_num +" with " + rank + " matching attributs, " + ilist.size() + " instances out of a possible set of " + traindataSet.size() + " sets");
 		
+		// replace traindataSEt
+		//traindataSet = new SetUniqueList<Instances>();
+		traindataSet.clear();
+		traindataSet.add(ilist);
+		
 		// we have to build the classifier here:
 		try {
 		    
 			//
-		    if( this.classifier == null ) {
+		    if (this.classifier == null) {
 		        Console.traceln(Level.SEVERE, "Classifier is null");
 		    }
 			//Console.traceln(Level.INFO, "Building classifier with the matched training data with " + ilist.size() + " instances and "+ ilist.numAttributes() + " attributes");
@@ -199,7 +215,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	 		 }
 			
 			 this.test_values = new ArrayList<double[]>();
-			 for( int i=0; i < this.test.numAttributes()-1; i++ ) {
+			 for (int i=0; i < this.test.numAttributes()-1; i++) {
 				this.test_values.add(this.test.attributeToDoubleArray(i));
 			 }
 		 }
@@ -231,7 +247,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			 
 			 Iterator it = this.attributes.entrySet().iterator();
 			 int j = 0;
-			 while(it.hasNext()) {
+			 while (it.hasNext()) {
 				 Map.Entry values = (Map.Entry)it.next();
 				 ni.setValue(testdata.attribute(j), test.value((int)values.getValue()));
 				 j++;
@@ -267,7 +283,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			 // construct our new attributes
 			 Attribute[] attrs = new Attribute[this.attributes.size()+1];
 			 FastVector fwTrain = new FastVector(this.attributes.size());
-			 for(int i=0; i < this.attributes.size(); i++) {
+			 for (int i=0; i < this.attributes.size(); i++) {
 				 attrs[i] = new Attribute(String.valueOf(i));
 				 fwTrain.addElement(attrs[i]);
 			 }
@@ -280,17 +296,17 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			 Instances newTrain = new Instances(name, fwTrain, data.size());
 			 newTrain.setClassIndex(newTrain.numAttributes()-1);
 			 
-			 for(int i=0; i < data.size(); i++) {
+			 for (int i=0; i < data.size(); i++) {
 				 Instance ni = new DenseInstance(this.attributes.size()+1);
 				
 				 Iterator it = this.attributes.entrySet().iterator();
 				 int j = 0;
-				 while(it.hasNext()) {
+				 while (it.hasNext()) {
 					 Map.Entry values = (Map.Entry)it.next();
 					 int value = (int)values.getValue();
 					 
 					 // key ist traindata
-					 if(name.equals("train")) {
+					 if (name.equals("train")) {
 						 value = (int)values.getKey();
 					 }
 					 ni.setValue(newTrain.attribute(j), data.instance(i).value(value));
@@ -301,8 +317,72 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 				 newTrain.add(ni);
 			 }
 			 
-			 return newTrain;
-		 }
+		    return newTrain;
+        }
+		 
+		 
+		/**
+		 * performs the attribute selection
+		 * we perform attribute significance tests and drop attributes
+		 */
+		public void attributeSelection() throws Exception {
+			this.attributeSelection(this.train);
+			this.attributeSelection(this.test);
+		}
+		
+		private void attributeSelection(Instances which) throws Exception {
+			// 1. step we have to categorize the attributes
+			//http://weka.sourceforge.net/doc.packages/probabilisticSignificanceAE/weka/attributeSelection/SignificanceAttributeEval.html
+			
+			SignificanceAttributeEval et = new SignificanceAttributeEval();
+			et.buildEvaluator(which);
+			//double tmp[] = new double[this.train.numAttributes()];
+			HashMap<Integer,Double> saeval = new HashMap<Integer,Double>();
+			// evaluate all training attributes
+			// select top 15% of metrics
+			for(int i=0; i < which.numAttributes() - 1; i++) { 
+				//tmp[i] = et.evaluateAttribute(i);
+				saeval.put(i, et.evaluateAttribute(i));
+				//Console.traceln(Level.SEVERE, "Significance Attribute Eval: " + tmp);
+			}
+			
+			HashMap<Integer, Double> sorted = sortByValues(saeval);
+			
+			// die letzen 15% wollen wir haben
+			int last = (saeval.size() / 100) * 15;
+			int drop_first = saeval.size() - last;
+			
+			// drop attributes above last
+			Iterator it = sorted.entrySet().iterator();
+		    while (it.hasNext()) {
+		    	Map.Entry pair = (Map.Entry)it.next();
+		    	if(drop_first > 0) {
+		    		which.deleteAttributeAt((int)pair.getKey());
+		    	}
+		    	drop_first--;
+		    }   
+		}
+		
+		private HashMap sortByValues(HashMap map) {
+	       List list = new LinkedList(map.entrySet());
+	       // Defined Custom Comparator here
+	       Collections.sort(list, new Comparator() {
+	            public int compare(Object o1, Object o2) {
+	               return ((Comparable) ((Map.Entry) (o1)).getValue())
+	                  .compareTo(((Map.Entry) (o2)).getValue());
+	            }
+	       });
+
+	       // Here I am copying the sorted list in HashMap
+	       // using LinkedHashMap to preserve the insertion order
+	       HashMap sortedHashMap = new LinkedHashMap();
+	       for (Iterator it = list.iterator(); it.hasNext();) {
+	              Map.Entry entry = (Map.Entry) it.next();
+	              sortedHashMap.put(entry.getKey(), entry.getValue());
+	       } 
+	       return sortedHashMap;
+		}
+		 
 		 
 		 /**
 		  * calculate Spearmans rank correlation coefficient as matching score
@@ -314,27 +394,27 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			 SpearmansCorrelation t = new SpearmansCorrelation();
 
 			 // size has to be the same so we randomly sample the number of the smaller sample from the big sample
-			 if( this.train.size() > this.test.size() ) {
+			 if (this.train.size() > this.test.size()) {
 			     this.sample(this.train, this.test, this.train_values);
-			 }else if( this.test.size() > this.train.size() ) {
+			 }else if (this.test.size() > this.train.size()) {
 			     this.sample(this.test, this.train, this.test_values);
 			 }
 			 
 			 // try out possible attribute combinations
-            for( int i=0; i < this.train.numAttributes()-1; i++ ) {
-                for ( int j=0; j < this.test.numAttributes()-1; j++ ) {
+            for (int i=0; i < this.train.numAttributes()-1; i++) {
+                for (int j=0; j < this.test.numAttributes()-1; j++) {
                     // class attributes are not relevant 
-                    if ( this.train.classIndex() == i ) {
+                    if (this.train.classIndex() == i) {
                         continue;
                     }
-                    if ( this.test.classIndex() == j ) {
+                    if (this.test.classIndex() == j) {
                         continue;
                     }
                     
                     
-					if( !this.attributes.containsKey(i) ) {
+					if (!this.attributes.containsKey(i)) {
 						p = t.correlation(this.train_values.get(i), this.test_values.get(j));
-						if( p > cutoff ) {
+						if (p > cutoff) {
 							this.attributes.put(i, j);
 						}
 					}
@@ -348,25 +428,25 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
             int indices_to_draw = smaller.size();
             ArrayList<Integer> indices = new ArrayList<Integer>();
             Random rand = new Random();
-            while( indices_to_draw > 0) {
+            while (indices_to_draw > 0) {
                 
                 int index = rand.nextInt(bigger.size()-1);
                 
-                if( !indices.contains(index) ) {
+                if (!indices.contains(index)) {
                     indices.add(index);
                     indices_to_draw--;
                 }
             }
             
             // now reduce our values to the indices we choose above for every attribute
-            for(int att=0; att < bigger.numAttributes()-1; att++ ) {
+            for (int att=0; att < bigger.numAttributes()-1; att++) {
                 
                 // get double for the att
                 double[] vals = values.get(att);
                 double[] new_vals = new double[indices.size()];
                 
                 int i = 0;
-                for( Iterator<Integer> it = indices.iterator(); it.hasNext(); ) {
+                for (Iterator<Integer> it = indices.iterator(); it.hasNext();) {
                     new_vals[i] = vals[it.next()];
                     i++;
                 }
@@ -393,7 +473,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			// todo: this should be symmetrical we don't have to compare i to j and then j to i 
 			// todo: this relies on the last attribute being the class, 
 			//Console.traceln(Level.INFO, "Starting Kolmogorov-Smirnov test for traindata size: " + this.train.size() + " attributes("+this.train.numAttributes()+") and testdata size: " + this.test.size() + " attributes("+this.test.numAttributes()+")");
-			for( int i=0; i < this.train.numAttributes()-1; i++ ) {
+			for (int i=0; i < this.train.numAttributes()-1; i++) {
 				for ( int j=0; j < this.test.numAttributes()-1; j++) {
 					//p = t.kolmogorovSmirnovTest(this.train_values.get(i), this.test_values.get(j));
 					//p = t.kolmogorovSmirnovTest(this.train_values.get(i), this.test_values.get(j));
@@ -405,11 +485,11 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
                         continue;
                     }
 					// PRoblem: exactP is forced for small sample sizes and it never finishes
-					if( !this.attributes.containsKey(i) ) {
+					if (!this.attributes.containsKey(i)) {
 						
 						// todo: output the values and complain on the math.commons mailinglist
 						p = t.kolmogorovSmirnovTest(this.train_values.get(i), this.test_values.get(j));
-						if( p > cutoff ) {
+						if (p > cutoff) {
 							this.attributes.put(i, j);
 						}
 					}
