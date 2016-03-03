@@ -107,6 +107,9 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			else if (this.method.equals("kolmogorov")) {
 			    tmp.kolmogorovSmirnovTest(this.threshold);
 			}
+			else if( this.method.equals("percentile") ) {
+			    tmp.percentiles(this.threshold);
+			}
 			else {
 			    throw new RuntimeException("unknown method");
 			}
@@ -402,6 +405,53 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	       return sortedHashMap;
 		}
 		 
+		/**
+		 * Calculates the Percentiles of the source and target metrics.
+		 * 
+		 * @param cutoff
+		 */
+		public void percentiles(double cutoff) {
+		    for( int i = 0; i < this.train.numAttributes()-1; i++ ) {
+                for( int j = 0; j < this.test.numAttributes()-1; j++ ) {
+                    // class attributes are not relevant 
+                    if( this.train.classIndex() == i ) {
+                        continue;
+                    }
+                    if( this.test.classIndex() == j ) {
+                        continue;
+                    }
+                    
+                    
+                    if( !this.attributes.containsKey(i) ) {
+                        // get percentiles
+                        double train[] = this.train_values.get(i);
+                        double test[] = this.test_values.get(j);
+                        
+                        Arrays.sort(train);
+                        Arrays.sort(test);
+                        
+                        // percentiles
+                        double train_p;
+                        double test_p;
+                        double score = 0.0;
+                        for( double p=0.1; p < 1; p+=0.1 ) {
+                            train_p = train[(int)Math.ceil(train.length * p)];
+                            test_p = test[(int)Math.ceil(test.length * p)];
+                        
+                            if( train_p > test_p ) {
+                                score += test_p / train_p;
+                            }else {
+                                score += train_p / test_p;
+                            }
+                        }
+                        
+                        if( score > cutoff ) {
+                            this.attributes.put(i, j);
+                        }
+                    }
+                }
+            }
+		}
 		 
 		 /**
 		  * calculate Spearmans rank correlation coefficient as matching score
