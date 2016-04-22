@@ -7,8 +7,8 @@
 	<property name="javadoc.location" value="javadoc" />
 	<property name="downloads.location" value="downloads" />
 	<property name="debuglevel" value="source,lines,vars" />
-	<property name="target" value="1.7" />
-	<property name="source" value="1.7" />
+	<property name="target" value="1.8" />
+	<property name="source" value="1.8" />
 
 	<!-- Crosspare Properties -->
 	<property name="Crosspare.jarname" value="crosspare.jar" />
@@ -19,6 +19,8 @@
 		<pathelement location="lib/commons-math3-3.5.jar" />
 		<pathelement location="lib/java-utils-0.0.1.jar" />
 		<pathelement location="lib/weka.jar" />
+		<pathelement location="lib/guava-19.0" />
+		<pathelement location="lib/ojalgo-37.1.jar" />
 	</path>
 
 	<!-- Initialization Targets -->
