@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.dataprocessing;
 
+import java.util.Arrays;
+
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 import weka.core.Instance;
@@ -88,7 +90,7 @@ public class CLAProcessor implements IProcessesingStrategy {
 
         // determine median of cluster number
         Median m = new Median();
-        double medianClusterNumber = m.evaluate(clusterNumber);
+        double medianClusterNumber = m.evaluate(Arrays.stream(clusterNumber).distinct().toArray());
 
         // finally modify the instances
         // drop the unclean instances
