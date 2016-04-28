@@ -24,6 +24,7 @@ import org.ojalgo.scalar.ComplexNumber;
 import org.ojalgo.access.Access2D.Builder;
 import org.ojalgo.array.Array1D;
 
+import de.ugoe.cs.cpdp.util.SortUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -88,14 +89,14 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
 
         Array1D<ComplexNumber> eigenvaluesArray = eigenvalueDecomposition.getEigenvalues();
         System.out.println(eigenvaluesArray.length);
-        final double[] eigenvalues = new double[(int) eigenvaluesArray.length];
+        final Double[] eigenvalues = new Double[(int) eigenvaluesArray.length];
         final int[] index = new int[(int) eigenvaluesArray.length];
         // create kernel transformation matrix from eigenvectors
         for (int i = 0; i < eigenvaluesArray.length; i++) {
             eigenvalues[i] = eigenvaluesArray.doubleValue(i);
             index[i] = i;
         }
-        quicksort(eigenvalues, index);
+        SortUtils.quicksort(eigenvalues, index);
 
         final PrimitiveMatrix transformedKernel = kernelMatrix.multiplyRight(eigenvalueDecomposition
             .getV().selectColumns(Arrays.copyOfRange(index, 0, reducedDimension)));
@@ -216,52 +217,5 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
             muMatrix.set(i, i, mu);
         }
         return muMatrix.build();
-    }
-
-    // below is from http://stackoverflow.com/a/1040503
-    private static void quicksort(double[] main, int[] index) {
-        quicksort(main, index, 0, index.length - 1);
-    }
-
-    // quicksort a[left] to a[right]
-    private static void quicksort(double[] a, int[] index, int left, int right) {
-        if (right <= left)
-            return;
-        int i = partition(a, index, left, right);
-        quicksort(a, index, left, i - 1);
-        quicksort(a, index, i + 1, right);
-    }
-
-    // partition a[left] to a[right], assumes left < right
-    private static int partition(double[] a, int[] index, int left, int right) {
-        int i = left - 1;
-        int j = right;
-        while (true) {
-            while (less(a[++i], a[right])) // find item on left to swap
-            ; // a[right] acts as sentinel
-            while (less(a[right], a[--j])) // find item on right to swap
-                if (j == left)
-                    break; // don't go out-of-bounds
-            if (i >= j)
-                break; // check if pointers cross
-            exch(a, index, i, j); // swap two elements into place
-        }
-        exch(a, index, i, right); // swap with partition element
-        return i;
-    }
-
-    // is x < y ?
-    private static boolean less(double x, double y) {
-        return (x < y);
-    }
-
-    // exchange a[i] and a[j]
-    private static void exch(double[] a, int[] index, int i, int j) {
-        double swap = a[i];
-        a[i] = a[j];
-        a[j] = swap;
-        int b = index[i];
-        index[i] = index[j];
-        index[j] = b;
     }
 }

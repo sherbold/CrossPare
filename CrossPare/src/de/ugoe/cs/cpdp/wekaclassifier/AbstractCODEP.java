@@ -26,6 +26,7 @@ import weka.classifiers.functions.Logistic;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.classifiers.functions.RBFNetwork;
 import weka.classifiers.rules.DecisionTable;
+import weka.classifiers.trees.ADTree;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -102,14 +103,14 @@ public abstract class AbstractCODEP extends AbstractClassifier {
 
     /**
      * <p>
-     * Creates a CODEP instance using the classications of the internal classifiers.
+     * Creates a CODEP instance using the classifications of the internal classifiers.
      * </p>
      *
      * @param instance
      *            instance for which the CODEP instance is created
      * @return CODEP instance
      * @throws Exception
-     *             thrown if an exception occurs during classification with an internal classifer
+     *             thrown if an exception occurs during classification with an internal classifier
      */
     private Instance createInternalInstance(Instance instance) throws Exception {
         double[] values = new double[internalAttributes.size()];
@@ -146,7 +147,7 @@ public abstract class AbstractCODEP extends AbstractClassifier {
         internalClassifiers = new ArrayList<>(6);
         // create training data with prediction labels
 
-        // TODO ADTree missing?!
+        internalClassifiers.add(new ADTree());
         internalClassifiers.add(new BayesNet());
         internalClassifiers.add(new DecisionTable());
         internalClassifiers.add(new Logistic());
