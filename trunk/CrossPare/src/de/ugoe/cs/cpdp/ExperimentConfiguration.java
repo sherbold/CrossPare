@@ -195,6 +195,7 @@ public class ExperimentConfiguration extends DefaultHandler {
         pointwiseselectors = new LinkedList<>();
         postprocessors = new LinkedList<>();
         trainers = new LinkedList<>();
+        testAwareTrainers = new LinkedList<>();
         evaluators = new LinkedList<>();
 
         if (file == null) {
