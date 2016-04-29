@@ -41,6 +41,7 @@ import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
 import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
+import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
 import de.ugoe.cs.util.StringTools;
@@ -138,6 +139,11 @@ public class ExperimentConfiguration extends DefaultHandler {
      * normal trainers, i.e., trainers that require the selected training data in a single data set
      */
     private List<ITrainingStrategy> trainers;
+    
+    /**
+     * normal trainers, i.e., trainers that require the selected training data in a single data set
+     */
+    private List<ITestAwareTrainingStrategy> testAwareTrainers;
 
     /**
      * evaluators used for the the experiment results
@@ -375,6 +381,15 @@ public class ExperimentConfiguration extends DefaultHandler {
     public List<ITrainingStrategy> getTrainers() {
         return trainers;
     }
+    
+    /**
+     * returns the test aware training algorithms
+     * 
+     * @return normal training algorithms
+     */
+    public List<ITestAwareTrainingStrategy> getTestAwareTrainers() {
+        return testAwareTrainers;
+    }
 
     /**
      * returns the evaluation strategies
@@ -523,6 +538,14 @@ public class ExperimentConfiguration extends DefaultHandler {
                         .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 trainers.add(trainer);
+            }
+            else if (qName.equals("testawaretrainer")) {
+                final ITestAwareTrainingStrategy trainer =
+                    (ITestAwareTrainingStrategy) Class.forName("de.ugoe.cs.cpdp.training." +
+                                                          attributes.getValue("name"))
+                        .newInstance();
+                trainer.setParameter(attributes.getValue("param"));
+                testAwareTrainers.add(trainer);
             }
             else if (qName.equals("eval")) {
                 final IEvaluationStrategy evaluator =

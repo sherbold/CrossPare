@@ -32,6 +32,7 @@ import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
 import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
+import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
@@ -205,6 +206,13 @@ public class CrossProjectExperiment implements IExecutionStrategy {
                                 testVersion.getVersion(), trainer.getName()));
                     trainer.apply(traindata);
                 }
+                for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying trainer %s",
+                                config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), trainer.getName()));
+                    trainer.apply(testdata, traindata);
+                }
                 File resultsDir = new File(config.getResultsPath());
                 if (!resultsDir.exists()) {
                     resultsDir.mkdir();
@@ -222,6 +230,9 @@ public class CrossProjectExperiment implements IExecutionStrategy {
                         allTrainers.add(setwiseTestdataAwareTrainer);
                     }
                     for (ITrainingStrategy trainer : config.getTrainers()) {
+                        allTrainers.add(trainer);
+                    }
+                    for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
                         allTrainers.add(trainer);
                     }
                     if (writeHeader) {
