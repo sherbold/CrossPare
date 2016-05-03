@@ -28,6 +28,7 @@ import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
 import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
+import de.ugoe.cs.cpdp.eval.IResultStorage;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
 import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
@@ -162,6 +163,15 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                 String.format("[%s] [%02d/%02d] %s: starting",
                                               config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
+                if (resultsAvailable(testVersion)) {
+                    Console.traceln(Level.INFO,
+                                    String.format(
+                                                  "[%s] [%02d/%02d] %s: results already available; skipped",
+                                                  config.getExperimentName(), versionCount,
+                                                  testVersionCount, testVersion.getVersion()));
+                    versionCount++;
+                    continue;
+                }
 
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
@@ -298,7 +308,8 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(config.getResultsPath() + "/" +
                             config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, writeHeader, config.getResultStorages());
+                    evaluator.apply(testdata, traindata, allTrainers, writeHeader,
+                                    config.getResultStorages());
                     writeHeader = false;
                 }
                 Console.traceln(Level.INFO,
@@ -325,5 +336,16 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
             result &= !filter.apply(version);
         }
         return result;
+    }
+
+    private boolean resultsAvailable(SoftwareVersion version) {
+        if (config.getResultStorages().isEmpty()) {
+            return false;
+        }
+        boolean available = true;
+        for (IResultStorage storage : config.getResultStorages()) {
+            available &= storage.containsResult(config.getExperimentName(), version.getVersion());
+        }
+        return available;
     }
 }

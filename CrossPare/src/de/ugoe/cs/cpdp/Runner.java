@@ -44,7 +44,7 @@ public class Runner {
      */
     public static void main(String[] args) {
         new TextConsole(Level.FINE);
-        final int concurrentThreads = Runtime.getRuntime().availableProcessors() - 2;
+        final int concurrentThreads = Runtime.getRuntime().availableProcessors();
         final ExecutorService threadPool = Executors.newFixedThreadPool(concurrentThreads);
         for (String arg : args) {
             File file = new File(arg);
@@ -88,7 +88,7 @@ public class Runner {
         }
 
         if (config != null) {
-            Console.trace(Level.FINE, config.toString());
+            Console.trace(Level.FINEST, config.toString());
             // Instantiate the class like it was given as parameter in the config file and cast it
             // to the interface
             try {
