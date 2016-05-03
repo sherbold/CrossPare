@@ -298,7 +298,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(config.getResultsPath() + "/" +
                             config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, writeHeader);
+                    evaluator.apply(testdata, traindata, allTrainers, writeHeader, config.getResultStorages());
                     writeHeader = false;
                 }
                 Console.traceln(Level.INFO,

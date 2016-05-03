@@ -167,7 +167,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     evaluator.setParameter(config.getResultsPath() + "/" +
                         config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testdata, traindata, allTrainers, writeHeader);
+                evaluator.apply(testdata, traindata, allTrainers, writeHeader, config.getResultStorages());
                 writeHeader = false;
             }
 

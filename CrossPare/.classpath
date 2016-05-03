@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/elki-bundle-0.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/alternatingDecisionTrees.jar"/>
 	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.38-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

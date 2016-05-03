@@ -22,6 +22,7 @@
 		<pathelement location="lib/guava-19.0" />
 		<pathelement location="lib/ojalgo-37.1.jar" />
 		<pathelement location="lib/elki-bundle-0.7.1.jar" />
+		<pathelement location="lib/mysql-connector-java-5.1.38-bin" />
 	</path>
 
 	<!-- Initialization Targets -->

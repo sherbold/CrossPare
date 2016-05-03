@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,18 +43,17 @@ import weka.core.Instances;
  * <li>precision</li>
  * <li>fscore</li>
  * <li>gscore</li>
+ * <li>MCC</li>
  * <li>AUC</li>
  * <li>AUCEC (weighted by LOC, if applicable; 0.0 if LOC not available)</li>
  * <li>tpr: true positive rate</li>
  * <li>tnr: true negative rate</li>
+ * <li>fpr: false positive rate</li>
+ * <li>fnr: false negative rate</li>
  * <li>tp: true positives</li>
  * <li>fp: false positives</li>
  * <li>tn: true negatives</li>
  * <li>fn: false negatives</li>
- * <li>errortrain: training error</li>
- * <li>recalltrain: training recall</li>
- * <li>precisiontrain: training precision</li>
- * <li>succHetrain: training success with recall>0.7 and precision>0.5
  * </ul>
  * 
  * @author Steffen Herbold
@@ -66,9 +66,11 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
     private PrintWriter output = new PrintWriter(System.out);
 
     private boolean outputIsSystemOut = true;
+    
+    private String configurationName = "default";
 
     /**
-     * Creates the weka evaluator. Allows the creation of the evaluator in different ways, e.g., for
+     * Creates the Weka evaluator. Allows the creation of the evaluator in different ways, e.g., for
      * cross-validation or evaluation on the test data.
      * 
      * @param testdata
@@ -89,12 +91,17 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
     public void apply(Instances testdata,
                       Instances traindata,
                       List<ITrainer> trainers,
-                      boolean writeHeader)
+                      boolean writeHeader,
+                      List<IResultStorage> storages)
     {
-        final List<Classifier> classifiers = new LinkedList<Classifier>();
+        final List<Classifier> classifiers = new LinkedList<>();
+        final List<ExperimentResult> experimentResults = new LinkedList<>();
+        String productName = testdata.relationName();
+        
         for (ITrainer trainer : trainers) {
             if (trainer instanceof IWekaCompatibleTrainer) {
                 classifiers.add(((IWekaCompatibleTrainer) trainer).getClassifier());
+                experimentResults.add(new ExperimentResult(configurationName, productName, ((IWekaCompatibleTrainer) trainer).getName()));
             }
             else {
                 throw new RuntimeException("The selected evaluator only support Weka classifiers");
@@ -128,49 +135,30 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             output.append(StringTools.ENDLINE);
         }
 
-        output.append(testdata.relationName());
+        output.append(productName);
         output.append("," + testdata.numInstances());
         output.append("," + traindata.numInstances());
 
         Evaluation eval = null;
-        //Evaluation evalTrain = null;
-        for (Classifier classifier : classifiers) {
+        Iterator<Classifier> classifierIter = classifiers.iterator();
+        Iterator<ExperimentResult> resultIter = experimentResults.iterator();
+        while (classifierIter.hasNext()) {
+            Classifier classifier = classifierIter.next();
             eval = createEvaluator(testdata, classifier);
-            //evalTrain = createEvaluator(traindata, classifier);
 
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
             double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
             double aucec = calculateReviewEffort(testdata, classifier);
-
-            if (eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5) {
-                output.append(",1");
-            }
-            else {
-                output.append(",0");
-            }
-
-            if (eval.recall(1) >= 0.7 && eval.precision(1) >= 0.7) {
-                output.append(",1");
-            }
-            else {
-                output.append(",0");
-            }
-
-            if (gmeasure > 0.75) {
-                output.append(",1");
-            }
-            else {
-                output.append(",0");
-            }
-
-            if (gmeasure > 0.6) {
-                output.append(",1");
-            }
-            else {
-                output.append(",0");
-            }
-
+            double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
+            double succZi = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.7 ? 1.0 : 0.0;
+            double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
+            double succG60 = gmeasure > 0.6 ? 1.0 : 0.0;
+            
+            output.append("," + succHe);
+            output.append("," + succZi);
+            output.append("," + succG75);
+            output.append("," + succG60);            
             output.append("," + eval.errorRate());
             output.append("," + eval.recall(1));
             output.append("," + eval.precision(1));
@@ -187,6 +175,33 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             output.append("," + eval.numFalseNegatives(1));
             output.append("," + eval.numTrueNegatives(1));
             output.append("," + eval.numFalsePositives(1));
+            
+            ExperimentResult result = resultIter.next();
+            result.setSizeTestData(testdata.numInstances());
+            result.setSizeTrainingData(traindata.numInstances());
+            result.setSuccHe(succHe);
+            result.setSuccZi(succZi);
+            result.setSuccG75(succG75);
+            result.setSuccG60(succG60);
+            result.setError(eval.errorRate());
+            result.setRecall(eval.recall(1));
+            result.setPrecision(eval.precision(1));
+            result.setFscore(eval.fMeasure(1));
+            result.setGscore(gmeasure);
+            result.setMcc(eval.matthewsCorrelationCoefficient(1));
+            result.setAuc(eval.areaUnderROC(1));
+            result.setAucec(aucec);
+            result.setTpr(eval.truePositiveRate(1));
+            result.setTnr(eval.trueNegativeRate(1));
+            result.setFpr(eval.falsePositiveRate(1));
+            result.setFnr(eval.falseNegativeRate(1));
+            result.setTp(eval.numTruePositives(1));
+            result.setFn(eval.numFalseNegatives(1));
+            result.setTn(eval.numTrueNegatives(1));
+            result.setFp(eval.numFalsePositives(1));
+            for( IResultStorage storage : storages ) {
+                storage.addResult(result);
+            }
         }
 
         output.append(StringTools.ENDLINE);
@@ -300,6 +315,9 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             try {
                 output = new PrintWriter(new FileOutputStream(parameters));
                 outputIsSystemOut = false;
+                int filenameStart = parameters.lastIndexOf('/')+1;
+                int filenameEnd = parameters.lastIndexOf('.');
+                configurationName = parameters.substring(filenameStart, filenameEnd);
             }
             catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
