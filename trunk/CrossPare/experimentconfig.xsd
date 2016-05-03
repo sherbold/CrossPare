@@ -24,7 +24,9 @@
         <xs:element name="pointwiseselector" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="postprocessor" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="trainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="testawaretrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="eval" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="storage" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="partialconfig" type="pathType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>

@@ -39,6 +39,12 @@ public interface IEvaluationStrategy extends IParameterizable {
      *            list of training algorithms used to train the classifiers
      * @param writeHeader
      *            if true, a header line for the results file is written (may not be applicable)
+     * @param storages
+     *            result storages that shall additionally be used
      */
-    void apply(Instances testdata, Instances traindata, List<ITrainer> trainers, boolean writeHeader);
+    void apply(Instances testdata,
+               Instances traindata,
+               List<ITrainer> trainers,
+               boolean writeHeader,
+               List<IResultStorage> storages);
 }
