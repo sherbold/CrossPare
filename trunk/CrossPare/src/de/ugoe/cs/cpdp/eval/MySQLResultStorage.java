@@ -3,6 +3,7 @@ package de.ugoe.cs.cpdp.eval;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -33,17 +34,6 @@ public class MySQLResultStorage implements IResultStorage {
     }
 
     public void addResult(ExperimentResult result) {
-        Statement stmt;
-        try {
-            stmt = con.createStatement();
-        }
-        catch (SQLException e) {
-            Console.printerr("Problem with MySQL connection: ");
-            Console.printerr("SQLException: " + e.getMessage());
-            Console.printerr("SQLState: " + e.getSQLState());
-            Console.printerr("VendorError: " + e.getErrorCode());
-            return;
-        }
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO crosspare.results VALUES (NULL,");
         sql.append("\'" + result.getConfigurationName()+"\',");
@@ -71,7 +61,10 @@ public class MySQLResultStorage implements IResultStorage {
         sql.append(result.getFn()+",");
         sql.append(result.getTn()+",");
         sql.append(result.getFp()+");");
+        
+        Statement stmt;
         try {
+            stmt = con.createStatement();
             stmt.executeUpdate(sql.toString().replace("NaN", "NULL"));
         }
         catch (SQLException e) {
@@ -83,5 +76,24 @@ public class MySQLResultStorage implements IResultStorage {
         }
     }
     
-    //public boolean containsResult(String configurationName, String productName, String classifier);
+    @Override
+    public boolean containsResult(String experimentName, String productName) {
+        String sql = "SELECT COUNT(*) as cnt FROM crosspare.results WHERE configurationName=\'" + experimentName + "\' AND productName=\'" + productName + "\';";
+        Statement stmt;
+        boolean contained = false;
+        try {
+            stmt = con.createStatement();
+            ResultSet results = stmt.executeQuery(sql);
+            results.next();
+            int count = results.getInt("cnt");
+            contained = count>0;
+        }
+        catch (SQLException e) {
+            Console.printerr("Problem with MySQL connection: \n");
+            Console.printerr("SQLException: " + e.getMessage() + "\n");
+            Console.printerr("SQLState: " + e.getSQLState() + "\n");
+            Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+        }
+        return contained;
+    }
 }
