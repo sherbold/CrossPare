@@ -63,11 +63,16 @@ public class DecentFolderLoader extends AbstractFolderLoader {
          * "project1" for a "model.decent" file. In the second one, it will look into each folder
          * and searches for "model.decent" files.
          */
+        if (dataDir.listFiles() == null) {
+            return versions;
+        }
         for (File projectDir : dataDir.listFiles()) {
             if (projectDir.isDirectory()) {
                 projectName = projectDir.getName();
-                for (File versionFile : projectDir.listFiles()) {
-                    loadDataFromFile(versionFile, instancesLoader, projectName, versions);
+                if (projectDir.listFiles() != null) {
+                    for (File versionFile : projectDir.listFiles()) {
+                        loadDataFromFile(versionFile, instancesLoader, projectName, versions);
+                    }
                 }
             }
             else {

@@ -162,11 +162,11 @@ public class DecentDataLoader implements SingleVersionLoader {
             }
             catch (FileNotFoundException e) {
                 Console.printerrln("File with path: " + arffLocation + " was not found.");
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             catch (IOException e) {
                 Console.printerrln("File with path: " + arffLocation + " cannot be read.");
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
             // Set class attribute if not set
@@ -444,7 +444,8 @@ public class DecentDataLoader implements SingleVersionLoader {
             module = new EolModule();
         }
         else {
-
+            Console.printerrln("Could not determine model type, file should end with either .etl or .eol");
+            return null;
         }
 
         module.parse(modelHandler.getFile(source));
@@ -452,7 +453,7 @@ public class DecentDataLoader implements SingleVersionLoader {
         if (module.getParseProblems().size() > 0) {
             Console.printerrln("Parse error occured...");
             for (ParseProblem problem : module.getParseProblems()) {
-                System.err.println(problem.toString());
+                Console.printerrln(problem.toString());
             }
             // System.exit(-1);
         }

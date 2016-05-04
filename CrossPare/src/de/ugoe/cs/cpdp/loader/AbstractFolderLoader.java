@@ -52,17 +52,21 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
 
         final File dataDir = new File(path);
         final SingleVersionLoader instancesLoader = getSingleLoader();
-
+        if (dataDir.listFiles() == null) {
+            return versions;
+        }
         for (File projectDir : dataDir.listFiles()) {
             if (projectDir.isDirectory()) {
                 String projectName = projectDir.getName();
-                for (File versionFile : projectDir.listFiles()) {
-                    if (versionFile.isFile() &&
-                        instancesLoader.filenameFilter(versionFile.getName()))
-                    {
-                        String versionName = versionFile.getName();
-                        Instances data = instancesLoader.load(versionFile);
-                        versions.add(new SoftwareVersion(projectName, versionName, data));
+                if (projectDir.listFiles() != null) {
+                    for (File versionFile : projectDir.listFiles()) {
+                        if (versionFile.isFile() &&
+                            instancesLoader.filenameFilter(versionFile.getName()))
+                        {
+                            String versionName = versionFile.getName();
+                            Instances data = instancesLoader.load(versionFile);
+                            versions.add(new SoftwareVersion(projectName, versionName, data));
+                        }
                     }
                 }
             }
