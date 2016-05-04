@@ -92,10 +92,10 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
     public void setOptions(String[] options) throws Exception {
         String lamdaString = Utils.getOption('L', options);
         String boostingIterString = Utils.getOption('B', options);
-        if (!boostingIterString.equals("")) {
+        if (!boostingIterString.isEmpty()) {
             boostingIterations = Integer.parseInt(boostingIterString);
         }
-        if (lamdaString.equals("")) {
+        if (!lamdaString.isEmpty()) {
             lamda = Double.parseDouble(lamdaString);
         }
     }
