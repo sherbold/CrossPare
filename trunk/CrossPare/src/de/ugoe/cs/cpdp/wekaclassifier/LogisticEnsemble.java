@@ -14,93 +14,117 @@
 
 package de.ugoe.cs.cpdp.wekaclassifier;
 
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.functions.Logistic;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Logistic Ensemble Classifier after Uchigaki et al. 
+ * Logistic Ensemble Classifier after Uchigaki et al. with some assumptions. It is unclear if these
+ * assumptions are true.
  *
- * TODO comment class
  * @author Steffen Herbold
  */
 public class LogisticEnsemble extends AbstractClassifier {
 
+    /**
+     * default id
+     */
     private static final long serialVersionUID = 1L;
 
-    private List<Instances> trainingData = null;
-
+    /**
+     * list with classifiers
+     */
     private List<Classifier> classifiers = null;
-    
-    private String[] options; 
 
+    /**
+     * list with weights for each classifier
+     */
+    private List<Double> weights = null;
+
+    /**
+     * local copy of the options to be passed to the ensemble of logistic classifiers
+     */
+    private String[] options;
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.AbstractClassifier#setOptions(java.lang.String[])
+     */
     @Override
     public void setOptions(String[] options) throws Exception {
         this.options = options;
     }
-    
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.AbstractClassifier#distributionForInstance(weka.core.Instance)
+     */
     @Override
-    public double classifyInstance(Instance instance) {
-        if (classifiers == null) {
-            return 0.0;
-        }
-
-        double classification = 0.0;
-        for (int i = 0; i < classifiers.size(); i++) {
-            Classifier classifier = classifiers.get(i);
-            Instances traindata = trainingData.get(i);
-
-            Set<String> attributeNames = new HashSet<>();
-            for (int j = 0; j < traindata.numAttributes(); j++) {
-                attributeNames.add(traindata.attribute(j).name());
-            }
-
-            double[] values = new double[traindata.numAttributes()];
-            int index = 0;
+    public double[] distributionForInstance(Instance instance) throws Exception {
+        Iterator<Classifier> classifierIter = classifiers.iterator();
+        Iterator<Double> weightIter = weights.iterator();
+        double[] result = new double[2];
+        while (classifierIter.hasNext()) {
             for (int j = 0; j < instance.numAttributes(); j++) {
-                if (attributeNames.contains(instance.attribute(j).name())) {
-                    values[index] = instance.value(j);
-                    index++;
+                if (j != instance.classIndex()) {
+                    Instance copy = new DenseInstance(instance);
+                    for (int k = instance.numAttributes() - 1; k >= 0; k--) {
+                        if (j != k && k != instance.classIndex()) {
+                            copy.deleteAttributeAt(k);
+                        }
+                    }
+                    double[] localResult = classifierIter.next().distributionForInstance(copy);
+                    double currentWeight = weightIter.next();
+                    for (int i = 0; i < localResult.length; i++) {
+                        result[i] = result[i] + localResult[i] * currentWeight;
+                    }
                 }
             }
-
-            Instances tmp = new Instances(traindata);
-            tmp.clear();
-            Instance instCopy = new DenseInstance(instance.weight(), values);
-            instCopy.setDataset(tmp);
-            try {
-                classification += classifier.classifyInstance(instCopy);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("bagging classifier could not classify an instance", e);
-            }
         }
-        classification /= classifiers.size();
-        return (classification >= 0.5) ? 1.0 : 0.0;
+        return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
+     */
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         classifiers = new LinkedList<>();
-        for( int j=0 ; j<traindata.numAttributes() ; j++) {
-            final Logistic classifier = new Logistic();
-            classifier.setOptions(options);
-            final Instances copy = new Instances(traindata);
-            for( int k=traindata.numAttributes()-1; k>=0 ; k-- ) {
-                if( j!=k && traindata.classIndex()!=k ) {
-                    copy.deleteAttributeAt(k);
+        weights = new LinkedList<>();
+        List<Double> weightsTmp = new LinkedList<>();
+        double sumWeights = 0.0;
+        for (int j = 0; j < traindata.numAttributes(); j++) {
+            if (j != traindata.classIndex()) {
+                final Logistic classifier = new Logistic();
+                classifier.setOptions(options);
+                final Instances copy = new Instances(traindata);
+                for (int k = traindata.numAttributes() - 1; k >= 0; k--) {
+                    if (j != k && k != traindata.classIndex()) {
+                        copy.deleteAttributeAt(k);
+                    }
                 }
+                classifier.buildClassifier(copy);
+                classifiers.add(classifier);
+                Evaluation eval = new Evaluation(copy);
+                eval.evaluateModel(classifier, copy);
+                weightsTmp.add(eval.matthewsCorrelationCoefficient(1));
+                sumWeights += eval.matthewsCorrelationCoefficient(1);
             }
-            classifier.buildClassifier(copy);
-            classifiers.add(classifier);
+        }
+        for (double tmp : weightsTmp) {
+            weights.add(tmp / sumWeights);
         }
     }
 }
