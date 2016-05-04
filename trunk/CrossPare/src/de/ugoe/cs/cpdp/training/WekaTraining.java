@@ -47,6 +47,10 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
     @Override
     public void apply(Instances traindata) {
         classifier = setupClassifier();
+        if( classifier==null ) {
+            Console.printerr("classifier of WekaTraining is null");
+            throw new RuntimeException("classifier of WekaTraining is null");
+        }
         PrintStream errStr = System.err;
         System.setErr(new PrintStream(new NullOutputStream()));
         try {

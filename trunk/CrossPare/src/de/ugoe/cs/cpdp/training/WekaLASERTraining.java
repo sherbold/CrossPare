@@ -109,7 +109,7 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
                     double label = Double.NaN;
                     boolean allEqual = true;
                     for( Integer index : closestToTrainingInstance ) {
-                        if( label == Double.NaN ) {
+                        if( Double.isNaN(label) ) {
                             label = traindata.get(closestToTrainingInstance.get(index)).classValue();
                         }
                         else if( label!=traindata.get(closestToTrainingInstance.get(index)).classValue() ) {
@@ -128,7 +128,7 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
                 double label = Double.NaN;
                 boolean allEqual = true;
                 for( Integer index : closestInstances ) {
-                    if( label == Double.NaN ) {
+                    if( Double.isNaN(label) ) {
                         label = traindata.get(closestInstances.get(index)).classValue();
                     }
                     else if( label!=traindata.get(closestInstances.get(index)).classValue() ) {

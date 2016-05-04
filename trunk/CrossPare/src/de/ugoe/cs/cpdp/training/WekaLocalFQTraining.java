@@ -398,8 +398,6 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             cpivotindices = FMAP.getPivots();
 
             double[][] X = FMAP.getX();
-            distmat = new double[0][0];
-            System.gc();
 
             // quadtree payload generation
             ArrayList<QuadTreePayload<Instance>> qtp = new ArrayList<QuadTreePayload<Instance>>();

@@ -47,7 +47,7 @@ public class MahalanobisOutlierRemoval
      */
     @Override
     public void setParameter(String parameters) {
-        if (parameters != null && parameters != "") {
+        if (parameters != null && parameters.isEmpty()) {
             epsilon = Double.parseDouble(parameters);
         }
     }
