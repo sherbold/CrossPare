@@ -6,13 +6,7 @@ public class MySQLResultStorageTest {
 
     @Test
     public void testAddResult() throws Exception {
-        String dbHost = "localhost";
-        String dbPort = "3306";
-        String dbName = "crosspare";
-        String dbUser = "crosspare";
-        String dbPass = "benchmark";
-        
-        MySQLResultStorage storage = new MySQLResultStorage(dbHost, dbPort, dbName, dbUser, dbPass);
+        MySQLResultStorage storage = new MySQLResultStorage();
         
         ExperimentResult result = new ExperimentResult("dummy", "product-1.0", "classifier");
         result.setSizeTestData(100);
