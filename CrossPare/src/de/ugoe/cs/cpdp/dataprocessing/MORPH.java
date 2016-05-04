@@ -54,7 +54,7 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
      */
     @Override
     public void setParameter(String parameters) {
-        if (parameters != null) {
+        if (parameters != null && !parameters.equals("")) {
             String[] values = parameters.split(" ");
             if( values.length!=2 ) {
                 throw new InvalidParameterException("MORPH requires two doubles as parameter or no parameters to use default values");
