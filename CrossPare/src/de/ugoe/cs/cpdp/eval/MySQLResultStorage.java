@@ -95,9 +95,14 @@ public class MySQLResultStorage implements IResultStorage {
                              String dbPass)
     {
         try {
+            Properties connectionProperties = new Properties();
+            connectionProperties.put("user", dbUser);
+            connectionProperties.put("password", dbPass);
+            connectionProperties.put("autoReconnect", "true");
+            connectionProperties.put("maxReconnects", "10000");
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" +
-                dbName + "?" + "user=" + dbUser + "&" + "password=" + dbPass);
+                dbName, connectionProperties);
         }
         catch (ClassNotFoundException e) {
             Console.printerr("JDBC driver not found");
