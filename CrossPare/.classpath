@@ -21,5 +21,8 @@
 	<classpathentry kind="lib" path="lib/alternatingDecisionTrees.jar"/>
 	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.38-bin.jar"/>
+	<classpathentry kind="lib" path="lib/jmetal-algorithm-5.0-jar-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/jmetal-core-5.0-jar-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/jmetal-exec-5.0-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
