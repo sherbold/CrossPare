@@ -15,7 +15,6 @@
 package de.ugoe.cs.cpdp.training;
 
 import weka.classifiers.AbstractClassifier;
-import weka.classifiers.Classifier;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -27,9 +26,7 @@ import weka.core.Capabilities.Capability;
  * 
  * @author Steffen Herbold
  */
-public class FixClass extends AbstractClassifier implements ITrainingStrategy,
-    IWekaCompatibleTrainer
-{
+public class FixClass extends AbstractClassifier {
 
     private static final long serialVersionUID = 1L;
 
@@ -78,30 +75,4 @@ public class FixClass extends AbstractClassifier implements ITrainingStrategy,
     public void buildClassifier(Instances traindata) throws Exception {
         // do nothing
     }
-
-    @Override
-    public void setParameter(String parameters) {
-        try {
-            this.setOptions(parameters.split(" "));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void apply(Instances traindata) {
-        // do nothing!
-    }
-
-    @Override
-    public String getName() {
-        return "FixClass";
-    }
-
-    @Override
-    public Classifier getClassifier() {
-        return this;
-    }
-
 }
