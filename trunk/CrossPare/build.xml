@@ -23,6 +23,9 @@
 		<pathelement location="lib/ojalgo-37.1.jar" />
 		<pathelement location="lib/elki-bundle-0.7.1.jar" />
 		<pathelement location="lib/mysql-connector-java-5.1.38-bin" />
+		<pathelement location="lib/jmetal-algorithm-5.0-jar-with-dependencies.jar" />
+		<pathelement location="lib/jmetal-core-5.0-jar-with-dependencies" />
+		<pathelement location="lib/jmetal-exec-5.0-jar-with-dependencies" />
 	</path>
 
 	<!-- Initialization Targets -->
