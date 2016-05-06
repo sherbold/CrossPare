@@ -17,7 +17,6 @@ package de.ugoe.cs.cpdp.training;
 import java.util.Random;
 
 import weka.classifiers.AbstractClassifier;
-import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -27,9 +26,7 @@ import weka.core.Instances;
  * The range of class labels are hardcoded in fixedClassValues. This can later be extended to take
  * values from the XML configuration.
  */
-public class RandomClass extends AbstractClassifier implements ITrainingStrategy,
-    IWekaCompatibleTrainer
-{
+public class RandomClass extends AbstractClassifier {
 
     private static final long serialVersionUID = 1L;
 
@@ -37,28 +34,8 @@ public class RandomClass extends AbstractClassifier implements ITrainingStrategy
         { 0.0d, 1.0d };
 
     @Override
-    public void setParameter(String parameters) {
-        // do nothing, maybe take percentages for distribution later
-    }
-
-    @Override
     public void buildClassifier(Instances arg0) throws Exception {
         // do nothing
-    }
-
-    @Override
-    public Classifier getClassifier() {
-        return this;
-    }
-
-    @Override
-    public void apply(Instances traindata) {
-        // nothing to do
-    }
-
-    @Override
-    public String getName() {
-        return "RandomClass";
     }
 
     @Override
