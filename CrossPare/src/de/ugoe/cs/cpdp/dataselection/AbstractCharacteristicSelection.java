@@ -22,6 +22,7 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.Utils;
 import weka.experiment.Stats;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Normalize;
@@ -95,6 +96,15 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
                     else if ("var".equals(characteristics[j])) {
                         instanceValues[i * characteristics.length + j] = testdata.variance(j);
                     }
+                    else if ("max".equals(characteristics[j])) {
+                        instanceValues[i * characteristics.length + j] = stats.max;
+                    }
+                    else if ("min".equals(characteristics[j])) {
+                        instanceValues[i * characteristics.length + j] = stats.min;
+                    }
+                    else if ("median".equals(characteristics[j])) {
+                        instanceValues[i * characteristics.length + j] = Utils.kthSmallestValue(testdata.attributeToDoubleArray(i), testdata.size()/2);
+                    }
                     else {
                         throw new RuntimeException("Unkown distributional characteristic: " +
                             characteristics[j]);
@@ -118,7 +128,16 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
                             instanceValues[i * characteristics.length + j] = stats.stdDev;
                         }
                         else if ("var".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = testdata.variance(j);
+                            instanceValues[i * characteristics.length + j] = traindata.variance(j);
+                        }
+                        else if ("max".equals(characteristics[j])) {
+                            instanceValues[i * characteristics.length + j] = stats.max;
+                        }
+                        else if ("min".equals(characteristics[j])) {
+                            instanceValues[i * characteristics.length + j] = stats.min;
+                        }
+                        else if ("median".equals(characteristics[j])) {
+                            instanceValues[i * characteristics.length + j] = Utils.kthSmallestValue(traindata.attributeToDoubleArray(i), traindata.size()/2);
                         }
                         else {
                             throw new RuntimeException("Unkown distributional characteristic: " +
