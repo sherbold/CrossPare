@@ -63,8 +63,8 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                         if (versionFile.isFile() &&
                             instancesLoader.filenameFilter(versionFile.getName()))
                         {
-                            String versionName = versionFile.getName();
                             Instances data = instancesLoader.load(versionFile);
+                            String versionName = data.relationName();
                             versions.add(new SoftwareVersion(projectName, versionName, data));
                         }
                     }
