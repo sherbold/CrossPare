@@ -22,7 +22,7 @@
 		<pathelement location="lib/epsilon-1.2-kitchensink.jar" />
 		<pathelement location="lib/org.antlr.runtime_3.1.b1_3.1.0.jar" />
 		<pathelement location="lib/org.eclipse.ocl.common_1.1.0.v20130531-0544.jar" />
-		<pathelement location="lib/org.eclipse.ocl.ecore_3.3.0.v20130520.jar" />
+		<pathelement location="lib/org.eclipse.ocl.ecore_3.3.0.v20130520-1222.jar" />
 		<pathelement location="lib/commons-math3-3.5.jar" />
 		<pathelement location="lib/ojalgo-37.1.jar" />
 		<pathelement location="lib/elki-bundle-0.7.1.jar" />
