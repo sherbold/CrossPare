@@ -83,6 +83,7 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
             new DBSCAN<DoubleVector>(EuclideanDistanceFunction.STATIC, 1.0, 10);
         Clustering<Model> clusterer = dbscan.run(db);
         Relation<DoubleVector> rel = db.getRelation(TypeUtil.DOUBLE_VECTOR_FIELD);
+        int firstInternalIndex = rel.iterDBIDs().internalGetIndex();
 
         for (Cluster<Model> cluster : clusterer.getAllClusters()) {
             // check if cluster has any training data
@@ -97,7 +98,7 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
                 for (DBIDIter clusterIter = cluster.getIDs().iter(); clusterIter
                     .valid(); clusterIter.advance())
                 {
-                    int internalIndex = clusterIter.internalGetIndex() - testdata.size() - 1;
+                    int internalIndex = clusterIter.internalGetIndex() - testdata.size() - firstInternalIndex;
                     if (internalIndex >= 0) {
                         // index belongs to a training instance
                         filteredTraindata.add(traindata.get(internalIndex));
@@ -106,7 +107,6 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
 
             }
         }
-        System.out.println(filteredTraindata.size());
 
         return filteredTraindata;
     }
