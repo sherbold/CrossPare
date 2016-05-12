@@ -14,11 +14,8 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.io.output.NullOutputStream;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.classifiers.AbstractClassifier;
@@ -45,16 +42,11 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
 
     @Override
     public void apply(Instances traindata) {
-        PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
         try {
             internalClassifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        finally {
-            System.setErr(errStr);
         }
     }
 
@@ -110,9 +102,9 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
                     boolean allEqual = true;
                     for( Integer index : closestToTrainingInstance ) {
                         if( Double.isNaN(label) ) {
-                            label = traindata.get(closestToTrainingInstance.get(index)).classValue();
+                            label = traindata.get(index).classValue();
                         }
-                        else if( label!=traindata.get(closestToTrainingInstance.get(index)).classValue() ) {
+                        else if( label!=traindata.get(index).classValue() ) {
                             allEqual = false;
                             break;
                         }
@@ -129,9 +121,9 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
                 boolean allEqual = true;
                 for( Integer index : closestInstances ) {
                     if( Double.isNaN(label) ) {
-                        label = traindata.get(closestInstances.get(index)).classValue();
+                        label = traindata.get(index).classValue();
                     }
-                    else if( label!=traindata.get(closestInstances.get(index)).classValue() ) {
+                    else if( label!=traindata.get(index).classValue() ) {
                         allEqual = false;
                         break;
                     }
