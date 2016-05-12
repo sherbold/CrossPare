@@ -71,7 +71,10 @@ public abstract class AbstractCODEP extends AbstractClassifier {
         if (codepClassifier == null) {
             throw new RuntimeException("classifier must be trained first, call to buildClassifier missing");
         }
-        return codepClassifier.classifyInstance(createInternalInstance(instance));
+        Instances tmp = new Instances(instance.dataset());
+        tmp.clear();
+        tmp.add(createInternalInstance(instance));
+        return codepClassifier.classifyInstance(tmp.firstInstance());
     }
 
     /*
