@@ -23,6 +23,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+
 import de.lmu.ifi.dbs.elki.logging.Logging.Level;
 import de.ugoe.cs.util.console.Console;
 
@@ -38,7 +42,12 @@ public class MySQLResultStorage implements IResultStorage {
     /**
      * Connection to the database
      */
-    private Connection con = null;
+    //private Connection con = null;
+    
+    /**
+     * Connection pool for the data base.
+     */
+    private MysqlDataSource connectionPool = null;
 
     /**
      * <p>
@@ -94,6 +103,11 @@ public class MySQLResultStorage implements IResultStorage {
                              String dbUser,
                              String dbPass)
     {
+        connectionPool = new MysqlDataSource();
+        connectionPool.setUser(dbUser);
+        connectionPool.setPassword(dbPass);
+        connectionPool.setUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName);
+        /*
         try {
             Properties connectionProperties = new Properties();
             connectionProperties.put("user", dbUser);
@@ -101,6 +115,7 @@ public class MySQLResultStorage implements IResultStorage {
             connectionProperties.put("autoReconnect", "true");
             connectionProperties.put("maxReconnects", "10000");
             Class.forName("com.mysql.jdbc.Driver");
+            
             con = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":" + dbPort + "/" +
                 dbName, connectionProperties);
         }
@@ -113,6 +128,7 @@ public class MySQLResultStorage implements IResultStorage {
             Console.printerr("SQLState: " + e.getSQLState());
             Console.printerr("VendorError: " + e.getErrorCode());
         }
+        */
     }
 
     /*
@@ -152,7 +168,7 @@ public class MySQLResultStorage implements IResultStorage {
 
         Statement stmt;
         try {
-            stmt = con.createStatement();
+            stmt = connectionPool.getConnection().createStatement();
             stmt.executeUpdate(sql.toString().replace("NaN", "NULL"));
         }
         catch (SQLException e) {
@@ -176,7 +192,7 @@ public class MySQLResultStorage implements IResultStorage {
         Statement stmt;
         boolean contained = false;
         try {
-            stmt = con.createStatement();
+            stmt = connectionPool.getConnection().createStatement();
             ResultSet results = stmt.executeQuery(sql);
             results.next();
             int count = results.getInt("cnt");
@@ -187,6 +203,8 @@ public class MySQLResultStorage implements IResultStorage {
             Console.printerr("SQLException: " + e.getMessage() + "\n");
             Console.printerr("SQLState: " + e.getSQLState() + "\n");
             Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+            Console.printerr("\nskipping product since we could not check if the results is available");
+            contained = true;
         }
         return contained;
     }
