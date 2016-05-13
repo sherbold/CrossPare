@@ -160,6 +160,11 @@ public class ExperimentConfiguration extends DefaultHandler {
      * indicates, if the classifier should be saved
      */
     private Boolean saveClassifier = null;
+    
+    /**
+     * number of repetitions of an experiment (to account for randomness)
+     */
+    private int repetitions = 1;
 
     /**
      * indicates, which execution strategy to choose (e.g. CrossProjectExperiment,
@@ -420,6 +425,15 @@ public class ExperimentConfiguration extends DefaultHandler {
     public boolean getSaveClassifier() {
         return saveClassifier;
     }
+    
+    /**
+     * number of repetitions of an experiment
+     *
+     * @return number of repetitions
+     */
+    public int getRepetitions() {
+        return repetitions;
+    }
 
     /**
      * returns the execution strategy
@@ -563,6 +577,9 @@ public class ExperimentConfiguration extends DefaultHandler {
             }
             else if (qName.equals("saveClassifier")) {
                 saveClassifier = true;
+            }
+            else if( qName.equals("repetitions")) {
+                repetitions = Integer.parseInt(attributes.getValue("number"));
             }
             else if (qName.equals("executionStrategy")) {
                 executionStrategy = attributes.getValue("name");

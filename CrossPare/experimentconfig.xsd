@@ -27,7 +27,7 @@
         <xs:element name="testawaretrainer" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="eval" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="storage" type="setupType" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element name="partialconfig" type="pathType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="repetitions" type="repetitionsType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -49,5 +49,8 @@
     <xs:attribute name="param" type="xs:string" />
     <xs:attribute name="method" type="xs:string" />
     <xs:attribute name="threshold" type="xs:float" />
+  </xs:complexType>
+  <xs:complexType name="repetitionsType">
+  	<xs:attribute name="number" type="xs:integer" />
   </xs:complexType>
 </xs:schema>

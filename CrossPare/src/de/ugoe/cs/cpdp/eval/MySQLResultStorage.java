@@ -161,26 +161,22 @@ public class MySQLResultStorage implements IResultStorage {
      * @see de.ugoe.cs.cpdp.eval.IResultStorage#containsResult(java.lang.String, java.lang.String)
      */
     @Override
-    public boolean containsResult(String experimentName, String productName) {
+    public int containsResult(String experimentName, String productName) {
         String sql = "SELECT COUNT(*) as cnt FROM crosspare.results WHERE configurationName=\'" +
             experimentName + "\' AND productName=\'" + productName + "\';";
         Statement stmt;
-        boolean contained = false;
         try {
             stmt = connectionPool.getConnection().createStatement();
             ResultSet results = stmt.executeQuery(sql);
             results.next();
-            int count = results.getInt("cnt");
-            contained = count > 0;
+            return results.getInt("cnt");
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: \n");
             Console.printerr("SQLException: " + e.getMessage() + "\n");
             Console.printerr("SQLState: " + e.getSQLState() + "\n");
             Console.printerr("VendorError: " + e.getErrorCode() + "\n");
-            Console.printerr("\nskipping product since we could not check if the results is available");
-            contained = true;
+            return 0;
         }
-        return contained;
     }
 }
