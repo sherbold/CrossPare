@@ -45,6 +45,7 @@ public class Runner {
     public static void main(String[] args) {
         new TextConsole(Level.FINE);
         final int concurrentThreads = Runtime.getRuntime().availableProcessors();
+        Console.traceln(Level.FINE, "exuection max " + concurrentThreads + " at the same time");
         final ExecutorService threadPool = Executors.newFixedThreadPool(concurrentThreads);
         for (String arg : args) {
             File file = new File(arg);
