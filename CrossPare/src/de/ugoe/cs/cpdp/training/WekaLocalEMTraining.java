@@ -14,15 +14,12 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
-
-import org.apache.commons.io.output.NullOutputStream;
 
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
@@ -58,16 +55,11 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
 
     @Override
     public void apply(Instances traindata) {
-        PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
         try {
             classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        finally {
-            System.setErr(errStr);
         }
     }
 

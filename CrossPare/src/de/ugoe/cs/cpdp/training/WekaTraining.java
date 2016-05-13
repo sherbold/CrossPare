@@ -14,10 +14,7 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import java.io.PrintStream;
 import java.util.logging.Level;
-
-import org.apache.commons.io.output.NullOutputStream;
 
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.rules.ZeroR;
@@ -51,8 +48,6 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
             Console.printerr("classifier of WekaTraining is null");
             throw new RuntimeException("classifier of WekaTraining is null");
         }
-        PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
         try {
             if (classifier == null) {
                 Console.traceln(Level.WARNING, String.format("classifier null!"));
@@ -75,9 +70,6 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
             else {
                 throw new RuntimeException(e);
             }
-        }
-        finally {
-            System.setErr(errStr);
         }
     }
 }
