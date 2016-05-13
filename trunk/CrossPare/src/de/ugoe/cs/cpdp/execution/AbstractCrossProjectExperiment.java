@@ -147,12 +147,18 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
         boolean writeHeader = true;
         int versionCount = 1;
         int testVersionCount = 0;
+        int numTrainers = 0;
 
         for (SoftwareVersion testVersion : versions) {
             if (isVersion(testVersion, config.getTestVersionFilters())) {
                 testVersionCount++;
             }
         }
+        
+        numTrainers += config.getSetWiseTrainers().size();
+        numTrainers += config.getSetWiseTestdataAwareTrainers().size();
+        numTrainers += config.getTrainers().size();
+        numTrainers += config.getTestAwareTrainers().size();
 
         // sort versions
         Collections.sort(versions);
@@ -163,7 +169,8 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                 String.format("[%s] [%02d/%02d] %s: starting",
                                               config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
-                if (resultsAvailable(testVersion)) {
+                int numResultsAvailable = resultsAvailable(testVersion);
+                if (numResultsAvailable >= numTrainers*config.getRepetitions()) {
                     Console.traceln(Level.INFO,
                                     String.format(
                                                   "[%s] [%02d/%02d] %s: results already available; skipped",
@@ -338,13 +345,16 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
         return result;
     }
 
-    private boolean resultsAvailable(SoftwareVersion version) {
+    private int resultsAvailable(SoftwareVersion version) {
         if (config.getResultStorages().isEmpty()) {
-            return false;
+            return 0;
         }
-        boolean available = true;
+        int available = Integer.MAX_VALUE;
         for (IResultStorage storage : config.getResultStorages()) {
-            available &= storage.containsResult(config.getExperimentName(), version.getVersion());
+            int curAvailable = storage.containsResult(config.getExperimentName(), version.getVersion());
+            if( curAvailable<available ) {
+                available = curAvailable;
+            }
         }
         return available;
     }

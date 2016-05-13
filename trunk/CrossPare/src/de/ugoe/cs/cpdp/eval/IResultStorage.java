@@ -42,8 +42,7 @@ public interface IResultStorage {
      *            name of the experiment
      * @param productName
      *            name of the product
-     * @return true of the results ofr the given product and experiment are contained in the result
-     *         storage
+     * @return number of contained resultsfor the given product and experiment
      */
-    public boolean containsResult(String experimentName, String productName);
+    public int containsResult(String experimentName, String productName);
 }
