@@ -16,14 +16,11 @@ package de.ugoe.cs.cpdp.eval;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import org.apache.commons.dbcp2.BasicDataSource;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
