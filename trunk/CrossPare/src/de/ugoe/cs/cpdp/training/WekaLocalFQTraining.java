@@ -14,7 +14,6 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +21,6 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
-
-import org.apache.commons.io.output.NullOutputStream;
 
 import de.ugoe.cs.cpdp.training.QuadTree;
 import de.ugoe.cs.util.console.Console;
@@ -65,16 +62,11 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
 
     @Override
     public void apply(Instances traindata) {
-        PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
         try {
             classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        finally {
-            System.setErr(errStr);
         }
     }
 

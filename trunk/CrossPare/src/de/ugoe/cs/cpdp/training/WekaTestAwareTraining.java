@@ -14,10 +14,7 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import java.io.PrintStream;
 import java.util.logging.Level;
-
-import org.apache.commons.io.output.NullOutputStream;
 
 import de.ugoe.cs.cpdp.wekaclassifier.ITestAwareClassifier;
 import de.ugoe.cs.util.console.Console;
@@ -34,8 +31,6 @@ public class WekaTestAwareTraining extends WekaBaseTraining implements ITestAwar
             throw new RuntimeException("classifier must implement the ITestAwareClassifier interface in order to be used as TestAwareTrainingStrategy");
         }
         ((ITestAwareClassifier) classifier).setTestdata(testdata);
-        PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
         try {
             if (classifier == null) {
                 Console.traceln(Level.WARNING, String.format("classifier null!"));
@@ -58,9 +53,6 @@ public class WekaTestAwareTraining extends WekaBaseTraining implements ITestAwar
             else {
                 throw new RuntimeException(e);
             }
-        }
-        finally {
-            System.setErr(errStr);
         }
     }
 }

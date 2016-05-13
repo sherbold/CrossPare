@@ -14,14 +14,12 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections4.list.SetUniqueList;
-import org.apache.commons.io.output.NullOutputStream;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
@@ -59,16 +57,11 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
 
     @Override
     public void apply(SetUniqueList<Instances> traindataSet) {
-        PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
         try {
             classifier.buildClassifier(traindataSet);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        finally {
-            System.setErr(errStr);
         }
     }
 
