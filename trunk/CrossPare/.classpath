@@ -25,5 +25,6 @@
 	<classpathentry kind="lib" path="lib/probabilisticSignificanceAE-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jgap.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-dbcp2-2.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
