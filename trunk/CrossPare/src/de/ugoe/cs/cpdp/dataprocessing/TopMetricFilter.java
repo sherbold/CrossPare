@@ -74,6 +74,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
 
     private void determineTopKAttributes(Instances testdata, SetUniqueList<Instances> traindataSet) throws Exception {
         Integer[] counts = new Integer[traindataSet.get(0).numAttributes()-1];
+        IntStream.range(0,counts.length).forEach(val -> counts[val] = 0);
         for( Instances traindata : traindataSet ) {
             J48 decisionTree = new J48();
             decisionTree.buildClassifier(traindata);
@@ -81,11 +82,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
             for( int j=0; j<traindata.numAttributes(); j++) {
                 if(j!=traindata.classIndex()){
                     if( decisionTree.toString().contains(traindata.attribute(j).name()) ) {
-                        if( counts[k]==null ){
-                            counts[k] = 1;
-                        } else {
-                            counts[k] = counts[k]+1;
-                        }
+                        counts[k] = counts[k]+1;
                     }
                     k++;
                 }
