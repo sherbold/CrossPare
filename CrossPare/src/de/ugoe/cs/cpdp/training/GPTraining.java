@@ -1,5 +1,6 @@
 package de.ugoe.cs.cpdp.training;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections4.list.SetUniqueList;
@@ -46,7 +47,7 @@ import org.jgap.util.CloneException;
  */
 public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrainer  {
     
-    private GPVClassifier classifier = new GPVClassifier();
+    private GPVVClassifier classifier = new GPVVClassifier();
     
     private int populationSize = 1000;
     private int initMinDepth = 2;
@@ -341,7 +342,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     
     /**
      * GP Multiple Data Sets Validation-Voting Classifier
-     *
+     * 
+     * As the GP Multiple Data Sets Validation Classifier
+     * But here we do keep a model candidate for each training set which may later vote
      *
      */
     public class GPVVClassifier extends GPVClassifier {
@@ -359,23 +362,50 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             // each classifier is trained with one project from the set
             // then is evaluated on the rest
             for(int i=0; i < traindataSet.size(); i++) {
-                Classifier classifier = new GPRun();
                 
-                // one project is training data
-                classifier.buildClassifier(traindataSet.get(i));
+                // candidates we get out of evaluation
+                LinkedList<Classifier> candidates = new LinkedList<>();
                 
-                double[] errors;
+                // 200 runs
                 
-                // rest of the set is evaluation data, we evaluate now
-                for(int j=0; j < traindataSet.size(); j++) {
-                    if(j != i) {
-                        // if type1 and type2 errors are < 0.5 we allow the model in the final voting
-                        errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
-                        if((errors[0] / traindataSet.get(j).numInstances()) < 0.5 && (errors[0] / traindataSet.get(j).numInstances()) < 0.5) {
-                            classifiers.add(classifier);                            
+                for(int k=0; k < 200; k++) {
+                    Classifier classifier = new GPRun();
+                    
+                    // one project is training data
+                    classifier.buildClassifier(traindataSet.get(i));
+                    
+                    double[] errors;
+                    // rest of the set is evaluation data, we evaluate now
+                    for(int j=0; j < traindataSet.size(); j++) {
+                        if(j != i) {
+                            // if type1 and type2 errors are < 0.5 we allow the model in the final voting
+                            errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
+                            if((errors[0] / traindataSet.get(j).numInstances()) < 0.5 && (errors[0] / traindataSet.get(j).numInstances()) < 0.5) {
+                                candidates.add(classifier);                            
+                            }
                         }
                     }
                 }
+                
+                // now after the evaluation we do a model selection where only one model remains for the given training data
+                double smallest_error_count = Double.MAX_VALUE;
+                double[] errors;
+                Classifier best = null;
+                for(int ii=0; ii < candidates.size(); ii++) {
+                    for(int j=0; j < traindataSet.size(); j++) {
+                        if(j != i) {
+                            errors = this.evaluate((GPRun)candidates.get(ii), traindataSet.get(j));
+                            
+                            if(errors[0]+errors[1] < smallest_error_count) {
+                                best = candidates.get(ii);
+                            }
+                        }
+                    }
+                }
+                
+                // now we have the best classifier for this training data
+                classifiers.add(best);
+                
             }
         }
         
@@ -406,7 +436,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 }
             }
             
-            if(vote_positive >= 3) {
+            if(vote_positive >= (classifiers.size()/2)) {
                 return 1.0;
             }else {
                 return 0.0;
@@ -429,8 +459,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
      */
     public class GPVClassifier extends AbstractClassifier {
         
+        private List<Classifier> classifiers = null;
         private Classifier best = null;
-        
+
         private static final long serialVersionUID = 3708714057579101522L;
 
 
@@ -448,21 +479,68 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             // each classifier is trained with one project from the set
             // then is evaluated on the rest
             for(int i=0; i < traindataSet.size(); i++) {
-                Classifier classifier = new GPRun();
                 
-                // one project is training data
-                classifier.buildClassifier(traindataSet.get(i));
+                // candidates we get out of evaluation
+                LinkedList<Classifier> candidates = new LinkedList<>();
                 
-                // rest of the set is evaluation data, we evaluate now
-                double smallest_error_count = Double.MAX_VALUE;
-                double[] errors;
-                for(int j=0; j < traindataSet.size(); j++) {
-                    if(j != i) {
-                        errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
-                        if(errors[0]+errors[1] < smallest_error_count) {
-                            this.best = classifier;
+                // 200 runs
+                for(int k=0; k < 200; k++) {
+                    Classifier classifier = new GPRun();
+                    
+                    // one project is training data
+                    classifier.buildClassifier(traindataSet.get(i));
+                    
+                    double[] errors;
+                    
+                    // rest of the set is evaluation data, we evaluate now
+                    for(int j=0; j < traindataSet.size(); j++) {
+                        if(j != i) {
+                            // if type1 and type2 errors are < 0.5 we allow the model in the final voting
+                            errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
+                            if((errors[0] / traindataSet.get(j).numInstances()) < 0.5 && (errors[0] / traindataSet.get(j).numInstances()) < 0.5) {
+                                candidates.add(classifier);                            
+                            }
                         }
                     }
+                }
+                
+                // now after the evaluation we do a model selection where only one model remains per training data set
+                // from that we chose the best model
+                
+                // now after the evaluation we do a model selection where only one model remains for the given training data
+                double smallest_error_count = Double.MAX_VALUE;
+                double[] errors;
+                Classifier best = null;
+                for(int ii=0; ii < candidates.size(); ii++) {
+                    for(int j=0; j < traindataSet.size(); j++) {
+                        if(j != i) {
+                            errors = this.evaluate((GPRun)candidates.get(ii), traindataSet.get(j));
+                            
+                            if(errors[0]+errors[1] < smallest_error_count) {
+                                best = candidates.get(ii);
+                            }
+                        }
+                    }
+                }
+                
+                // now we have the best classifier for this training data
+                classifiers.add(best);
+            }
+            
+            // now determine the best classifier for all training data
+            double smallest_error_count = Double.MAX_VALUE;
+            double error_count;
+            double errors[];
+            for(int j=0; j < classifiers.size(); j++) {
+                error_count = 0;
+                Classifier current = classifiers.get(j);
+                for(int i=0; i < traindataSet.size(); i++) {
+                    errors = this.evaluate((GPRun)current, traindataSet.get(i));
+                    error_count = errors[0] + errors[1];
+                }
+                
+                if(error_count < smallest_error_count) {
+                    best = current;
                 }
             }
         }
@@ -471,7 +549,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         public void buildClassifier(Instances traindata) throws Exception {
             final Classifier classifier = new GPRun();
             classifier.buildClassifier(traindata);
-            best = classifier;
+            classifiers.add(classifier);
         }
         
         public double[] evaluate(GPRun classifier, Instances evalData) {
