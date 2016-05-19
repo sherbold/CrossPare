@@ -1,5 +1,7 @@
 package de.ugoe.cs.cpdp.training;
 
+import java.util.List;
+
 import org.apache.commons.collections4.list.SetUniqueList;
 
 import weka.classifiers.AbstractClassifier;
@@ -7,7 +9,7 @@ import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 import org.apache.commons.lang3.ArrayUtils;
-
+import org.jgap.Configuration;
 import org.jgap.InvalidConfigurationException;
 import org.jgap.gp.CommandGene;
 import org.jgap.gp.GPProblem;
@@ -33,6 +35,8 @@ import org.jgap.gp.terminal.Variable;
 import org.jgap.gp.MathCommand;
 import org.jgap.util.ICloneable;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
+
 import org.jgap.gp.impl.ProgramChromosome;
 import org.jgap.util.CloneException;
 
@@ -42,7 +46,7 @@ import org.jgap.util.CloneException;
  */
 public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrainer  {
     
-    private final GPClassifier classifier = new GPClassifier();
+    private GPVClassifier classifier = new GPVClassifier();
     
     private int populationSize = 1000;
     private int initMinDepth = 2;
@@ -51,30 +55,27 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     
     @Override
     public void setParameter(String parameters) {
-        System.out.println("setParameters");
+        // todo, which type of classifier? GPV, GPVV?
+        // more config population size, etc.
+        // todo: voting for gpvv only 3 votes necessary?
     }
 
     @Override
     public void apply(SetUniqueList<Instances> traindataSet) {
-        System.out.println("apply");
-        for (Instances traindata : traindataSet) {
-            try {
-                classifier.buildClassifier(traindata);
-            }catch(Exception e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            classifier.buildClassifier(traindataSet);
+        }catch(Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public String getName() {
-        System.out.println("getName");
         return "GPTraining";
     }
 
     @Override
     public Classifier getClassifier() {
-        System.out.println("getClassifier");
         return this.classifier;
     }
     
@@ -84,15 +85,13 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         
         public InstanceData(Instances instances) {
             this.instances_x = new double[instances.numInstances()][instances.numAttributes()-1];
-
+            this.instances_y = new boolean[instances.numInstances()];
+            
             Instance current;
             for(int i=0; i < this.instances_x.length; i++) {
                 current = instances.get(i);
-                for(int j=0; j < this.instances_x[0].length; j++) {
-                    this.instances_x[i][j] = current.value(j);
-                }
-                
-                this.instances_y[i] = current.stringValue(instances.classIndex()).equals("Y");
+                this.instances_x[i] = WekaUtils.instanceValues(current);
+                this.instances_y[i] = 1.0 == current.classValue();
             }
         }
         
@@ -104,9 +103,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         }
     }
     
-    public class GPClassifier extends AbstractClassifier {
-
-        private static final long serialVersionUID = 3708714057579101522L;
+    // one gprun, we want several for voting
+    public class GPRun extends AbstractClassifier {
+        private static final long serialVersionUID = -4250422550107888789L;
 
         private int populationSize = 1000;
         private int initMinDepth = 2;
@@ -125,47 +124,24 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             this.maxGenerations = maxGenerations;
         }
         
-        @Override
-        public void buildClassifier(Instances instances) throws Exception {
-            // load instances into double[][] and boolean[]
-            InstanceData train = new InstanceData(instances);
-            this.problem = new CrossPareGP(train.getX(), train.getY(), this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize);
-            
-            this.gp = problem.create();
-            this.gp.evolve(this.maxGenerations);
+        public GPGenotype getGp() {
+            return this.gp;
         }
         
-        @Override
-        public double classifyInstance(Instance instance) {
-            Variable[] vars = ((CrossPareGP)this.problem).getVariables();
-            
-            double[][] x = new double[1][instance.numAttributes()-1];
-            boolean[] y = new boolean[1];
-            
-            for(int i = 0; i < instance.numAttributes()-1; i++) {
-                x[0][i] = instance.value(i);
-            }
-            y[0] = instance.stringValue(instance.classIndex()).equals("Y");
-            
-            CrossPareFitness test = new CrossPareFitness(vars, x, y);
-            IGPProgram fitest = gp.getAllTimeBest();
-            
-            double sfitness = test.evaluate(fitest);
-            
-            // korrekt sind wir wenn wir geringe fitness haben?
-            if(sfitness < 0.5) {
-                return 1.0;
-            }
-            return 0;
+        public Variable[] getVariables() {
+            return ((CrossPareGP)this.problem).getVariables();
+        }
+        
+        public void setEvaldata(Instances testdata) {
             
         }
-
+        
         /**
          * GPProblem implementation
          */
         class CrossPareGP extends GPProblem {
             
-            private static final long serialVersionUID = 7526472295622776147L;
+            //private static final long serialVersionUID = 7526472295622776147L;
 
             private double[][] instances;
             private boolean[] output;
@@ -174,14 +150,17 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
             public CrossPareGP(double[][] instances, boolean[] output, int populationSize, int minInitDept, int maxInitDepth, int tournamentSize) throws InvalidConfigurationException {
                 super(new GPConfiguration());
-
+                
                 this.instances = instances;
                 this.output = output;
 
+                Configuration.reset();
                 GPConfiguration config = this.getGPConfiguration();
-
+                //config.reset();
+                
                 this.x = new Variable[this.instances[0].length];
 
+               
                 for(int j=0; j < this.x.length; j++) {
                     this.x[j] = Variable.create(config, "X"+j, CommandGene.DoubleClass);    
                 }
@@ -226,7 +205,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 // Arguments of result-producing chromosome: none
                 Class[][] argTypes = { {} };
 
-                // variables + functions
+                // variables + functions, we set the variables with the values of the instances here
                 CommandGene[] vars = new CommandGene[this.instances[0].length];
                 for(int j=0; j < this.instances[0].length; j++) {
                     vars[j] = this.x[j];
@@ -255,6 +234,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 return result;
             }
         }
+
         
         /**
          * Fitness function
@@ -316,8 +296,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         this.x[j].set(this.instances[i][j]);
                     }
 
-                    // value gives us a double, if > 0.5 we set this instance as faulty
-                    value = program.execute_double(0, NO_ARGS);
+                    // value gives us a double, if < 0.5 we set this instance as faulty
+                    value = program.execute_double(0, NO_ARGS);  // todo: test with this.x
 
                     if(value < 0.5) {
                         if(this.output[i] != true) {
@@ -336,7 +316,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 //System.out.println("pfitness: " + pfitness);
 
                 // number of nodes in the programm, if lower then 10 we assign sFitness of 10
+                // we can set metadata with setProgramData to save this
                 if(program.getChromosome(0).getSize(0) < 10) {
+                    program.setApplicationData(10.0f);
                     this.sfitness = 10.0f;
                     //System.out.println("wenige nodes: "+program.getChromosome(0).getSize(0));
                     //System.out.println(program.toStringNorm(0));
@@ -345,6 +327,211 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 // sfitness counts the number of nodes in the tree, if it is lower than 10 fitness is increased by 10
 
                 return pfitness;
+            }
+        }
+
+        @Override
+        public void buildClassifier(Instances traindata) throws Exception {
+            InstanceData train = new InstanceData(traindata);            
+            this.problem = new CrossPareGP(train.getX(), train.getY(), this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize);
+            this.gp = problem.create();
+            this.gp.evolve(this.maxGenerations);
+        }
+    }
+    
+    /**
+     * GP Multiple Data Sets Validation-Voting Classifier
+     *
+     *
+     */
+    public class GPVVClassifier extends GPVClassifier {
+        
+        private List<Classifier> classifiers = null;
+        
+        @Override
+        public void buildClassifier(Instances arg0) throws Exception {
+            // TODO Auto-generated method stub
+            
+        }
+        
+        public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
+
+            // each classifier is trained with one project from the set
+            // then is evaluated on the rest
+            for(int i=0; i < traindataSet.size(); i++) {
+                Classifier classifier = new GPRun();
+                
+                // one project is training data
+                classifier.buildClassifier(traindataSet.get(i));
+                
+                double[] errors;
+                
+                // rest of the set is evaluation data, we evaluate now
+                for(int j=0; j < traindataSet.size(); j++) {
+                    if(j != i) {
+                        // if type1 and type2 errors are < 0.5 we allow the model in the final voting
+                        errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
+                        if((errors[0] / traindataSet.get(j).numInstances()) < 0.5 && (errors[0] / traindataSet.get(j).numInstances()) < 0.5) {
+                            classifiers.add(classifier);                            
+                        }
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Use the remaining classifiers for our voting
+         */
+        @Override
+        public double classifyInstance(Instance instance) {
+            
+            int vote_positive = 0;
+            int vote_negative = 0;
+            
+            for (int i = 0; i < classifiers.size(); i++) {
+                Classifier classifier = classifiers.get(i);
+                
+                GPGenotype gp = ((GPRun)classifier).getGp();
+                Variable[] vars = ((GPRun)classifier).getVariables();
+                
+                IGPProgram fitest = gp.getAllTimeBest();  // all time fitest
+                for(int j = 0; j < instance.numAttributes()-1; j++) {
+                   vars[j].set(instance.value(j));
+                }
+                
+                if(fitest.execute_double(0, vars) < 0.5) {
+                    vote_positive += 1;
+                }else {
+                    vote_negative += 1;
+                }
+            }
+            
+            if(vote_positive >= 3) {
+                return 1.0;
+            }else {
+                return 0.0;
+            }
+        }
+    }
+    
+    /**
+     * GP Multiple Data Sets Validation Classifier
+     * 
+     *
+     * for one test data set:
+     *   for one in 6 possible training data sets:
+     *     For 200 GP Runs:
+     *       train one Classifier with this training data
+     *       then evaluate the classifier with the remaining project
+     *       if the candidate model performs bad (error type1 or type2 > 50%) discard it
+     * for the remaining model candidates the best one is used
+     *
+     */
+    public class GPVClassifier extends AbstractClassifier {
+        
+        private Classifier best = null;
+        
+        private static final long serialVersionUID = 3708714057579101522L;
+
+
+        /** Build the GP Multiple Data Sets Validation Classifier
+         * 
+         * - Traindata one of the Instances of the Set (which one? The firsT? as it is a list?)
+         * - Testdata one other Instances of the Set (the next one? chose randomly?)
+         * - Evaluation the rest of the instances
+         * 
+         * @param traindataSet
+         * @throws Exception
+         */
+        public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
+
+            // each classifier is trained with one project from the set
+            // then is evaluated on the rest
+            for(int i=0; i < traindataSet.size(); i++) {
+                Classifier classifier = new GPRun();
+                
+                // one project is training data
+                classifier.buildClassifier(traindataSet.get(i));
+                
+                // rest of the set is evaluation data, we evaluate now
+                double smallest_error_count = Double.MAX_VALUE;
+                double[] errors;
+                for(int j=0; j < traindataSet.size(); j++) {
+                    if(j != i) {
+                        errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
+                        if(errors[0]+errors[1] < smallest_error_count) {
+                            this.best = classifier;
+                        }
+                    }
+                }
+            }
+        }
+        
+        @Override
+        public void buildClassifier(Instances traindata) throws Exception {
+            final Classifier classifier = new GPRun();
+            classifier.buildClassifier(traindata);
+            best = classifier;
+        }
+        
+        public double[] evaluate(GPRun classifier, Instances evalData) {
+            GPGenotype gp = classifier.getGp();
+            Variable[] vars = classifier.getVariables();
+            
+            IGPProgram fitest = gp.getAllTimeBest();  // selects the fitest of all not just the last generation
+            
+            double classification;
+            int error_type1 = 0;
+            int error_type2 = 0;
+            int number_instances = evalData.numInstances();
+            
+            for(Instance instance: evalData) {
+                
+                for(int i = 0; i < instance.numAttributes()-1; i++) {
+                    vars[i].set(instance.value(i));
+                }
+                
+                classification = fitest.execute_double(0, vars);
+                
+                // classification < 0.5 we say defective
+                if(classification < 0.5) {
+                    if(instance.classValue() != 1.0) {
+                        error_type1 += 1;
+                    }
+                }else {
+                    if(instance.classValue() == 1.0) {
+                        error_type2 += 1;
+                    }
+                }
+            }
+            
+            double et1_per = error_type1 / number_instances;
+            double et2_per = error_type2 / number_instances; 
+            
+            // return some kind of fehlerquote?
+            //return (error_type1 + error_type2) / number_instances;
+            return new double[]{error_type1, error_type2};
+        }
+        
+        /**
+         * Use only the best classifier from our evaluation phase
+         */
+        @Override
+        public double classifyInstance(Instance instance) {
+            GPGenotype gp = ((GPRun)best).getGp();
+            Variable[] vars = ((GPRun)best).getVariables();
+            
+            IGPProgram fitest = gp.getAllTimeBest();  // all time fitest
+            for(int i = 0; i < instance.numAttributes()-1; i++) {
+               vars[i].set(instance.value(i));
+            }
+            
+            double classification = fitest.execute_double(0, vars);
+            
+            if(classification < 0.5) {
+                return 1.0;
+            }else {
+                return 0.0;
             }
         }
     }
