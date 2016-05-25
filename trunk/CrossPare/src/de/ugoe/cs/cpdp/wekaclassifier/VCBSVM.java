@@ -333,6 +333,9 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      * @return sampled data
      */
     private Instances weightedResample(final Instances data, final int size) {
+        if( data.isEmpty() ) {
+            return data;
+        }
         final Instances resampledData = new Instances(data);
         resampledData.clear();
         double sumOfWeights = data.sumOfWeights();
