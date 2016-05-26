@@ -43,22 +43,41 @@ import org.jgap.util.CloneException;
 
 /**
  * Genetic Programming Trainer
+ * 
  *
+ * - GPRun is a Run of a complete Genetic Programm Evolution, we want several complete runs.
+ * - GPVClassifier is the Validation Classifier
+ * - GPVVClassifier is the Validation-Voting Classifier
+ * 
+ * config: <setwisetrainer name="GPTraining" param="GPVVClassifier" />
  */
 public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrainer  {
     
-    private GPVVClassifier classifier = new GPVVClassifier();
+    private GPVClassifier classifier = null;
     
     private int populationSize = 1000;
     private int initMinDepth = 2;
     private int initMaxDepth = 6;
     private int tournamentSize = 7;
-    
+    private int maxGenerations = 50;
+    private double errorType2Weight = 1;
+    private int numberRuns = 200;  // 200 in the paper
+    private int maxDepth = 20;  // max depth within one program
+    private int maxNodes = 100;  // max nodes within one program
+
     @Override
     public void setParameter(String parameters) {
-        // todo, which type of classifier? GPV, GPVV?
-        // more config population size, etc.
-        // todo: voting for gpvv only 3 votes necessary?
+        if(parameters.equals("GPVVClassifier")) {
+            this.classifier = new GPVVClassifier();
+            ((GPVVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
+        }else if(parameters.equals("GPVClassifier")) {
+            this.classifier = new GPVClassifier();
+            ((GPVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
+        }else {
+            // default
+            this.classifier = new GPVVClassifier();
+            ((GPVVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
+        }
     }
 
     @Override
@@ -104,25 +123,34 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         }
     }
     
-    // one gprun, we want several for voting
+    /**
+     * One Run of a GP Classifier
+     * we want several runs to mitigate problems with local maxima/minima 
+     */
     public class GPRun extends AbstractClassifier {
         private static final long serialVersionUID = -4250422550107888789L;
 
-        private int populationSize = 1000;
-        private int initMinDepth = 2;
-        private int initMaxDepth = 6;
-        private int tournamentSize = 7;
-        private int maxGenerations = 50;
+        private int populationSize;
+        private int initMinDepth;
+        private int initMaxDepth;
+        private int tournamentSize;
+        private int maxGenerations;
+        private double errorType2Weight;
+        private int maxDepth;
+        private int maxNodes;
         
         private GPGenotype gp;
         private GPProblem problem;
         
-        public void configure(int populationSize, int initMinDepth, int initMaxDepth, int tournamentSize, int maxGenerations) {
+        public void configure(int populationSize, int initMinDepth, int initMaxDepth, int tournamentSize, int maxGenerations, double errorType2Weight, int maxDepth, int maxNodes) {
             this.populationSize = populationSize;
             this.initMinDepth = initMinDepth;
             this.initMaxDepth = initMaxDepth;
             this.tournamentSize = tournamentSize;
             this.maxGenerations = maxGenerations;
+            this.errorType2Weight = errorType2Weight;
+            this.maxDepth = maxDepth;
+            this.maxNodes = maxNodes;
         }
         
         public GPGenotype getGp() {
@@ -132,35 +160,39 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         public Variable[] getVariables() {
             return ((CrossPareGP)this.problem).getVariables();
         }
-        
-        public void setEvaldata(Instances testdata) {
-            
+
+        @Override
+        public void buildClassifier(Instances traindata) throws Exception {
+            InstanceData train = new InstanceData(traindata);            
+            this.problem = new CrossPareGP(train.getX(), train.getY(), this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.errorType2Weight, this.maxDepth, this.maxNodes);
+            this.gp = problem.create();
+            this.gp.evolve(this.maxGenerations);
         }
         
         /**
          * GPProblem implementation
          */
         class CrossPareGP extends GPProblem {
-            
-            //private static final long serialVersionUID = 7526472295622776147L;
-
             private double[][] instances;
             private boolean[] output;
 
+            private int maxDepth;
+            private int maxNodes;
+            
             private Variable[] x;
 
-            public CrossPareGP(double[][] instances, boolean[] output, int populationSize, int minInitDept, int maxInitDepth, int tournamentSize) throws InvalidConfigurationException {
+            public CrossPareGP(double[][] instances, boolean[] output, int populationSize, int minInitDept, int maxInitDepth, int tournamentSize, double errorType2Weight, int maxDepth, int maxNodes) throws InvalidConfigurationException {
                 super(new GPConfiguration());
                 
                 this.instances = instances;
                 this.output = output;
+                this.maxDepth = maxDepth;
+                this.maxNodes = maxNodes;
 
                 Configuration.reset();
                 GPConfiguration config = this.getGPConfiguration();
-                //config.reset();
                 
                 this.x = new Variable[this.instances[0].length];
-
                
                 for(int j=0; j < this.x.length; j++) {
                     this.x[j] = Variable.create(config, "X"+j, CommandGene.DoubleClass);    
@@ -169,25 +201,19 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator()); // smaller fitness is better
                 //config.setGPFitnessEvaluator(new DefaultGPFitnessEvaluator()); // bigger fitness is better
 
-                // from paper: 2-6
                 config.setMinInitDepth(minInitDept);
                 config.setMaxInitDepth(maxInitDepth);
-
-                // missing from paper
-                // config.setMaxDepth(20);
-
+                
                 config.setCrossoverProb((float)0.60);
                 config.setReproductionProb((float)0.10);
                 config.setMutationProb((float)0.30);
 
                 config.setSelectionMethod(new TournamentSelector(tournamentSize));
 
-                // from paper 1000
                 config.setPopulationSize(populationSize);
 
-                // BranchTypingCross
                 config.setMaxCrossoverDepth(4);
-                config.setFitnessFunction(new CrossPareFitness(this.x, this.instances, this.output));
+                config.setFitnessFunction(new CrossPareFitness(this.x, this.instances, this.output, errorType2Weight));
                 config.setStrictProgramCreation(true);
             }
 
@@ -229,8 +255,11 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 CommandGene[][] nodeSets = {
                     comb,
                 };
-
-                GPGenotype result = GPGenotype.randomInitialGenotype(config, types, argTypes, nodeSets, 20, true); // 20 = maxNodes, true = verbose output
+                
+                // we only have one chromosome so this suffices
+                int minDepths[] = {config.getMinInitDepth()};
+                int maxDepths[] = {this.maxDepth};
+                GPGenotype result = GPGenotype.randomInitialGenotype(config, types, argTypes, nodeSets, minDepths, maxDepths, this.maxNodes, false); // 40 = maxNodes, true = verbose output
 
                 return result;
             }
@@ -249,27 +278,28 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             private double[][] instances;
             private boolean[] output;
 
-            private double error_type2_weight = 1.0;
+            private double errorType2Weight = 1.0;
 
             // needed in evaluate
-            private Object[] NO_ARGS = new Object[0];
+            //private Object[] NO_ARGS = new Object[0];
 
             private double sfitness = 0.0f;
-            private int error_type1 = 0;
-            private int error_type2 = 0;
+            private int errorType1 = 0;
+            private int errorType2 = 0;
 
-            public CrossPareFitness(Variable[] x, double[][] instances, boolean[] output) {
+            public CrossPareFitness(Variable[] x, double[][] instances, boolean[] output, double errorType2Weight) {
                 this.x = x;
                 this.instances = instances;
                 this.output = output;
+                this.errorType2Weight = errorType2Weight;
             }
 
             public int getErrorType1() {
-                return this.error_type1;
+                return this.errorType1;
             }
 
             public int getErrorType2() {
-                return this.error_type2;
+                return this.errorType2;
             }
 
             public double getSecondFitness() {
@@ -287,8 +317,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 double value = 0.0f;
 
                 // count classification errors
-                this.error_type1 = 0;
-                this.error_type2 = 0;
+                this.errorType1 = 0;
+                this.errorType2 = 0;
 
                 for(int i=0; i < this.instances.length; i++) {
 
@@ -298,21 +328,21 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                     }
 
                     // value gives us a double, if < 0.5 we set this instance as faulty
-                    value = program.execute_double(0, NO_ARGS);  // todo: test with this.x
+                    value = program.execute_double(0, this.x);  // todo: test with this.x
 
                     if(value < 0.5) {
                         if(this.output[i] != true) {
-                            this.error_type1 += 1;
+                            this.errorType1 += 1;
                         }
                     }else {
                         if(this.output[i] == true) {
-                            this.error_type2 += 1;
+                            this.errorType2 += 1;
                         }
                     }
                 }
 
                 // now calc pfitness
-                pfitness = (this.error_type1 + this.error_type2_weight * this.error_type2) / this.instances.length;
+                pfitness = (this.errorType1 + this.errorType2Weight * this.errorType2) / this.instances.length;
 
                 //System.out.println("pfitness: " + pfitness);
 
@@ -320,24 +350,63 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 // we can set metadata with setProgramData to save this
                 if(program.getChromosome(0).getSize(0) < 10) {
                     program.setApplicationData(10.0f);
-                    this.sfitness = 10.0f;
-                    //System.out.println("wenige nodes: "+program.getChromosome(0).getSize(0));
-                    //System.out.println(program.toStringNorm(0));
                 }
-
-                // sfitness counts the number of nodes in the tree, if it is lower than 10 fitness is increased by 10
 
                 return pfitness;
             }
         }
+        
+        /**
+         * Custom GT implementation used in the GP Algorithm.
+         */
+         public class GT extends MathCommand implements ICloneable {
+             
+             private static final long serialVersionUID = 113454184817L;
 
-        @Override
-        public void buildClassifier(Instances traindata) throws Exception {
-            InstanceData train = new InstanceData(traindata);            
-            this.problem = new CrossPareGP(train.getX(), train.getY(), this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize);
-            this.gp = problem.create();
-            this.gp.evolve(this.maxGenerations);
-        }
+             public GT(final GPConfiguration a_conf, java.lang.Class a_returnType) throws InvalidConfigurationException {
+                 super(a_conf, 2, a_returnType);
+             }
+
+             public String toString() {
+                 return "GT(&1, &2)";
+             }
+
+             public String getName() {
+                 return "GT";
+             }   
+
+             public float execute_float(ProgramChromosome c, int n, Object[] args) {
+                 float f1 = c.execute_float(n, 0, args);
+                 float f2 = c.execute_float(n, 1, args);
+
+                 float ret = 1.0f;
+                 if(f1 > f2) {
+                     ret = 0.0f;
+                 }
+
+                 return ret;
+             }
+
+             public double execute_double(ProgramChromosome c, int n, Object[] args) {
+                 double f1 = c.execute_double(n, 0, args);
+                 double f2 = c.execute_double(n, 1, args);
+
+                 double ret = 1;
+                 if(f1 > f2)  {
+                     ret = 0;
+                 }
+                 return ret;
+             }
+
+             public Object clone() {
+                 try {
+                     GT result = new GT(getGPConfiguration(), getReturnType());
+                     return result;
+                 }catch(Exception ex) {
+                     throw new CloneException(ex);
+                 }
+             }
+         }
     }
     
     /**
@@ -348,7 +417,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
      *
      */
     public class GPVVClassifier extends GPVClassifier {
-        
+
+        private static final long serialVersionUID = -654710583852839901L;
         private List<Classifier> classifiers = null;
         
         @Override
@@ -361,15 +431,16 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
             // each classifier is trained with one project from the set
             // then is evaluated on the rest
+            classifiers = new LinkedList<>();
             for(int i=0; i < traindataSet.size(); i++) {
                 
                 // candidates we get out of evaluation
                 LinkedList<Classifier> candidates = new LinkedList<>();
                 
-                // 200 runs
-                
-                for(int k=0; k < 200; k++) {
+                // number of runs
+                for(int k=0; k < this.numberRuns; k++) {
                     Classifier classifier = new GPRun();
+                    ((GPRun)classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.maxGenerations, this.errorType2Weight, this.maxDepth, this.maxNodes);
                     
                     // one project is training data
                     classifier.buildClassifier(traindataSet.get(i));
@@ -380,8 +451,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if(j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the final voting
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
-                            if((errors[0] / traindataSet.get(j).numInstances()) < 0.5 && (errors[0] / traindataSet.get(j).numInstances()) < 0.5) {
-                                candidates.add(classifier);                            
+                            if((errors[0] < 0.5) && (errors[0] < 0.5)) {
+                                candidates.add(classifier);
                             }
                         }
                     }
@@ -405,7 +476,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 
                 // now we have the best classifier for this training data
                 classifiers.add(best);
-                
             }
         }
         
@@ -416,7 +486,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         public double classifyInstance(Instance instance) {
             
             int vote_positive = 0;
-            int vote_negative = 0;
             
             for (int i = 0; i < classifiers.size(); i++) {
                 Classifier classifier = classifiers.get(i);
@@ -431,8 +500,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 
                 if(fitest.execute_double(0, vars) < 0.5) {
                     vote_positive += 1;
-                }else {
-                    vote_negative += 1;
                 }
             }
             
@@ -449,8 +516,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
      * 
      *
      * for one test data set:
-     *   for one in 6 possible training data sets:
-     *     For 200 GP Runs:
+     *   for one in X possible training data sets:
+     *     For Y GP Runs:
      *       train one Classifier with this training data
      *       then evaluate the classifier with the remaining project
      *       if the candidate model performs bad (error type1 or type2 > 50%) discard it
@@ -464,7 +531,38 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
         private static final long serialVersionUID = 3708714057579101522L;
 
+        protected int populationSize;
+        protected int initMinDepth;
+        protected int initMaxDepth;
+        protected int tournamentSize;
+        protected int maxGenerations;
+        protected double errorType2Weight;
+        protected int numberRuns;
+        protected int maxDepth;
+        protected int maxNodes;
 
+        /**
+         * Configure the GP Params and number of Runs
+         * 
+         * @param populationSize
+         * @param initMinDepth
+         * @param initMaxDepth
+         * @param tournamentSize
+         * @param maxGenerations
+         * @param errorType2Weight
+         */
+        public void configure(int populationSize, int initMinDepth, int initMaxDepth, int tournamentSize, int maxGenerations, double errorType2Weight, int numberRuns, int maxDepth, int maxNodes) {
+            this.populationSize = populationSize;
+            this.initMinDepth = initMinDepth;
+            this.initMaxDepth = initMaxDepth;
+            this.tournamentSize = tournamentSize;
+            this.maxGenerations = maxGenerations;
+            this.errorType2Weight = errorType2Weight;
+            this.numberRuns = numberRuns;
+            this.maxDepth = maxDepth;
+            this.maxNodes = maxNodes;
+        }
+        
         /** Build the GP Multiple Data Sets Validation Classifier
          * 
          * - Traindata one of the Instances of the Set (which one? The firsT? as it is a list?)
@@ -484,8 +582,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 LinkedList<Classifier> candidates = new LinkedList<>();
                 
                 // 200 runs
-                for(int k=0; k < 200; k++) {
+                for(int k=0; k < this.numberRuns; k++) {
                     Classifier classifier = new GPRun();
+                    ((GPRun)classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.maxGenerations, this.errorType2Weight, this.maxDepth, this.maxNodes);
                     
                     // one project is training data
                     classifier.buildClassifier(traindataSet.get(i));
@@ -497,7 +596,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if(j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the final voting
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
-                            if((errors[0] / traindataSet.get(j).numInstances()) < 0.5 && (errors[0] / traindataSet.get(j).numInstances()) < 0.5) {
+                            if((errors[0] < 0.5) && (errors[0] < 0.5)) {
                                 candidates.add(classifier);                            
                             }
                         }
@@ -548,6 +647,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
             final Classifier classifier = new GPRun();
+            ((GPRun)classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, this.maxDepth, this.maxNodes);
             classifier.buildClassifier(traindata);
             classifiers.add(classifier);
         }
@@ -561,7 +661,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             double classification;
             int error_type1 = 0;
             int error_type2 = 0;
-            int number_instances = evalData.numInstances();
+            int positive = 0;
+            int negative = 0;
             
             for(Instance instance: evalData) {
                 
@@ -570,6 +671,13 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 }
                 
                 classification = fitest.execute_double(0, vars);
+                
+                // we need to count the absolutes of positives for percentage
+                if(instance.classValue() == 1.0) {
+                    positive +=1;
+                }else {
+                    negative +=1;
+                }
                 
                 // classification < 0.5 we say defective
                 if(classification < 0.5) {
@@ -583,12 +691,10 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 }
             }
             
-            double et1_per = error_type1 / number_instances;
-            double et2_per = error_type2 / number_instances; 
-            
-            // return some kind of fehlerquote?
-            //return (error_type1 + error_type2) / number_instances;
-            return new double[]{error_type1, error_type2};
+            // return error types percentages for the types 
+            double et1_per = error_type1 / negative;
+            double et2_per = error_type2 / positive; 
+            return new double[]{et1_per, et2_per};
         }
         
         /**
@@ -610,59 +716,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 return 1.0;
             }else {
                 return 0.0;
-            }
-        }
-    }
-    
-    
-    /**
-    * Custom GT implementation from the paper
-    */
-    public class GT extends MathCommand implements ICloneable {
-        
-        private static final long serialVersionUID = 113454184817L;
-
-        public GT(final GPConfiguration a_conf, java.lang.Class a_returnType) throws InvalidConfigurationException {
-            super(a_conf, 2, a_returnType);
-        }
-
-        public String toString() {
-            return "GT(&1, &2)";
-        }
-
-        public String getName() {
-            return "GT";
-        }   
-
-        public float execute_float(ProgramChromosome c, int n, Object[] args) {
-            float f1 = c.execute_float(n, 0, args);
-            float f2 = c.execute_float(n, 1, args);
-
-            float ret = 1.0f;
-            if(f1 > f2) {
-                ret = 0.0f;
-            }
-
-            return ret;
-        }
-
-        public double execute_double(ProgramChromosome c, int n, Object[] args) {
-            double f1 = c.execute_double(n, 0, args);
-            double f2 = c.execute_double(n, 1, args);
-
-            double ret = 1;
-            if(f1 > f2)  {
-                ret = 0;
-            }
-            return ret;
-        }
-
-        public Object clone() {
-            try {
-                GT result = new GT(getGPConfiguration(), getReturnType());
-                return result;
-            }catch(Exception ex) {
-                throw new CloneException(ex);
             }
         }
     }
