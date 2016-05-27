@@ -44,42 +44,75 @@ import org.jgap.util.CloneException;
 /**
  * Genetic Programming Trainer
  * 
- *
+ * Implementation according to Liu et al. Evolutionary Optimization of Software Quality Modeling with Multiple Repositories.
+ * 
  * - GPRun is a Run of a complete Genetic Programm Evolution, we want several complete runs.
  * - GPVClassifier is the Validation Classifier
  * - GPVVClassifier is the Validation-Voting Classifier
  * 
- * config: <setwisetrainer name="GPTraining" param="GPVVClassifier" />
+ * config: <setwisetrainer name="GPTraining" param="populationSize=1000" />
  */
 public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrainer  {
     
-    private GPVClassifier classifier = null;
+    private GPVVClassifier classifier = null;
     
+    // default values from the paper
     private int populationSize = 1000;
     private int initMinDepth = 2;
     private int initMaxDepth = 6;
     private int tournamentSize = 7;
     private int maxGenerations = 50;
     private double errorType2Weight = 15;
-    private int numberRuns = 1;  // 200 in the paper
+    private int numberRuns = 20;  // im paper 20 per errorType2Weight then additional 20
     private int maxDepth = 20;  // max depth within one program
     private int maxNodes = 100;  // max nodes within one program
 
     @Override
     public void setParameter(String parameters) {
         
-        // todo: split parameters to get classifier and the configuration variables for the gprun
-        if(parameters.equals("GPVVClassifier")) {
-            this.classifier = new GPVVClassifier();
-            ((GPVVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
-        }else if(parameters.equals("GPVClassifier")) {
-            this.classifier = new GPVClassifier();
-            ((GPVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
-        }else {
-            // default
-            this.classifier = new GPVVClassifier();
-            ((GPVVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
+        String[] params = parameters.split(",");
+        String[] keyvalue = new String[2];
+
+        for(int i=0; i < params.length; i++) {
+            keyvalue = params[i].split(":");
+            
+            switch(keyvalue[0]) {
+                case "populationSize":
+                    this.populationSize = Integer.parseInt(keyvalue[1]);
+                break;
+                
+                case "initMinDepth":
+                    this.initMinDepth = Integer.parseInt(keyvalue[1]);
+                break;
+                
+                case "tournamentSize":
+                    this.tournamentSize = Integer.parseInt(keyvalue[1]);
+                break;
+                
+                case "maxGenerations":
+                    this.maxGenerations = Integer.parseInt(keyvalue[1]);
+                break;
+                
+                case "errorType2Weight":
+                    this.errorType2Weight = Double.parseDouble(keyvalue[1]);
+                break;
+                
+                case "numberRuns":
+                    this.numberRuns = Integer.parseInt(keyvalue[1]);
+                break;
+                
+                case "maxDepth":
+                    this.maxDepth = Integer.parseInt(keyvalue[1]);
+                break;
+                
+                case "maxNodes":
+                    this.maxNodes = Integer.parseInt(keyvalue[1]);
+                break;
+            }
         }
+        
+        this.classifier = new GPVVClassifier();
+        ((GPVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
     }
 
     @Override
