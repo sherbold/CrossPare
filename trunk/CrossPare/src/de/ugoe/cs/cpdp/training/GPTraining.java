@@ -478,11 +478,11 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             // then is evaluated on the rest
             classifiers = new LinkedList<>();
             for(int i=0; i < traindataSet.size(); i++) {
-                
+
                 // candidates we get out of evaluation
                 LinkedList<Classifier> candidates = new LinkedList<>();
                 
-                // number of runs
+                // number of runs, yields the best of these
                 for(int k=0; k < this.numberRuns; k++) {
                     Classifier classifier = new GPRun();
                     ((GPRun)classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.maxGenerations, this.errorType2Weight, this.maxDepth, this.maxNodes);
@@ -496,31 +496,43 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if(j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the candidates
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
-                            if((errors[0] < 0.5) && (errors[0] < 0.5)) {
+                            if((errors[0] < 0.5) && (errors[1] < 0.5)) {
                                 candidates.add(classifier);
                             }
                         }
                     }
                 }
                 
+                
                 // now after the evaluation we do a model selection where only one model remains for the given training data
+                // we select the model which is best on all evaluation data
                 double smallest_error_count = Double.MAX_VALUE;
                 double[] errors;
                 Classifier best = null;
                 for(int ii=0; ii < candidates.size(); ii++) {
+                    double[] errors_eval = {0.0, 0.0};
+                    
+                    // we add the errors the candidate makes over the evaldata
                     for(int j=0; j < traindataSet.size(); j++) {
                         if(j != i) {
                             errors = this.evaluate((GPRun)candidates.get(ii), traindataSet.get(j));
-                            
-                            if(errors[0]+errors[1] < smallest_error_count) {
-                                best = candidates.get(ii);
-                            }
+                            errors_eval[0] += errors[0];
+                            errors_eval[1] += errors[1];
                         }
+                    }
+                    
+                    // if the candidate made fewer errors it is now the best
+                    if(errors_eval[0] + errors_eval[1] < smallest_error_count) {
+                        best = candidates.get(ii);
+                        smallest_error_count = errors_eval[0] + errors_eval[1];
                     }
                 }
                 
+                
                 // now we have the best classifier for this training data
                 classifiers.add(best);
+                
+                
             }
         }
         
@@ -634,7 +646,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if(j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the candidate list
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
-                            if((errors[0] < 0.5) && (errors[0] < 0.5)) {
+                            if((errors[0] < 0.5) && (errors[1] < 0.5)) {
                                 candidates.add(classifier);
                             }
                         }
