@@ -60,13 +60,15 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     private int initMaxDepth = 6;
     private int tournamentSize = 7;
     private int maxGenerations = 50;
-    private double errorType2Weight = 1;
-    private int numberRuns = 200;  // 200 in the paper
+    private double errorType2Weight = 15;
+    private int numberRuns = 1;  // 200 in the paper
     private int maxDepth = 20;  // max depth within one program
     private int maxNodes = 100;  // max nodes within one program
 
     @Override
     public void setParameter(String parameters) {
+        
+        // todo: split parameters to get classifier and the configuration variables for the gprun
         if(parameters.equals("GPVVClassifier")) {
             this.classifier = new GPVVClassifier();
             ((GPVVClassifier)this.classifier).configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations, errorType2Weight, numberRuns, maxDepth, maxNodes);
@@ -124,8 +126,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     }
     
     /**
-     * One Run of a GP Classifier
-     * we want several runs to mitigate problems with local maxima/minima 
+     * One Run executed by a GP Classifier
      */
     public class GPRun extends AbstractClassifier {
         private static final long serialVersionUID = -4250422550107888789L;
@@ -310,6 +311,11 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 return this.instances.length;
             }
 
+            /**
+             * This is the fitness function
+             * 
+             * Our fitness is best if we have the less wrong classifications, this includes a weight for type2 errors
+             */
             @Override
             protected double evaluate(final IGPProgram program) {
                 double pfitness = 0.0f;
@@ -328,7 +334,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                     }
 
                     // value gives us a double, if < 0.5 we set this instance as faulty
-                    value = program.execute_double(0, this.x);  // todo: test with this.x
+                    value = program.execute_double(0, this.x);
 
                     if(value < 0.5) {
                         if(this.output[i] != true) {
@@ -343,8 +349,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
                 // now calc pfitness
                 pfitness = (this.errorType1 + this.errorType2Weight * this.errorType2) / this.instances.length;
-
-                //System.out.println("pfitness: " + pfitness);
 
                 // number of nodes in the programm, if lower then 10 we assign sFitness of 10
                 // we can set metadata with setProgramData to save this
@@ -412,7 +416,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     /**
      * GP Multiple Data Sets Validation-Voting Classifier
      * 
-     * As the GP Multiple Data Sets Validation Classifier
+     * Basically the same as the GP Multiple Data Sets Validation Classifier.
      * But here we do keep a model candidate for each training set which may later vote
      *
      */
@@ -427,6 +431,14 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             
         }
         
+        /** Build the GP Multiple Data Sets Validation-Voting Classifier
+         * 
+         * This is according to Section 6 of the Paper by Liu et al.
+         * It is basically the Multiple Data Sets Validation Classifier but here we keep the best models an let them vote.
+         * 
+         * @param traindataSet
+         * @throws Exception
+         */
         public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
 
             // each classifier is trained with one project from the set
@@ -449,7 +461,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                     // rest of the set is evaluation data, we evaluate now
                     for(int j=0; j < traindataSet.size(); j++) {
                         if(j != i) {
-                            // if type1 and type2 errors are < 0.5 we allow the model in the final voting
+                            // if type1 and type2 errors are < 0.5 we allow the model in the candidates
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
                             if((errors[0] < 0.5) && (errors[0] < 0.5)) {
                                 candidates.add(classifier);
@@ -480,7 +492,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         }
         
         /**
-         * Use the remaining classifiers for our voting
+         * Use the best classifiers for each training data in a majority voting
          */
         @Override
         public double classifyInstance(Instance instance) {
@@ -514,15 +526,10 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     /**
      * GP Multiple Data Sets Validation Classifier
      * 
-     *
-     * for one test data set:
-     *   for one in X possible training data sets:
-     *     For Y GP Runs:
-     *       train one Classifier with this training data
-     *       then evaluate the classifier with the remaining project
-     *       if the candidate model performs bad (error type1 or type2 > 50%) discard it
-     * for the remaining model candidates the best one is used
-     *
+     * We train a Classifier with one training project $numberRun times.
+     * Then we evaluate the classifier on the rest of the training projects and keep the best classifier.
+     * After that we have for each training project the best classifier as per the evaluation on the rest of the data set.
+     * Then we determine the best classifier from these candidates and keep it to be used later.
      */
     public class GPVClassifier extends AbstractClassifier {
         
@@ -565,9 +572,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         
         /** Build the GP Multiple Data Sets Validation Classifier
          * 
-         * - Traindata one of the Instances of the Set (which one? The firsT? as it is a list?)
-         * - Testdata one other Instances of the Set (the next one? chose randomly?)
-         * - Evaluation the rest of the instances
+         * This is according to Section 6 of the Paper by Liu et al. except for the selection of the best model.
+         * Section 4 describes a slightly different approach.
          * 
          * @param traindataSet
          * @throws Exception
@@ -581,32 +587,30 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 // candidates we get out of evaluation
                 LinkedList<Classifier> candidates = new LinkedList<>();
                 
-                // 200 runs
+                // numberRuns full GPRuns, we generate numberRuns models for each traindata
                 for(int k=0; k < this.numberRuns; k++) {
                     Classifier classifier = new GPRun();
                     ((GPRun)classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.maxGenerations, this.errorType2Weight, this.maxDepth, this.maxNodes);
                     
-                    // one project is training data
                     classifier.buildClassifier(traindataSet.get(i));
                     
                     double[] errors;
-                    
+
                     // rest of the set is evaluation data, we evaluate now
                     for(int j=0; j < traindataSet.size(); j++) {
                         if(j != i) {
-                            // if type1 and type2 errors are < 0.5 we allow the model in the final voting
+                            // if type1 and type2 errors are < 0.5 we allow the model in the candidate list
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
                             if((errors[0] < 0.5) && (errors[0] < 0.5)) {
-                                candidates.add(classifier);                            
+                                candidates.add(classifier);
                             }
                         }
                     }
                 }
                 
-                // now after the evaluation we do a model selection where only one model remains per training data set
-                // from that we chose the best model
-                
-                // now after the evaluation we do a model selection where only one model remains for the given training data
+                // after the numberRuns we have < numberRuns candidate models for this trainData
+                // we now evaluate the candidates
+                // finding the best model is not really described in the paper we go with least errors
                 double smallest_error_count = Double.MAX_VALUE;
                 double[] errors;
                 Classifier best = null;
@@ -624,9 +628,11 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 
                 // now we have the best classifier for this training data
                 classifiers.add(best);
-            }
+            } /* endfor trainData */
             
-            // now determine the best classifier for all training data
+            // now we have one best classifier for each trainData 
+            // we evaluate again to find the best classifier of all time
+            // this selection is now according to section 4 of the paper and not 6 where an average of the 6 models is build 
             double smallest_error_count = Double.MAX_VALUE;
             double error_count;
             double errors[];
@@ -652,6 +658,17 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             classifiers.add(classifier);
         }
         
+        /**
+         * Evaluation of the Classifier
+         * 
+         * We evaluate the classifier with the Instances of the evalData.
+         * It basically assigns the instance attribute values to the variables of the s-expression-tree and 
+         * then counts the missclassifications. 
+         * 
+         * @param classifier
+         * @param evalData
+         * @return
+         */
         public double[] evaluate(GPRun classifier, Instances evalData) {
             GPGenotype gp = classifier.getGp();
             Variable[] vars = classifier.getVariables();
@@ -666,8 +683,10 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             
             for(Instance instance: evalData) {
                 
-                for(int i = 0; i < instance.numAttributes()-1; i++) {
-                    vars[i].set(instance.value(i));
+                // assign instance attribute values to the variables of the s-expression-tree
+                double[] tmp = WekaUtils.instanceValues(instance);
+                for(int i = 0; i < tmp.length; i++) {
+                    vars[i].set(tmp[i]);
                 }
                 
                 classification = fitest.execute_double(0, vars);
