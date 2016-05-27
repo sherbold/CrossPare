@@ -502,8 +502,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         }
                     }
                 }
-                
-                
+
                 // now after the evaluation we do a model selection where only one model remains for the given training data
                 // we select the model which is best on all evaluation data
                 double smallest_error_count = Double.MAX_VALUE;
@@ -651,26 +650,34 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                     }
                 }
                 
-                // after the numberRuns we have < numberRuns candidate models for this trainData
-                // we now evaluate the candidates
-                // finding the best model is not really described in the paper we go with least errors
+                // now after the evaluation we do a model selection where only one model remains for the given training data
+                // we select the model which is best on all evaluation data
                 double smallest_error_count = Double.MAX_VALUE;
                 double[] errors;
                 Classifier best = null;
                 for(int ii=0; ii < candidates.size(); ii++) {
+                    double[] errors_eval = {0.0, 0.0};
+                    
+                    // we add the errors the candidate makes over the evaldata
                     for(int j=0; j < traindataSet.size(); j++) {
                         if(j != i) {
                             errors = this.evaluate((GPRun)candidates.get(ii), traindataSet.get(j));
-                            
-                            if(errors[0]+errors[1] < smallest_error_count) {
-                                best = candidates.get(ii);
-                            }
+                            errors_eval[0] += errors[0];
+                            errors_eval[1] += errors[1];
                         }
+                    }
+                    
+                    // if the candidate made fewer errors it is now the best
+                    if(errors_eval[0] + errors_eval[1] < smallest_error_count) {
+                        best = candidates.get(ii);
+                        smallest_error_count = errors_eval[0] + errors_eval[1];
                     }
                 }
                 
+                
                 // now we have the best classifier for this training data
                 classifiers.add(best);
+
             } /* endfor trainData */
             
             // now we have one best classifier for each trainData 
