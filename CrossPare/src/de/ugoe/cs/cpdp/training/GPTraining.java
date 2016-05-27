@@ -531,8 +531,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 
                 // now we have the best classifier for this training data
                 classifiers.add(best);
-                
-                
             }
         }
         
