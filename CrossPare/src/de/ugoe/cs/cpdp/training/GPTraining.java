@@ -44,13 +44,13 @@ import org.jgap.util.CloneException;
 /**
  * Genetic Programming Trainer
  * 
- * Implementation according to Liu et al. Evolutionary Optimization of Software Quality Modeling with Multiple Repositories.
+ * Implementation (mostly) according to Liu et al. Evolutionary Optimization of Software Quality Modeling with Multiple Repositories.
  * 
  * - GPRun is a Run of a complete Genetic Programm Evolution, we want several complete runs.
  * - GPVClassifier is the Validation Classifier
  * - GPVVClassifier is the Validation-Voting Classifier
  * 
- * config: <setwisetrainer name="GPTraining" param="populationSize=1000" />
+ *  config: <setwisetrainer name="GPTraining" param="populationSize:1000,numberRuns:10" />
  */
 public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrainer  {
     
