@@ -71,9 +71,7 @@
 
 	<!-- Build Targets -->
 	<target depends="init.build" name="build">
-		<javac debug="true" debuglevel="${debuglevel}"
-			destdir="${build.location}" source="${source}"
-			target="${target}" includeantruntime="false">
+		<javac debug="false" destdir="${build.location}" source="${source}" target="${target}" includeantruntime="false" encoding="UTF-8">
 			<src path="src" />
 			<classpath refid="Crosspare.classpath" />
 		</javac>
