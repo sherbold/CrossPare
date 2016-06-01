@@ -210,8 +210,14 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
 
     private double calculateReviewEffort(Instances testdata, Classifier classifier) {
 
-        final Attribute loc = testdata.attribute("loc");
+        Attribute loc = testdata.attribute("loc");
         if (loc == null) {
+            loc = testdata.attribute("LOC_EXECUTABLE");
+        }
+        if (loc == null) {
+            loc = testdata.attribute("numberOfLinesOfCode");
+        }
+        if( loc == null ) {
             return 0.0;
         }
 
