@@ -210,12 +210,19 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
 
     private double calculateReviewEffort(Instances testdata, Classifier classifier) {
 
+        // attribute in the JURECZKO data and default
         Attribute loc = testdata.attribute("loc");
         if (loc == null) {
+            // attribute in the NASA/SOFTMINE/MDP data
             loc = testdata.attribute("LOC_EXECUTABLE");
         }
         if (loc == null) {
+            // attribute in the AEEEM data
             loc = testdata.attribute("numberOfLinesOfCode");
+        }
+        if (loc == null) {
+            // attribute in the RELINK data
+            loc = testdata.attribute("CountLineCodeExe");
         }
         if( loc == null ) {
             return 0.0;
