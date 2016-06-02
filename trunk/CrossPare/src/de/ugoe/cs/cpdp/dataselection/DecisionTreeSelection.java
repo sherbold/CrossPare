@@ -83,6 +83,10 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
                 }
             }
             REPTree repTree = new REPTree();
+            if( repTree.getNumFolds()>similarityData.size() ) {
+                repTree.setNumFolds(similarityData.size());
+            }
+            repTree.setNumFolds(2);
             repTree.buildClassifier(similarityData);
 
             Instances testTrainSimilarity = new Instances(similarityData);
