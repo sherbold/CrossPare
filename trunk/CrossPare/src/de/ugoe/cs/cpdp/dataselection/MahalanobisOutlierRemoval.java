@@ -18,9 +18,12 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
+import de.lmu.ifi.dbs.elki.logging.Logging.Level;
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
 
 /**
@@ -91,10 +94,15 @@ public class MahalanobisOutlierRemoval
         for (int i = 0; i < data.size(); i++) {
             values.setRow(i, WekaUtils.instanceValues(data.get(i)));
         }
-        RealMatrix inverseCovariance =
+        RealMatrix inverseCovariance;
+        try {
+            inverseCovariance =
             new LUDecomposition(new Covariance(values).getCovarianceMatrix()).getSolver()
                 .getInverse();
-
+        } catch(SingularMatrixException e) {
+            Console.traceln(Level.WARNING, "could not perform Mahalanobis outlier removal due to singular covariance matrix");
+            return;
+        }
         // create mean vector
         double[] meanValues = new double[data.numAttributes() - 1];
         int k = 0;
