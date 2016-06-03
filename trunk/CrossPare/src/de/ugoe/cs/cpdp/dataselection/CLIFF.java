@@ -64,7 +64,7 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
         return applyCLIFF(traindata);
     }
 
-    private Instances applyCLIFF(Instances data) {
+    protected Instances applyCLIFF(Instances data) {
         final double[][] powerAttributes = new double[data.size()][data.numAttributes()];
         final double[] powerEntity = new double[data.size()];
         

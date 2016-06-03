@@ -96,18 +96,29 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
      *
      * @param data data to which the processor is applied
      */
-    private void applyMORPH(Instances data) {
+    public void applyMORPH(Instances data) {
         for (int i=0; i<data.numInstances(); i++ ) {
-            Instance instance = data.instance(i);
-            Instance nearestUnlikeNeighbor = getNearestUnlikeNeighbor(instance, data);
-            if( nearestUnlikeNeighbor==null ) {
-                throw new RuntimeException("could not find nearest unlike neighbor within the data: " + data.relationName());
-            }
-            for( int j=0; j<data.numAttributes() ; j++ ) {
-                if( data.attribute(j)!=data.classAttribute() && data.attribute(j).isNumeric()) {
-                    double randVal = rand.nextDouble()*(beta-alpha)+alpha;
-                    instance.setValue(j, instance.value(j) + randVal*(instance.value(j)-nearestUnlikeNeighbor.value(j)) );
-                }
+            morphInstance(data.get(i), data);
+        }
+    }
+    
+    /**
+     * <p>
+     * Applies MORPH to a single instance
+     * </p>
+     *
+     * @param instance instance that is morphed
+     * @param data data based on which the instance is morphed
+     */
+    public void morphInstance(Instance instance, Instances data) {
+        Instance nearestUnlikeNeighbor = getNearestUnlikeNeighbor(instance, data);
+        if( nearestUnlikeNeighbor==null ) {
+            throw new RuntimeException("could not find nearest unlike neighbor within the data: " + data.relationName());
+        }
+        for( int j=0; j<data.numAttributes() ; j++ ) {
+            if( data.attribute(j)!=data.classAttribute() && data.attribute(j).isNumeric()) {
+                double randVal = rand.nextDouble()*(beta-alpha)+alpha;
+                instance.setValue(j, instance.value(j) + randVal*(instance.value(j)-nearestUnlikeNeighbor.value(j)) );
             }
         }
     }
@@ -121,7 +132,7 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
      * @param data data where the nearest unlike neighbor is determined from
      * @return nearest unlike instance
      */
-    protected Instance getNearestUnlikeNeighbor(Instance instance, Instances data) {
+    public Instance getNearestUnlikeNeighbor(Instance instance, Instances data) {
         Instance nearestUnlikeNeighbor = null;
         
         double[] instanceVector = new double[data.numAttributes()-1];
