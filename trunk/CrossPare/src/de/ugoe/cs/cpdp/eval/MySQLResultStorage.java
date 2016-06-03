@@ -161,9 +161,9 @@ public class MySQLResultStorage implements IResultStorage {
      * @see de.ugoe.cs.cpdp.eval.IResultStorage#containsResult(java.lang.String, java.lang.String)
      */
     @Override
-    public int containsResult(String experimentName, String productName) {
+    public int containsResult(String experimentName, String productName, String classifierName) {
         String sql = "SELECT COUNT(*) as cnt FROM crosspare.results WHERE configurationName=\'" +
-            experimentName + "\' AND productName=\'" + productName + "\';";
+            experimentName + "\' AND productName=\'" + productName + "\' AND classifier=\'" + classifierName + "\';";
         Statement stmt;
         try {
             stmt = connectionPool.getConnection().createStatement();

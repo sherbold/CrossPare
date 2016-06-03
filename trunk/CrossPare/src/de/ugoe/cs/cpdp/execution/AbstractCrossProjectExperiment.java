@@ -35,6 +35,7 @@ import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
+import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import de.ugoe.cs.util.console.Console;
@@ -349,9 +350,27 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
         if (config.getResultStorages().isEmpty()) {
             return 0;
         }
+        
+        List<ITrainer> allTrainers = new LinkedList<>();
+        for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
+            allTrainers.add(setwiseTrainer);
+        }
+        for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
+            .getSetWiseTestdataAwareTrainers())
+        {
+            allTrainers.add(setwiseTestdataAwareTrainer);
+        }
+        for (ITrainingStrategy trainer : config.getTrainers()) {
+            allTrainers.add(trainer);
+        }
+        for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
+            allTrainers.add(trainer);
+        }
+        
         int available = Integer.MAX_VALUE;
         for (IResultStorage storage : config.getResultStorages()) {
-            int curAvailable = storage.containsResult(config.getExperimentName(), version.getVersion());
+            String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
+            int curAvailable = storage.containsResult(config.getExperimentName(), version.getVersion(), classifierName);
             if( curAvailable<available ) {
                 available = curAvailable;
             }
