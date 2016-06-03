@@ -42,7 +42,9 @@ public interface IResultStorage {
      *            name of the experiment
      * @param productName
      *            name of the product
+     * @param classifierName
+     *            name of the first classifier in the configuration
      * @return number of contained resultsfor the given product and experiment
      */
-    public int containsResult(String experimentName, String productName);
+    public int containsResult(String experimentName, String productName, String classifierName);
 }
