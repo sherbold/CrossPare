@@ -148,7 +148,6 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
         boolean writeHeader = true;
         int versionCount = 1;
         int testVersionCount = 0;
-        int numTrainers = 0;
 
         for (SoftwareVersion testVersion : versions) {
             if (isVersion(testVersion, config.getTestVersionFilters())) {
@@ -156,11 +155,6 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
             }
         }
         
-        numTrainers += config.getSetWiseTrainers().size();
-        numTrainers += config.getSetWiseTestdataAwareTrainers().size();
-        numTrainers += config.getTrainers().size();
-        numTrainers += config.getTestAwareTrainers().size();
-
         // sort versions
         Collections.sort(versions);
 
@@ -171,7 +165,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                               config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
-                if (numResultsAvailable >= numTrainers*config.getRepetitions()) {
+                if (numResultsAvailable >= config.getRepetitions()) {
                     Console.traceln(Level.INFO,
                                     String.format(
                                                   "[%s] [%02d/%02d] %s: results already available; skipped",
