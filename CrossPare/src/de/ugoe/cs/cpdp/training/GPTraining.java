@@ -483,7 +483,10 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 LinkedList<Classifier> candidates = new LinkedList<>();
                 
                 // number of runs, yields the best of these
+                double smallest_error_count_train = Double.MAX_VALUE; 
+                Classifier bestTrain = null;
                 for(int k=0; k < this.numberRuns; k++) {
+                    double[] errors_eval = {0.0, 0.0};
                     Classifier classifier = new GPRun();
                     ((GPRun)classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.maxGenerations, this.errorType2Weight, this.maxDepth, this.maxNodes);
                     
@@ -496,10 +499,18 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if(j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the candidates
                             errors = this.evaluate((GPRun)classifier, traindataSet.get(j));
+                            errors_eval[0] += errors[0];
+                            errors_eval[1] += errors[1];
                             if((errors[0] < 0.5) && (errors[1] < 0.5)) {
                                 candidates.add(classifier);
                             }
                         }
+                    }
+                    
+                    // if the candidate made fewer errors it is now the best
+                    if(errors_eval[0] + errors_eval[1] < smallest_error_count_train) {
+                        bestTrain = classifier;
+                        smallest_error_count_train = errors_eval[0] + errors_eval[1];
                     }
                 }
 
@@ -527,7 +538,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                     }
                 }
                 
-                
+                if( best==null ) {
+                    best = bestTrain;
+                }
                 // now we have the best classifier for this training data
                 classifiers.add(best);
             }
