@@ -253,8 +253,8 @@ public class WHICH extends AbstractClassifier {
             }
             support = numMatches / ((double) traindata.size());
             if (numMatches > 0) {
-                e1 = numMatchDefective / ((double) numMatches);
-                e2 = numMatchNondefective / ((double) numMatches);
+                e1 = numMatchNondefective / ((double) numMatches);
+                e2 = numMatchDefective / ((double) numMatches);
                 if (e2 > 0) {
                     score = e1 / e2 * support;
                 }
