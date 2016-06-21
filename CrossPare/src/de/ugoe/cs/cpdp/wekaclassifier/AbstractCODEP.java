@@ -15,8 +15,12 @@
 package de.ugoe.cs.cpdp.wekaclassifier;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
@@ -61,6 +65,16 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      */
     private Classifier codepClassifier = null;
 
+    /**
+     * Map that store attributes for upscaling for each classifier
+     */
+    private Map<Integer, Integer> upscaleIndex = null;
+
+    /**
+     * Scaling value that moves the decimal point by 5 digets.
+     */
+    private final double SCALER = 10000.0d;
+
     /*
      * (non-Javadoc)
      * 
@@ -86,10 +100,55 @@ public abstract class AbstractCODEP extends AbstractClassifier {
     public void buildClassifier(Instances traindata) throws Exception {
         setupInternalClassifiers();
         setupInternalAttributes();
+        upscaleIndex = new HashMap<>();
 
+        int classifierIndex = 0;
+        boolean secondAttempt = false;
+        Instances traindataCopy = null;
         for (Classifier classifier : internalClassifiers) {
-            Console.traceln(Level.FINE, "internally training " + classifier.getClass().getName());
-            classifier.buildClassifier(traindata);
+            boolean trainingSuccessfull = false;
+            do {
+                Console.traceln(Level.FINE,
+                                "internally training " + classifier.getClass().getName());
+                try {
+                    if (secondAttempt) {
+                        classifier.buildClassifier(traindataCopy);
+                        trainingSuccessfull = true;
+                    }
+                    else {
+                        classifier.buildClassifier(traindata);
+                        trainingSuccessfull = true;
+                    }
+                }
+                catch (IllegalArgumentException e) {
+                    String regex = "A nominal attribute \\((.*)\\) cannot have duplicate labels.*";
+                    Pattern p = Pattern.compile(regex);
+                    Matcher m = p.matcher(e.getMessage());
+                    if (!m.find()) {
+                        // cannot treat problem, rethrow exception
+                        throw e;
+                    }
+                    String attributeName = m.group(1);
+                    int attrIndex = traindata.attribute(attributeName).index();
+                    if (secondAttempt) {
+                        throw new RuntimeException("cannot be handled correctly yet, because upscaleIndex is a Map");
+                        // traindataCopy = upscaleAttribute(traindataCopy, attrIndex);
+                    }
+                    else {
+                        traindataCopy = upscaleAttribute(traindata, attrIndex);
+                    }
+
+                    upscaleIndex.put(classifierIndex, attrIndex);
+                    Console
+                        .traceln(Level.FINE,
+                                 "upscaled attribute " + attributeName + "; restarting training");
+                    secondAttempt = true;
+                    continue;
+                }
+            }
+            while (!trainingSuccessfull); // dummy loop for internal continue
+            classifierIndex++;
+            secondAttempt = false;
         }
 
         Instances internalTraindata =
@@ -117,7 +176,18 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      */
     private Instance createInternalInstance(Instance instance) throws Exception {
         double[] values = new double[internalAttributes.size()];
+        Instances traindataCopy;
         for (int j = 0; j < internalClassifiers.size(); j++) {
+            if (upscaleIndex.containsKey(j)) {
+                // instance value must be upscaled
+                int attrIndex = upscaleIndex.get(j);
+                double upscaledVal = instance.value(attrIndex) * SCALER;
+                traindataCopy = new Instances(instance.dataset());
+                instance = new DenseInstance(instance.weight(), instance.toDoubleArray());
+                instance.setValue(attrIndex, upscaledVal);
+                traindataCopy.add(instance);
+                instance.setDataset(traindataCopy);
+            }
             values[j] = internalClassifiers.get(j).classifyInstance(instance);
         }
         values[internalAttributes.size() - 1] = instance.classValue();
@@ -156,6 +226,27 @@ public abstract class AbstractCODEP extends AbstractClassifier {
         internalClassifiers.add(new Logistic());
         internalClassifiers.add(new MultilayerPerceptron());
         internalClassifiers.add(new RBFNetwork());
+    }
+
+    /**
+     * <p>
+     * Upscales the value of a single attribute. This is a workaround to get BayesNet running for
+     * all data. Works on a copy of the training data, i.e., leaves the original data untouched.
+     * </p>
+     *
+     * @param traindata
+     *            data from which the attribute is upscaled.
+     * @param attributeIndex
+     *            index of the attribute
+     * @return data with upscaled attribute
+     */
+    private Instances upscaleAttribute(Instances traindata, int attributeIndex) {
+        Instances traindataCopy = new Instances(traindata);
+        for (int i = 0; i < traindata.size(); i++) {
+            traindataCopy.get(i).setValue(attributeIndex,
+                                          traindata.get(i).value(attributeIndex) * SCALER);
+        }
+        return traindataCopy;
     }
 
     /**
