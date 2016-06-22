@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
@@ -69,11 +70,6 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      * Map that store attributes for upscaling for each classifier
      */
     private Map<Integer, Integer> upscaleIndex = null;
-
-    /**
-     * Scaling value that moves the decimal point by 5 digets.
-     */
-    private final double SCALER = 10000.0d;
 
     /*
      * (non-Javadoc)
@@ -135,7 +131,7 @@ public abstract class AbstractCODEP extends AbstractClassifier {
                         // traindataCopy = upscaleAttribute(traindataCopy, attrIndex);
                     }
                     else {
-                        traindataCopy = upscaleAttribute(traindata, attrIndex);
+                        traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
                     }
 
                     upscaleIndex.put(classifierIndex, attrIndex);
@@ -181,7 +177,7 @@ public abstract class AbstractCODEP extends AbstractClassifier {
             if (upscaleIndex.containsKey(j)) {
                 // instance value must be upscaled
                 int attrIndex = upscaleIndex.get(j);
-                double upscaledVal = instance.value(attrIndex) * SCALER;
+                double upscaledVal = instance.value(attrIndex) * WekaUtils.SCALER;
                 traindataCopy = new Instances(instance.dataset());
                 instance = new DenseInstance(instance.weight(), instance.toDoubleArray());
                 instance.setValue(attrIndex, upscaledVal);
@@ -226,27 +222,6 @@ public abstract class AbstractCODEP extends AbstractClassifier {
         internalClassifiers.add(new Logistic());
         internalClassifiers.add(new MultilayerPerceptron());
         internalClassifiers.add(new RBFNetwork());
-    }
-
-    /**
-     * <p>
-     * Upscales the value of a single attribute. This is a workaround to get BayesNet running for
-     * all data. Works on a copy of the training data, i.e., leaves the original data untouched.
-     * </p>
-     *
-     * @param traindata
-     *            data from which the attribute is upscaled.
-     * @param attributeIndex
-     *            index of the attribute
-     * @return data with upscaled attribute
-     */
-    private Instances upscaleAttribute(Instances traindata, int attributeIndex) {
-        Instances traindataCopy = new Instances(traindata);
-        for (int i = 0; i < traindata.size(); i++) {
-            traindataCopy.get(i).setValue(attributeIndex,
-                                          traindata.get(i).value(attributeIndex) * SCALER);
-        }
-        return traindataCopy;
     }
 
     /**

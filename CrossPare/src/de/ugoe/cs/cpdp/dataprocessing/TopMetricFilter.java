@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.list.SetUniqueList;
@@ -28,6 +30,7 @@ import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import com.google.common.collect.Sets;
 
 import de.ugoe.cs.cpdp.util.SortUtils;
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.CfsSubsetEval;
@@ -95,18 +98,66 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         // get CFSs for each training set
         List<Set<Integer>> cfsSets = new LinkedList<>();
         for( Instances traindata : traindataSet ) {
-            AttributeSelection attsel = new AttributeSelection();
-            CfsSubsetEval eval = new CfsSubsetEval();
-            GreedyStepwise search = new GreedyStepwise();
-            search.setSearchBackwards(true);
-            attsel.setEvaluator(eval);
-            attsel.setSearch(search);
-            attsel.SelectAttributes(traindata);
-            Set<Integer> cfsSet = new HashSet<>();
-            for( int attr : attsel.selectedAttributes() ) {
-                cfsSet.add(attr);
+            boolean selectionSuccessful = false;
+            boolean secondAttempt = false;
+            Instances traindataCopy = null;
+            do {
+                try {
+                    if (secondAttempt) {
+                        AttributeSelection attsel = new AttributeSelection();
+                        CfsSubsetEval eval = new CfsSubsetEval();
+                        GreedyStepwise search = new GreedyStepwise();
+                        search.setSearchBackwards(true);
+                        attsel.setEvaluator(eval);
+                        attsel.setSearch(search);
+                        attsel.SelectAttributes(traindataCopy);
+                        Set<Integer> cfsSet = new HashSet<>();
+                        for( int attr : attsel.selectedAttributes() ) {
+                            cfsSet.add(attr);
+                        }
+                        cfsSets.add(cfsSet);
+                        selectionSuccessful = true;
+                    }
+                    else {
+                        AttributeSelection attsel = new AttributeSelection();
+                        CfsSubsetEval eval = new CfsSubsetEval();
+                        GreedyStepwise search = new GreedyStepwise();
+                        search.setSearchBackwards(true);
+                        attsel.setEvaluator(eval);
+                        attsel.setSearch(search);
+                        attsel.SelectAttributes(traindata);
+                        Set<Integer> cfsSet = new HashSet<>();
+                        for( int attr : attsel.selectedAttributes() ) {
+                            cfsSet.add(attr);
+                        }
+                        cfsSets.add(cfsSet);
+                        selectionSuccessful = true;
+                    }
+                }
+                catch (IllegalArgumentException e) {
+                    String regex = "A nominal attribute \\((.*)\\) cannot have duplicate labels.*";
+                    Pattern p = Pattern.compile(regex);
+                    Matcher m = p.matcher(e.getMessage());
+                    if (!m.find()) {
+                        // cannot treat problem, rethrow exception
+                        throw e;
+                    }
+                    String attributeName = m.group(1);
+                    int attrIndex = traindata.attribute(attributeName).index();
+                    if (secondAttempt) {
+                        traindataCopy = WekaUtils.upscaleAttribute(traindataCopy, attrIndex);
+                    }
+                    else {
+                        traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
+                    }
+                    Console
+                        .traceln(Level.FINE,
+                                 "upscaled attribute " + attributeName + "; restarting training");
+                    secondAttempt = true;
+                    continue;
+                }
             }
-            cfsSets.add(cfsSet);
+            while (!selectionSuccessful); // dummy loop for internal continue
         }
         
         double[] coverages = new double[topkIndex.length];
@@ -142,7 +193,8 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
             }
         }
         Set<Integer> topkSetIndexSet = new TreeSet<>();
-        for( int j=0; j<bestCoverageIndex; j++ ) {
+        // j<30 ensures that the computational time does not explode since the powerset is 2^n in complexity
+        for( int j=0; j<bestCoverageIndex && j<30 ; j++ ) {
             topkSetIndexSet.add(j);
         }
         Set<Set<Integer>> allCombinations = Sets.powerSet(topkSetIndexSet);
@@ -156,7 +208,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
                     topkCombination.add(topkIndex[index]);
                 }
                 for( Set<Integer> cfsSet : cfsSets ) {
-                    currentCoverage += (coverage(combination, cfsSet)/traindataSet.size());
+                    currentCoverage += (coverage(topkCombination, cfsSet)/traindataSet.size());
                 }
                 if( currentCoverage > bestOptCoverage ) {
                     bestOptCoverage = currentCoverage;
