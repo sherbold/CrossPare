@@ -21,7 +21,9 @@ import de.ugoe.cs.util.console.Console;
 
 import weka.core.OptionHandler;
 import weka.classifiers.Classifier;
+import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.meta.CVParameterSelection;
+import weka.classifiers.meta.Vote;
 
 /**
  * WekaBaseTraining2
@@ -92,6 +94,14 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
             ((OptionHandler) obj).setOptions(param);
             cl = obj;
 
+            if( cl instanceof Vote ) {
+                Vote votingClassifier = (Vote) cl;
+                for( Classifier classifier : votingClassifier.getClassifiers() ) {
+                    if( classifier instanceof BayesNet ) {
+                        ((BayesNet) classifier).setUseADTree(false);
+                    }
+                }
+            }
             // we have cross val params
             // cant check on cvparam.length here, it may not be initialized
             if (cv) {
