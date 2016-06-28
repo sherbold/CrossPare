@@ -91,6 +91,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
     public void apply(Instances testdata,
                       Instances traindata,
                       List<ITrainer> trainers,
+                      List<Double> efforts, 
                       boolean writeHeader,
                       List<IResultStorage> storages)
     {
@@ -149,7 +150,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
             double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
-            double aucec = calculateReviewEffort(testdata, classifier);
+            double aucec = calculateReviewEffort(testdata, classifier, efforts);
             double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
             double succZi = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.7 ? 1.0 : 0.0;
             double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
@@ -207,7 +208,96 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         output.append(StringTools.ENDLINE);
         output.flush();
     }
+    
+    private double calculateReviewEffort(Instances testdata, Classifier classifier, List<Double> efforts) {
+        if( efforts==null ) {
+            return 0;
+        }
+        
+        final List<Integer> bugPredicted = new ArrayList<>();
+        final List<Integer> nobugPredicted = new ArrayList<>();
+        double totalLoc = 0.0d;
+        int totalBugs = 0;
+        for (int i = 0; i < testdata.numInstances(); i++) {
+            try {
+                if (Double.compare(classifier.classifyInstance(testdata.instance(i)), 0.0d) == 0) {
+                    nobugPredicted.add(i);
+                }
+                else {
+                    bugPredicted.add(i);
+                }
+            }
+            catch (Exception e) {
+                throw new RuntimeException(
+                                           "unexpected error during the evaluation of the review effort",
+                                           e);
+            }
+            if (Double.compare(testdata.instance(i).classValue(), 1.0d) == 0) {
+                totalBugs++;
+            }
+            totalLoc += efforts.get(i);
+        }
 
+        final List<Double> reviewLoc = new ArrayList<>(testdata.numInstances());
+        final List<Double> bugsFound = new ArrayList<>(testdata.numInstances());
+
+        double currentBugsFound = 0;
+
+        while (!bugPredicted.isEmpty()) {
+            double minLoc = Double.MAX_VALUE;
+            int minIndex = -1;
+            for (int i = 0; i < bugPredicted.size(); i++) {
+                double currentLoc = efforts.get(bugPredicted.get(i));
+                if (currentLoc < minLoc) {
+                    minIndex = i;
+                    minLoc = currentLoc;
+                }
+            }
+            if (minIndex != -1) {
+                reviewLoc.add(minLoc / totalLoc);
+
+                currentBugsFound += testdata.instance(bugPredicted.get(minIndex)).classValue();
+                bugsFound.add(currentBugsFound);
+
+                bugPredicted.remove(minIndex);
+            }
+            else {
+                throw new RuntimeException("Shouldn't happen!");
+            }
+        }
+
+        while (!nobugPredicted.isEmpty()) {
+            double minLoc = Double.MAX_VALUE;
+            int minIndex = -1;
+            for (int i = 0; i < nobugPredicted.size(); i++) {
+                double currentLoc = efforts.get(nobugPredicted.get(i));
+                if (currentLoc < minLoc) {
+                    minIndex = i;
+                    minLoc = currentLoc;
+                }
+            }
+            if (minIndex != -1) {
+                reviewLoc.add(minLoc / totalLoc);
+
+                currentBugsFound += testdata.instance(nobugPredicted.get(minIndex)).classValue();
+                bugsFound.add(currentBugsFound);
+                nobugPredicted.remove(minIndex);
+            }
+            else {
+                throw new RuntimeException("Shouldn't happen!");
+            }
+        }
+
+        double auc = 0.0;
+        for (int i = 0; i < bugsFound.size(); i++) {
+            auc += reviewLoc.get(i) * bugsFound.get(i) / totalBugs;
+        }
+
+        return auc;
+    }
+
+    @SuppressWarnings("unused")
+    @Deprecated
     private double calculateReviewEffort(Instances testdata, Classifier classifier) {
 
         // attribute in the JURECZKO data and default

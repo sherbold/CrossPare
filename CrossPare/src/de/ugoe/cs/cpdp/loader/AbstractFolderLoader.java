@@ -15,9 +15,11 @@
 package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import weka.core.Attribute;
 import weka.core.Instances;
 
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
@@ -65,13 +67,39 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                         {
                             Instances data = instancesLoader.load(versionFile);
                             String versionName = data.relationName();
-                            versions.add(new SoftwareVersion(projectName, versionName, data));
+                            List<Double> efforts = getEfforts(data); 
+                            versions.add(new SoftwareVersion(projectName, versionName, data, efforts));
                         }
                     }
                 }
             }
         }
         return versions;
+    }
+    
+    private List<Double> getEfforts(Instances data) {
+        // attribute in the JURECZKO data and default
+        Attribute effortAtt = data.attribute("loc");
+        if (effortAtt == null) {
+            // attribute in the NASA/SOFTMINE/MDP data
+            effortAtt = data.attribute("LOC_EXECUTABLE");
+        }
+        if (effortAtt == null) {
+            // attribute in the AEEEM data
+            effortAtt = data.attribute("numberOfLinesOfCode");
+        }
+        if (effortAtt == null) {
+            // attribute in the RELINK data
+            effortAtt = data.attribute("CountLineCodeExe");
+        }
+        if( effortAtt == null ) {
+            return null;
+        }
+        List<Double> efforts = new ArrayList<>(data.size());
+        for( int i=0; i<data.size(); i++ ) {
+            efforts.add(data.get(i).value(effortAtt));
+        }
+        return efforts;
     }
 
     /**

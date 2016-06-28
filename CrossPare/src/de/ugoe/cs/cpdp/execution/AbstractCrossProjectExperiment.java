@@ -177,6 +177,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
 
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
+                List<Double> efforts = testVersion.getEfforts();
                 SetUniqueList<Instances> traindataSet =
                     SetUniqueList.setUniqueList(new LinkedList<Instances>());
                 for (SoftwareVersion trainingVersion : versions) {
@@ -310,7 +311,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(config.getResultsPath() + "/" +
                             config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, writeHeader,
+                    evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
                                     config.getResultStorages());
                     writeHeader = false;
                 }

@@ -165,6 +165,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
 
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
+                List<Double> efforts = testVersion.getEfforts();
                 
                 for (ITrainingStrategy trainer : config.getTrainers()) {
                     Console.traceln(Level.FINE,
@@ -204,7 +205,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         evaluator.setParameter(config.getResultsPath() + "/" +
                             config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, testdata, allTrainers, writeHeader,
+                    evaluator.apply(testdata, testdata, allTrainers, efforts, writeHeader,
                                     config.getResultStorages());
                     writeHeader = false;
                 }

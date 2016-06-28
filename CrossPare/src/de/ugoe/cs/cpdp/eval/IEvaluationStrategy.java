@@ -45,6 +45,7 @@ public interface IEvaluationStrategy extends IParameterizable {
     void apply(Instances testdata,
                Instances traindata,
                List<ITrainer> trainers,
+               List<Double> efforts,
                boolean writeHeader,
                List<IResultStorage> storages);
 }
