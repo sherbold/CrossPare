@@ -103,7 +103,7 @@ public class DecentFolderLoader extends AbstractFolderLoader {
         if (versionFile.isFile() && instancesLoader.filenameFilter(versionFile.getName())) {
             String versionName = versionFile.getName();
             Instances data = instancesLoader.load(versionFile);
-            versions.add(new SoftwareVersion(projectName, versionName, data));
+            versions.add(new SoftwareVersion(projectName, versionName, data, null));
         }
     }
 

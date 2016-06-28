@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import java.util.List;
+
 import weka.core.Instances;
 
 /**
@@ -37,6 +39,11 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * data of the version
      */
     private final Instances instances;
+    
+    /**
+     * Review effort per instance. 
+     */
+    private final List<Double> efforts;
 
     /**
      * Constructor. Creates a new version.
@@ -48,12 +55,13 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @param instances
      *            data of the version
      */
-    public SoftwareVersion(String project, String version, Instances instances) {
+    public SoftwareVersion(String project, String version, Instances instances, List<Double> efforts) {
         this.project = project;
         this.version = version;
         this.instances = instances;
+        this.efforts = efforts;
     }
-
+    
     /**
      * returns the project name
      * 
@@ -79,6 +87,17 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      */
     public Instances getInstances() {
         return new Instances(instances);
+    }
+    
+    /**
+     * <p>
+     * returns the review effort of the version
+     * </p>
+     *
+     * @return
+     */
+    public List<Double> getEfforts() {
+        return efforts;
     }
 
     /**
