@@ -524,7 +524,7 @@ public class QuadTree {
      * <li>repeat</li>
      * </ol>
      * 
-     * @param q
+     * @param list
      *            List of QuadTree (children only)
      */
     public void gridClustering(ArrayList<QuadTree> list) {

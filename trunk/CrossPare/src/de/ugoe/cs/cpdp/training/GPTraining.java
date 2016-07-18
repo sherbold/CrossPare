@@ -248,7 +248,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * returns the instance values
          * </p>
          *
-         * @return
+         * @return the instance values
          */
         public double[][] getX() {
             return instances_x;
@@ -259,7 +259,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * returns the instance labels
          * </p>
          *
-         * @return
+         * @return the instance labels
          */
         public boolean[] getY() {
             return instances_y;
@@ -449,9 +449,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
              *            classifications of the training data
              * @param populationSize
              *            the population size
-             * @param initMinDepth
+             * @param minInitDept
              *            the initial minimal depth of the S-expression tree
-             * @param initMaxDepth
+             * @param maxInitDepth
              *            the initial maximal depth of the S-expression tree
              * @param tournamentSize
              *            the tournament size for selection
@@ -1264,7 +1264,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          *            the classifier that is evaluated
          * @param evalData
          *            the validation data
-         * @return
+         * @return the type I and type II error rates
          */
         public double[] evaluate(GPRun classifier, Instances evalData) {
             GPGenotype gp = classifier.getGp();

@@ -38,7 +38,7 @@ public interface SingleVersionLoader {
      * Defines a filter for the files to be loaded; only strings that end with the filter are
      * considered.
      * 
-     * @param filename
+     * @param endsWith
      *            string defining the filename filter
      * @return true if a filename shall be considered
      */

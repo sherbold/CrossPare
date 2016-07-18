@@ -41,6 +41,9 @@ public class DECENTEpsilonModelHandler {
     private boolean useDECENTBinary = false;
     private boolean useARFFxBinary = false;
 
+    /**
+     * path for DECENT model meta data
+     */
     public static String metaPath = "./decent/models/";
 
     /**
@@ -299,7 +302,7 @@ public class DECENTEpsilonModelHandler {
      * 
      * @param fileName
      *            of the file
-     * @return
+     * @return file name
      * @throws URISyntaxException
      */
     public File getFile(String fileName) throws URISyntaxException {
@@ -336,7 +339,7 @@ public class DECENTEpsilonModelHandler {
     /**
      * Returns true if decent binary model is used
      * 
-     * @return
+     * @return true if binary
      */
 
     public boolean isUseDECENTBinary() {
@@ -355,7 +358,7 @@ public class DECENTEpsilonModelHandler {
     /**
      * Returns true if arffx binary model is used
      * 
-     * @return
+     * @return true if ARFFx
      */
     public boolean isUseARFFxBinary() {
         return useARFFxBinary;

@@ -362,7 +362,7 @@ public class WHICH extends AbstractClassifier {
          * returns the score of the rule
          * </p>
          *
-         * @return
+         * @return the score
          */
         public double getScore() {
             return score;
@@ -531,7 +531,7 @@ public class WHICH extends AbstractClassifier {
          * Randomly draws a rule weighted by the score.
          * </p>
          *
-         * @return
+         * @return drawn rule
          */
         public WhichRule drawRule() {
             double randVal = rand.nextDouble() * scoreSum;

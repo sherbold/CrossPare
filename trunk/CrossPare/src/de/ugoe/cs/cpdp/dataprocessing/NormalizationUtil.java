@@ -136,7 +136,7 @@ public class NormalizationUtil {
      *
      * @param testdata
      *            test data of the target product
-     * @param traindata
+     * @param traindataSet
      *            training data
      */
     public static void zScoreTarget(Instances testdata, SetUniqueList<Instances> traindataSet) {

@@ -402,7 +402,7 @@ public class DecentDataLoader implements SingleVersionLoader {
     /**
      * Returns if a filename ends with ".decent"
      * 
-     * @return
+     * @return true if a .decent file
      */
     @Override
     public boolean filenameFilter(String filename) {
