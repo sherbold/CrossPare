@@ -11,10 +11,6 @@ public class MySQLResultStorageTest {
         ExperimentResult result = new ExperimentResult("dummy", "product-1.0", "classifier");
         result.setSizeTestData(100);
         result.setSizeTrainingData(200);
-        result.setSuccHe(0.1);
-        result.setSuccZi(0.05);
-        result.setSuccG75(0.2);
-        result.setSuccG60(0.4);
         result.setError(0.2);
         result.setRecall(0.8);
         result.setPrecision(0.7);

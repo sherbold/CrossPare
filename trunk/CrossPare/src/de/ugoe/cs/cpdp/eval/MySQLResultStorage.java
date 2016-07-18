@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 import de.lmu.ifi.dbs.elki.logging.Logging.Level;
@@ -36,11 +35,6 @@ import de.ugoe.cs.util.console.Console;
  */
 public class MySQLResultStorage implements IResultStorage {
 
-    /**
-     * Connection to the database
-     */
-    //private Connection con = null;
-    
     /**
      * Connection pool for the data base.
      */
@@ -120,10 +114,6 @@ public class MySQLResultStorage implements IResultStorage {
         sql.append("\'" + result.getClassifier() + "\',");
         sql.append(result.getSizeTestData() + ",");
         sql.append(result.getSizeTrainingData() + ",");
-        sql.append(result.getSuccHe() + ",");
-        sql.append(result.getSuccZi() + ",");
-        sql.append(result.getSuccG75() + ",");
-        sql.append(result.getSuccG60() + ",");
         sql.append(result.getError() + ",");
         sql.append(result.getRecall() + ",");
         sql.append(result.getPrecision() + ",");
@@ -163,7 +153,8 @@ public class MySQLResultStorage implements IResultStorage {
     @Override
     public int containsResult(String experimentName, String productName, String classifierName) {
         String sql = "SELECT COUNT(*) as cnt FROM crosspare.results WHERE configurationName=\'" +
-            experimentName + "\' AND productName=\'" + productName + "\' AND classifier=\'" + classifierName + "\';";
+            experimentName + "\' AND productName=\'" + productName + "\' AND classifier=\'" +
+            classifierName + "\';";
         Statement stmt;
         try {
             stmt = connectionPool.getConnection().createStatement();

@@ -14,6 +14,15 @@
 
 package de.ugoe.cs.cpdp.loader;
 
+/**
+ * <p>
+ * Loads data from the automative defect data set from Audi Electronic Ventures donated by Altinger
+ * et al. at the MSR 2015. This loader contains the changes per commit, i.e., it is for JIT defect
+ * prediction.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public class AUDIChangeFolderLoader extends AbstractFolderLoader {
 
     /*

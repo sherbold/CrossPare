@@ -14,6 +14,13 @@
 
 package de.ugoe.cs.cpdp.loader;
 
+/**
+ * <p>
+ * Reads data from the data set provided by Mockus (and Zhang) for universal defect prediction.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public class CSVMockusFolderLoader extends AbstractFolderLoader {
 
     @Override

@@ -24,7 +24,7 @@ import java.util.List;
  */
 public abstract class AbstractVersionFilter implements IVersionFilter {
 
-    /**
+    /*
      * @see de.ugoe.cs.cpdp.versions.IVersionFilter#apply(java.util.List)
      */
     @Override

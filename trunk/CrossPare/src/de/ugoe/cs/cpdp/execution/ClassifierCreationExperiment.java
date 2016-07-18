@@ -106,26 +106,31 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             testdata.setRelationName(testVersion.getProject());
 
             for (IProcessesingStrategy processor : config.getPreProcessors()) {
-                Console.traceln(Level.FINE, String
-                    .format("[%s] [%02d/%02d] %s: applying preprocessor %s",
-                            config.getExperimentName(), versionCount, versions.size(),
-                            testVersion.getProject(), processor.getClass().getName()));
+                Console.traceln(Level.FINE,
+                                String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
+                                              config.getExperimentName(), versionCount,
+                                              versions.size(), testVersion.getProject(),
+                                              processor.getClass().getName()));
                 processor.apply(testdata, traindata);
             }
 
             for (IPointWiseDataselectionStrategy dataselector : config.getPointWiseSelectors()) {
-                Console.traceln(Level.FINE, String
-                    .format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
-                            config.getExperimentName(), versionCount, versions.size(),
-                            testVersion.getProject(), dataselector.getClass().getName()));
+                Console
+                    .traceln(Level.FINE,
+                             String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
+                                           config.getExperimentName(), versionCount,
+                                           versions.size(), testVersion.getProject(),
+                                           dataselector.getClass().getName()));
                 traindata = dataselector.apply(testdata, traindata);
             }
 
             for (IProcessesingStrategy processor : config.getPostProcessors()) {
-                Console.traceln(Level.FINE, String
-                    .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                            config.getExperimentName(), versionCount, versions.size(),
-                            testVersion.getProject(), processor.getClass().getName()));
+                Console
+                    .traceln(Level.FINE,
+                             String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                           config.getExperimentName(), versionCount,
+                                           versions.size(), testVersion.getProject(),
+                                           processor.getClass().getName()));
                 processor.apply(testdata, traindata);
             }
 
@@ -147,8 +152,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     // Console.println(trainerToSave.getClassifier().toString());
                     try {
                         weka.core.SerializationHelper.write(resultsDir.getAbsolutePath() + "/" +
-                                                                trainer.getName() + "-" +
-                                                                testVersion.getProject(),
+                            trainer.getName() + "-" + testVersion.getProject(),
                                                             trainerToSave.getClassifier());
                     }
                     catch (Exception e) {
@@ -159,24 +163,27 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             }
 
             for (IEvaluationStrategy evaluator : config.getEvaluators()) {
-                Console.traceln(Level.FINE, String
-                    .format("[%s] [%02d/%02d] %s: applying evaluator %s",
-                            config.getExperimentName(), versionCount, versions.size(),
-                            testVersion.getProject(), evaluator.getClass().getName()));
+                Console.traceln(Level.FINE,
+                                String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
+                                              config.getExperimentName(), versionCount,
+                                              versions.size(), testVersion.getProject(),
+                                              evaluator.getClass().getName()));
 
                 if (writeHeader) {
                     evaluator.setParameter(config.getResultsPath() + "/" +
                         config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader, config.getResultStorages());
+                evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
+                                config.getResultStorages());
                 writeHeader = false;
             }
 
             versionCount++;
 
-            Console.traceln(Level.INFO, String.format("[%s] [%02d/%02d] %s: finished",
-                                                      config.getExperimentName(), versionCount,
-                                                      versions.size(), testVersion.getProject()));
+            Console.traceln(Level.INFO,
+                            String.format("[%s] [%02d/%02d] %s: finished",
+                                          config.getExperimentName(), versionCount, versions.size(),
+                                          testVersion.getProject()));
 
         }
 

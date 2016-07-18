@@ -29,7 +29,7 @@ public class MinClassNumberFilter extends AbstractVersionFilter {
      */
     private int minInstances = 0;
 
-    /**
+    /*
      * @see de.ugoe.cs.cpdp.versions.IVersionFilter#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override

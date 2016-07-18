@@ -103,7 +103,9 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
                         instanceValues[i * characteristics.length + j] = stats.min;
                     }
                     else if ("median".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] = Utils.kthSmallestValue(testdata.attributeToDoubleArray(i), testdata.size()/2);
+                        instanceValues[i * characteristics.length + j] =
+                            Utils.kthSmallestValue(testdata.attributeToDoubleArray(i),
+                                                   testdata.size() / 2);
                     }
                     else {
                         throw new RuntimeException("Unkown distributional characteristic: " +
@@ -137,7 +139,9 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
                             instanceValues[i * characteristics.length + j] = stats.min;
                         }
                         else if ("median".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = Utils.kthSmallestValue(traindata.attributeToDoubleArray(i), traindata.size()/2);
+                            instanceValues[i * characteristics.length + j] =
+                                Utils.kthSmallestValue(traindata.attributeToDoubleArray(i),
+                                                       traindata.size() / 2);
                         }
                         else {
                             throw new RuntimeException("Unkown distributional characteristic: " +
@@ -172,8 +176,7 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
             data = Filter.useFilter(data, normalizer);
         }
         catch (Exception e) {
-            throw new RuntimeException(
-                                       "Unexpected exception during normalization of distributional characteristics.",
+            throw new RuntimeException("Unexpected exception during normalization of distributional characteristics.",
                                        e);
         }
         return data;

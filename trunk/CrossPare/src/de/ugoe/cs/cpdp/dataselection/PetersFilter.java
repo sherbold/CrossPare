@@ -26,7 +26,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Filter according to F. Peters, T. Menzies, and A. Marcus: Better Cross Company Defect Prediction <br>
+ * Filter according to F. Peters, T. Menzies, and A. Marcus: Better Cross Company Defect Prediction
+ * <br>
  * <br>
  * This filter does not work, the paper has been withdrawn.
  * 
@@ -35,7 +36,7 @@ import weka.core.Instances;
 @Deprecated
 public class PetersFilter implements IPointWiseDataselectionStrategy {
 
-    /**
+    /*
      * @see de.ugoe.cs.cpdp.IParameterizable#setParameter(java.lang.String)
      */
     @Override
@@ -43,9 +44,9 @@ public class PetersFilter implements IPointWiseDataselectionStrategy {
         // dummy
     }
 
-    /**
+    /*
      * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(weka.core.Instances,
-     *      weka.core.Instances)
+     * weka.core.Instances)
      */
     @Override
     public Instances apply(Instances testdata, Instances traindata) {

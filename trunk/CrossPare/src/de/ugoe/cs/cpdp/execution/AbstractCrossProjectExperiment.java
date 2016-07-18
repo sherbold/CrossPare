@@ -154,7 +154,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 testVersionCount++;
             }
         }
-        
+
         // sort versions
         Collections.sort(versions);
 
@@ -341,11 +341,20 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
         return result;
     }
 
+    /**
+     * <p>
+     * helper function that checks if the results are already in the data store
+     * </p>
+     *
+     * @param version
+     *            version for which the results are checked
+     * @return
+     */
     private int resultsAvailable(SoftwareVersion version) {
         if (config.getResultStorages().isEmpty()) {
             return 0;
         }
-        
+
         List<ITrainer> allTrainers = new LinkedList<>();
         for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
             allTrainers.add(setwiseTrainer);
@@ -361,12 +370,13 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
         for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
             allTrainers.add(trainer);
         }
-        
+
         int available = Integer.MAX_VALUE;
         for (IResultStorage storage : config.getResultStorages()) {
             String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
-            int curAvailable = storage.containsResult(config.getExperimentName(), version.getVersion(), classifierName);
-            if( curAvailable<available ) {
+            int curAvailable = storage.containsResult(config.getExperimentName(),
+                                                      version.getVersion(), classifierName);
+            if (curAvailable < available) {
                 available = curAvailable;
             }
         }

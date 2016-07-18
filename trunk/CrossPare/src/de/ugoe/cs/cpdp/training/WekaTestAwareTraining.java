@@ -21,13 +21,26 @@ import de.ugoe.cs.util.console.Console;
 import weka.classifiers.rules.ZeroR;
 import weka.core.Instances;
 
-// TODO comment
+/**
+ * <p>
+ * Trainer that allows classifiers access to the training data. Classifiers need to make sure that
+ * they do not use the classification.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public class WekaTestAwareTraining extends WekaBaseTraining implements ITestAwareTrainingStrategy {
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy#apply(weka.core.Instances,
+     * weka.core.Instances)
+     */
     @Override
     public void apply(Instances testdata, Instances traindata) {
         classifier = setupClassifier();
-        if( !(classifier instanceof ITestAwareClassifier) ) {
+        if (!(classifier instanceof ITestAwareClassifier)) {
             throw new RuntimeException("classifier must implement the ITestAwareClassifier interface in order to be used as TestAwareTrainingStrategy");
         }
         ((ITestAwareClassifier) classifier).setTestdata(testdata);

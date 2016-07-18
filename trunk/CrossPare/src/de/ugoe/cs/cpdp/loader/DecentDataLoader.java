@@ -236,11 +236,11 @@ public class DecentDataLoader implements SingleVersionLoader {
         HashMap<String, Object> metaModelCache = new HashMap<>();
         for (String key : EPackage.Registry.INSTANCE.keySet()) {
             metaModelCache.put(key, EPackage.Registry.INSTANCE.get(key));
-        };
+        } ;
 
         for (String key : metaModelCache.keySet()) {
             EPackage.Registry.INSTANCE.remove(key);
-        };
+        } ;
 
         // Workaround to gernerate a usable URI. Absolute path is not
         // possible, therefore we need to construct a relative path
@@ -444,7 +444,8 @@ public class DecentDataLoader implements SingleVersionLoader {
             module = new EolModule();
         }
         else {
-            Console.printerrln("Could not determine model type, file should end with either .etl or .eol");
+            Console
+                .printerrln("Could not determine model type, file should end with either .etl or .eol");
             return null;
         }
 

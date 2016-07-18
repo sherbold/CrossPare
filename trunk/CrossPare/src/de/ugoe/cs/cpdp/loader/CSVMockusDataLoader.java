@@ -23,6 +23,13 @@ import weka.core.DenseInstance;
 import weka.core.Instances;
 import de.ugoe.cs.util.FileTools;
 
+/**
+ * <p>
+ * Reads data from the data set provided by Mockus (and Zhang) for universal defect prediction.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 class CSVMockusDataLoader implements SingleVersionLoader {
 
     @Override

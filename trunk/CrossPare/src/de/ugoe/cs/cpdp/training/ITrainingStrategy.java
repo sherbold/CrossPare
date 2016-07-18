@@ -16,9 +16,31 @@ package de.ugoe.cs.cpdp.training;
 
 import weka.core.Instances;
 
+/**
+ * <p>
+ * Training strategy for training with the training data as a single data set.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public interface ITrainingStrategy extends ITrainer {
 
+    /**
+     * <p>
+     * Applies the training strategy.
+     * </p>
+     *
+     * @param traindata
+     *            the training data for all target products
+     */
     void apply(Instances traindata);
 
+    /**
+     * <p>
+     * returns the name of the training strategy
+     * </p>
+     *
+     * @return the name
+     */
     String getName();
 }

@@ -16,6 +16,13 @@ package de.ugoe.cs.cpdp.training;
 
 import de.ugoe.cs.cpdp.IParameterizable;
 
+/**
+ * <p>
+ * Marker interface for all CrossPare trainers.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public interface ITrainer extends IParameterizable {
 
 }

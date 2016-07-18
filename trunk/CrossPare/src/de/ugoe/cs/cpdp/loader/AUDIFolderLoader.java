@@ -14,6 +14,15 @@
 
 package de.ugoe.cs.cpdp.loader;
 
+/**
+ * 
+ * <p>
+ * Loads data from the automative defect data set from Audi Electronic Ventures donated by Altinger
+ * et al. at the MSR 2015. This loader creates overall defect labels, for the final revision.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public class AUDIFolderLoader extends AbstractFolderLoader {
 
     /*

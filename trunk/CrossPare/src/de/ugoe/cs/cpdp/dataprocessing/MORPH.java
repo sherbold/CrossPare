@@ -24,7 +24,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Implements the MORPH data privatization. 
+ * Implements the MORPH data privatization.
  * 
  * 
  * @author Steffen Herbold
@@ -35,17 +35,17 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
      * random number generator for MORPH
      */
     Random rand = new Random();
-    
+
     /**
      * parameter alpha for MORPH, default is 0.15
      */
     double alpha = 0.15;
-    
+
     /**
      * parameter beta for MORPH, default is 0.35
      */
     double beta = 0.35;
-    
+
     /**
      * Does not have parameters. String is ignored.
      * 
@@ -56,13 +56,14 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
     public void setParameter(String parameters) {
         if (parameters != null && !parameters.equals("")) {
             String[] values = parameters.split(" ");
-            if( values.length!=2 ) {
+            if (values.length != 2) {
                 throw new InvalidParameterException("MORPH requires two doubles as parameter or no parameters to use default values");
             }
             try {
                 alpha = Double.parseDouble(values[0]);
                 beta = Double.parseDouble(values[1]);
-            } catch(NumberFormatException e) {
+            }
+            catch (NumberFormatException e) {
                 throw new InvalidParameterException("MORPH requires two doubles as parameter or no parameters to use default values");
             }
         }
@@ -74,7 +75,7 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
      */
     @Override
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for( Instances traindata : traindataSet ) {
+        for (Instances traindata : traindataSet) {
             applyMORPH(traindata);
         }
     }
@@ -87,73 +88,82 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
     public void apply(Instances testdata, Instances traindata) {
         applyMORPH(traindata);
     }
-    
+
     /**
      * 
      * <p>
      * Applies MORPH to the data
      * </p>
      *
-     * @param data data to which the processor is applied
+     * @param data
+     *            data to which the processor is applied
      */
     public void applyMORPH(Instances data) {
-        for (int i=0; i<data.numInstances(); i++ ) {
+        for (int i = 0; i < data.numInstances(); i++) {
             morphInstance(data.get(i), data);
         }
     }
-    
+
     /**
      * <p>
      * Applies MORPH to a single instance
      * </p>
      *
-     * @param instance instance that is morphed
-     * @param data data based on which the instance is morphed
+     * @param instance
+     *            instance that is morphed
+     * @param data
+     *            data based on which the instance is morphed
      */
     public void morphInstance(Instance instance, Instances data) {
         Instance nearestUnlikeNeighbor = getNearestUnlikeNeighbor(instance, data);
-        if( nearestUnlikeNeighbor==null ) {
-            throw new RuntimeException("could not find nearest unlike neighbor within the data: " + data.relationName());
+        if (nearestUnlikeNeighbor == null) {
+            throw new RuntimeException("could not find nearest unlike neighbor within the data: " +
+                data.relationName());
         }
-        for( int j=0; j<data.numAttributes() ; j++ ) {
-            if( data.attribute(j)!=data.classAttribute() && data.attribute(j).isNumeric()) {
-                double randVal = rand.nextDouble()*(beta-alpha)+alpha;
-                instance.setValue(j, instance.value(j) + randVal*(instance.value(j)-nearestUnlikeNeighbor.value(j)) );
+        for (int j = 0; j < data.numAttributes(); j++) {
+            if (data.attribute(j) != data.classAttribute() && data.attribute(j).isNumeric()) {
+                double randVal = rand.nextDouble() * (beta - alpha) + alpha;
+                instance.setValue(j, instance.value(j) +
+                    randVal * (instance.value(j) - nearestUnlikeNeighbor.value(j)));
             }
         }
     }
-    
+
     /**
      * <p>
-     * Determines the nearest unlike neighbor of an instance. 
+     * Determines the nearest unlike neighbor of an instance.
      * </p>
      *
-     * @param instance instance to which the nearest unlike neighbor is determined
-     * @param data data where the nearest unlike neighbor is determined from
+     * @param instance
+     *            instance to which the nearest unlike neighbor is determined
+     * @param data
+     *            data where the nearest unlike neighbor is determined from
      * @return nearest unlike instance
      */
     public Instance getNearestUnlikeNeighbor(Instance instance, Instances data) {
         Instance nearestUnlikeNeighbor = null;
-        
-        double[] instanceVector = new double[data.numAttributes()-1];
+
+        double[] instanceVector = new double[data.numAttributes() - 1];
         int tmp = 0;
-        for( int j=0; j<data.numAttributes(); j++ ) {
-            if( data.attribute(j)!=data.classAttribute() && data.attribute(j).isNumeric()) {
+        for (int j = 0; j < data.numAttributes(); j++) {
+            if (data.attribute(j) != data.classAttribute() && data.attribute(j).isNumeric()) {
                 instanceVector[tmp] = instance.value(j);
             }
         }
-        
+
         double minDistance = Double.MAX_VALUE;
-        for( int i=0 ; i<data.numInstances() ; i++ ) {
-            if( instance.classValue() != data.instance(i).classValue() ) {
+        for (int i = 0; i < data.numInstances(); i++) {
+            if (instance.classValue() != data.instance(i).classValue()) {
                 double[] otherVector = new double[data.numAttributes() - 1];
                 tmp = 0;
                 for (int j = 0; j < data.numAttributes(); j++) {
-                    if (data.attribute(j) != data.classAttribute() && data.attribute(j).isNumeric()) {
+                    if (data.attribute(j) != data.classAttribute() &&
+                        data.attribute(j).isNumeric())
+                    {
                         otherVector[tmp++] = data.instance(i).value(j);
                     }
                 }
-                if( MathArrays.distance(instanceVector, otherVector)<minDistance) {
+                if (MathArrays.distance(instanceVector, otherVector) < minDistance) {
                     minDistance = MathArrays.distance(instanceVector, otherVector);
                     nearestUnlikeNeighbor = data.instance(i);
                 }

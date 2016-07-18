@@ -1,3 +1,4 @@
+
 package de.ugoe.cs.cpdp.loader;
 
 import java.io.BufferedReader;
@@ -9,6 +10,13 @@ import java.util.Set;
 
 import weka.core.Instances;
 
+/**
+ * <p>
+ * Loads data from the RELINK data set.
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public class RelinkLoader implements SingleVersionLoader {
 
     @Override
@@ -66,13 +74,13 @@ public class RelinkLoader implements SingleVersionLoader {
         attrNames.add("SumCyclomaticStrict");
         attrNames.add("SumEssential");
         attrNames.add("isDefective");
-        
-        for( int j=tmpData.numAttributes()-1; j>=0 ; j-- ) {
-            if( !attrNames.contains(tmpData.attribute(j).name()) ) {
+
+        for (int j = tmpData.numAttributes() - 1; j >= 0; j--) {
+            if (!attrNames.contains(tmpData.attribute(j).name())) {
                 tmpData.deleteAttributeAt(j);
             }
         }
-        
+
         // setting class attribute
         tmpData.setClassIndex(tmpData.numAttributes() - 1);
 

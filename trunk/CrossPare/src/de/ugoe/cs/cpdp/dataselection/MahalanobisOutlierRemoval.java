@@ -96,11 +96,13 @@ public class MahalanobisOutlierRemoval
         }
         RealMatrix inverseCovariance;
         try {
-            inverseCovariance =
-            new LUDecomposition(new Covariance(values).getCovarianceMatrix()).getSolver()
-                .getInverse();
-        } catch(SingularMatrixException e) {
-            Console.traceln(Level.WARNING, "could not perform Mahalanobis outlier removal due to singular covariance matrix");
+            inverseCovariance = new LUDecomposition(new Covariance(values).getCovarianceMatrix())
+                .getSolver().getInverse();
+        }
+        catch (SingularMatrixException e) {
+            Console
+                .traceln(Level.WARNING,
+                         "could not perform Mahalanobis outlier removal due to singular covariance matrix");
             return;
         }
         // create mean vector

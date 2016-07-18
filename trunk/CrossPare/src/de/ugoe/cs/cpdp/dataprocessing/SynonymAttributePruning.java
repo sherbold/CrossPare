@@ -58,7 +58,7 @@ public class SynonymAttributePruning implements IProcessesingStrategy {
     private void applySynonymPruning(Instances testdata, Instances traindata) {
         double distance;
         for (int j = traindata.numAttributes() - 1; j >= 0; j--) {
-            if( j!=traindata.classIndex() ) {
+            if (j != traindata.classIndex()) {
                 boolean hasClosest = false;
                 for (int i1 = 0; !hasClosest && i1 < traindata.size(); i1++) {
                     for (int i2 = 0; !hasClosest && i2 < traindata.size(); i2++) {
@@ -66,7 +66,8 @@ public class SynonymAttributePruning implements IProcessesingStrategy {
                             double minVal = Double.MAX_VALUE;
                             double distanceJ = Double.MAX_VALUE;
                             for (int k = 0; k < traindata.numAttributes(); k++) {
-                                distance = Math.abs(traindata.get(i1).value(k) - traindata.get(i2).value(k));
+                                distance = Math
+                                    .abs(traindata.get(i1).value(k) - traindata.get(i2).value(k));
                                 if (distance < minVal) {
                                     minVal = distance;
                                 }

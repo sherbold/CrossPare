@@ -35,8 +35,7 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
      */
     @Override
     public void setParameter(String parameters) {
-        // TODO Auto-generated method stub
-
+        // dummy, parameters not used
     }
 
     /*
@@ -55,8 +54,10 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
      * Applies the relevancy filter after Ryu et al.
      * </p>
      *
-     * @param testdata test data 
-     * @param traindata training data
+     * @param testdata
+     *            test data
+     * @param traindata
+     *            training data
      * @return filtered trainind data
      */
     private Instances applyNeighborhoodFilter(Instances testdata, Instances traindata) {

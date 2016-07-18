@@ -35,7 +35,7 @@ import weka.core.Instances;
  * interface. For each classifier, the following metrics are calculated:
  * <ul>
  * <li>succHe: Success with recall>0.7, precision>0.5</li>
- * <li>succZi: Success with recall>0.7, precision>0.7</li>
+ * <li>succZi: Success with recall>=0.75, precision>=0.7, and error<=0.25</li>
  * <li>succG75: Success with gscore>0.75</li>
  * <li>succG60: Success with gscore>0.6</li>
  * <li>error</li>
@@ -65,8 +65,14 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      */
     private PrintWriter output = new PrintWriter(System.out);
 
+    /**
+     * flag that defines if the output is the system out
+     */
     private boolean outputIsSystemOut = true;
-    
+
+    /**
+     * name of the configuration
+     */
     private String configurationName = "default";
 
     /**
@@ -91,18 +97,20 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
     public void apply(Instances testdata,
                       Instances traindata,
                       List<ITrainer> trainers,
-                      List<Double> efforts, 
+                      List<Double> efforts,
                       boolean writeHeader,
                       List<IResultStorage> storages)
     {
         final List<Classifier> classifiers = new LinkedList<>();
         final List<ExperimentResult> experimentResults = new LinkedList<>();
         String productName = testdata.relationName();
-        
+
         for (ITrainer trainer : trainers) {
             if (trainer instanceof IWekaCompatibleTrainer) {
                 classifiers.add(((IWekaCompatibleTrainer) trainer).getClassifier());
-                experimentResults.add(new ExperimentResult(configurationName, productName, ((IWekaCompatibleTrainer) trainer).getName()));
+                experimentResults
+                    .add(new ExperimentResult(configurationName, productName,
+                                              ((IWekaCompatibleTrainer) trainer).getName()));
             }
             else {
                 throw new RuntimeException("The selected evaluator only support Weka classifiers");
@@ -152,14 +160,14 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
             double aucec = calculateReviewEffort(testdata, classifier, efforts);
             double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
-            double succZi = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.7 ? 1.0 : 0.0;
+            double succZi = eval.recall(1) >= 0.75 && eval.precision(1) >= 0.75 && eval.errorRate()<=0.25 ? 1.0 : 0.0;
             double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
             double succG60 = gmeasure > 0.6 ? 1.0 : 0.0;
-            
+
             output.append("," + succHe);
             output.append("," + succZi);
             output.append("," + succG75);
-            output.append("," + succG60);            
+            output.append("," + succG60);
             output.append("," + eval.errorRate());
             output.append("," + eval.recall(1));
             output.append("," + eval.precision(1));
@@ -176,14 +184,10 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             output.append("," + eval.numFalseNegatives(1));
             output.append("," + eval.numTrueNegatives(1));
             output.append("," + eval.numFalsePositives(1));
-            
+
             ExperimentResult result = resultIter.next();
             result.setSizeTestData(testdata.numInstances());
             result.setSizeTrainingData(traindata.numInstances());
-            result.setSuccHe(succHe);
-            result.setSuccZi(succZi);
-            result.setSuccG75(succG75);
-            result.setSuccG60(succG60);
             result.setError(eval.errorRate());
             result.setRecall(eval.recall(1));
             result.setPrecision(eval.precision(1));
@@ -200,7 +204,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             result.setFn(eval.numFalseNegatives(1));
             result.setTn(eval.numTrueNegatives(1));
             result.setFp(eval.numFalsePositives(1));
-            for( IResultStorage storage : storages ) {
+            for (IResultStorage storage : storages) {
                 storage.addResult(result);
             }
         }
@@ -208,12 +212,28 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         output.append(StringTools.ENDLINE);
         output.flush();
     }
-    
-    private double calculateReviewEffort(Instances testdata, Classifier classifier, List<Double> efforts) {
-        if( efforts==null ) {
+
+    /**
+     * <p>
+     * Calculates the effort. TODO: IMPLEMENTATION BUGGY! MUST BE FIXED!
+     * </p>
+     *
+     * @param testdata
+     *            the test data
+     * @param classifier
+     *            the classifier
+     * @param efforts
+     *            the effort information for each instance in the test data
+     * @return
+     */
+    private double calculateReviewEffort(Instances testdata,
+                                         Classifier classifier,
+                                         List<Double> efforts)
+    {
+        if (efforts == null) {
             return 0;
         }
-        
+
         final List<Integer> bugPredicted = new ArrayList<>();
         final List<Integer> nobugPredicted = new ArrayList<>();
         double totalLoc = 0.0d;
@@ -228,8 +248,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 }
             }
             catch (Exception e) {
-                throw new RuntimeException(
-                                           "unexpected error during the evaluation of the review effort",
+                throw new RuntimeException("unexpected error during the evaluation of the review effort",
                                            e);
             }
             if (Double.compare(testdata.instance(i).classValue(), 1.0d) == 0) {
@@ -296,6 +315,17 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         return auc;
     }
 
+    /**
+     * <p>
+     * Calculates effort. Deprecated. Do not use!
+     * </p>
+     *
+     * @param testdata
+     *            the test data
+     * @param classifier
+     *            the classifier
+     * @return
+     */
     @SuppressWarnings("unused")
     @Deprecated
     private double calculateReviewEffort(Instances testdata, Classifier classifier) {
@@ -314,7 +344,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             // attribute in the RELINK data
             loc = testdata.attribute("CountLineCodeExe");
         }
-        if( loc == null ) {
+        if (loc == null) {
             return 0.0;
         }
 
@@ -332,8 +362,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 }
             }
             catch (Exception e) {
-                throw new RuntimeException(
-                                           "unexpected error during the evaluation of the review effort",
+                throw new RuntimeException("unexpected error during the evaluation of the review effort",
                                            e);
             }
             if (Double.compare(testdata.instance(i).classValue(), 1.0d) == 0) {
@@ -418,7 +447,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             try {
                 output = new PrintWriter(new FileOutputStream(parameters));
                 outputIsSystemOut = false;
-                int filenameStart = parameters.lastIndexOf('/')+1;
+                int filenameStart = parameters.lastIndexOf('/') + 1;
                 int filenameEnd = parameters.lastIndexOf('.');
                 configurationName = parameters.substring(filenameStart, filenameEnd);
             }
