@@ -54,6 +54,8 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      *            name of the version
      * @param instances
      *            data of the version
+     * @param efforts
+     *            review efforts for the version
      */
     public SoftwareVersion(String project,
                            String version,
@@ -98,7 +100,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * returns the review effort of the version
      * </p>
      *
-     * @return
+     * @return the review efforts
      */
     public List<Double> getEfforts() {
         return efforts;

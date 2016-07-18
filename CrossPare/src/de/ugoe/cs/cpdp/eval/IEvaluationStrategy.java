@@ -37,6 +37,8 @@ public interface IEvaluationStrategy extends IParameterizable {
      *            training data used
      * @param trainers
      *            list of training algorithms used to train the classifiers
+     * @param efforts
+     *            list with review efforts for each instance
      * @param writeHeader
      *            if true, a header line for the results file is written (may not be applicable)
      * @param storages

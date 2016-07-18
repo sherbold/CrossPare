@@ -187,7 +187,7 @@ public class ExperimentConfiguration extends DefaultHandler {
     /**
      * Constructor. Creates a new configuration from a given file.
      * 
-     * @param filename
+     * @param file
      *            handle of the file from the configuration is loaded.
      * @throws ExperimentConfigurationException
      *             thrown if there is an error creating the configuration
@@ -413,6 +413,13 @@ public class ExperimentConfiguration extends DefaultHandler {
         return evaluators;
     }
 
+    /**
+     * <p>
+     * returns the result storages
+     * </p>
+     *
+     * @return result storages
+     */
     public List<IResultStorage> getResultStorages() {
         return resultStorages;
     }

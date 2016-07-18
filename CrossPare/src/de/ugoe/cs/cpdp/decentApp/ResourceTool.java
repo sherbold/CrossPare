@@ -119,15 +119,15 @@ public class ResourceTool {
     }
 
     /**
-     * Loads a ressource from XMI
+     * Loads a resource from XMI
      * 
      * @param inputPath
      *            path to the xmi
      * @param extension
-     *            of the ressource to load
+     *            of the resource to load
      * @param p
      *            the given EPackage
-     * @return
+     * @return the resource
      */
     // TODO: workarounds copied from respective methods without EPackage parameter
     @SuppressWarnings(
@@ -155,13 +155,13 @@ public class ResourceTool {
     }
 
     /**
-     * Loads a ressource from XMI
+     * Loads a resource from XMI
      * 
      * @param inputPath
      *            path to the xmi
      * @param extension
      *            of the ressource to load
-     * @return
+     * @return the resource
      */
 
     @SuppressWarnings(
@@ -186,15 +186,15 @@ public class ResourceTool {
     }
 
     /**
-     * Gets a ressource from a binary form
+     * Gets a resource from a binary form
      * 
      * @param inputPath
      *            path to the binary
      * @param extension
      *            of the model to load
      * @param p
-     *            EPackage to put the loaded ressource in
-     * @return
+     *            EPackage to put the loaded resource in
+     * @return the resource
      */
     public Resource getResourceFromBinary(String inputPath, String extension, EPackage p) {
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
@@ -217,15 +217,15 @@ public class ResourceTool {
     }
 
     /**
-     * Loads a ressource from a binary form
+     * Loads a resource from a binary form
      * 
      * @param inputPath
      *            path to the binary
      * @param extension
      *            of the model to load
      * @param p
-     *            EPackage to put the loaded ressource in
-     * @return
+     *            EPackage to put the loaded resource in
+     * @return the resource
      */
     // TODO: workarounds copied from respective methods without EPackage parameter
     @SuppressWarnings(
@@ -265,13 +265,13 @@ public class ResourceTool {
     }
 
     /**
-     * Loads a ressource from a binary form
+     * Loads a resource from a binary form
      * 
      * @param inputPath
      *            path to the binary
      * @param extension
      *            of the model to load
-     * @return
+     * @return the resource
      */
     @SuppressWarnings(
         { "rawtypes" })
