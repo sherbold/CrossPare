@@ -70,9 +70,8 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
         double closestDistance = Double.MAX_VALUE;
         int closestIndex = 1;
         for (int i = 1; i < data.numInstances(); i++) {
-            double distance =
-                MathArrays.distance(data.instance(0).toDoubleArray(), data.instance(i)
-                    .toDoubleArray());
+            double distance = MathArrays.distance(data.instance(0).toDoubleArray(),
+                                                  data.instance(i).toDoubleArray());
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closestIndex = i;

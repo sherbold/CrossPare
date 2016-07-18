@@ -51,7 +51,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
      * Internally used correlation threshold.
      */
     double correlationThreshold = 0.5;
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -59,7 +59,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
      */
     @Override
     public void setParameter(String parameters) {
-        if( parameters!=null && !parameters.equals("")) {
+        if (parameters != null && !parameters.equals("")) {
             correlationThreshold = Double.parseDouble(parameters);
         }
     }
@@ -75,29 +75,31 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         }
     }
 
-    private void determineTopKAttributes(Instances testdata, SetUniqueList<Instances> traindataSet) throws Exception {
-        Integer[] counts = new Integer[traindataSet.get(0).numAttributes()-1];
-        IntStream.range(0,counts.length).forEach(val -> counts[val] = 0);
-        for( Instances traindata : traindataSet ) {
+    private void determineTopKAttributes(Instances testdata, SetUniqueList<Instances> traindataSet)
+        throws Exception
+    {
+        Integer[] counts = new Integer[traindataSet.get(0).numAttributes() - 1];
+        IntStream.range(0, counts.length).forEach(val -> counts[val] = 0);
+        for (Instances traindata : traindataSet) {
             J48 decisionTree = new J48();
             decisionTree.buildClassifier(traindata);
-            int k=0;
-            for( int j=0; j<traindata.numAttributes(); j++) {
-                if(j!=traindata.classIndex()){
-                    if( decisionTree.toString().contains(traindata.attribute(j).name()) ) {
-                        counts[k] = counts[k]+1;
+            int k = 0;
+            for (int j = 0; j < traindata.numAttributes(); j++) {
+                if (j != traindata.classIndex()) {
+                    if (decisionTree.toString().contains(traindata.attribute(j).name())) {
+                        counts[k] = counts[k] + 1;
                     }
                     k++;
                 }
             }
         }
         int[] topkIndex = new int[counts.length];
-        IntStream.range(0,counts.length).forEach(val -> topkIndex[val] = val);
+        IntStream.range(0, counts.length).forEach(val -> topkIndex[val] = val);
         SortUtils.quicksort(counts, topkIndex, true);
-        
+
         // get CFSs for each training set
         List<Set<Integer>> cfsSets = new LinkedList<>();
-        for( Instances traindata : traindataSet ) {
+        for (Instances traindata : traindataSet) {
             boolean selectionSuccessful = false;
             boolean secondAttempt = false;
             Instances traindataCopy = null;
@@ -112,7 +114,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
                         attsel.setSearch(search);
                         attsel.SelectAttributes(traindataCopy);
                         Set<Integer> cfsSet = new HashSet<>();
-                        for( int attr : attsel.selectedAttributes() ) {
+                        for (int attr : attsel.selectedAttributes()) {
                             cfsSet.add(attr);
                         }
                         cfsSets.add(cfsSet);
@@ -127,7 +129,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
                         attsel.setSearch(search);
                         attsel.SelectAttributes(traindata);
                         Set<Integer> cfsSet = new HashSet<>();
-                        for( int attr : attsel.selectedAttributes() ) {
+                        for (int attr : attsel.selectedAttributes()) {
                             cfsSet.add(attr);
                         }
                         cfsSets.add(cfsSet);
@@ -159,19 +161,19 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
             }
             while (!selectionSuccessful); // dummy loop for internal continue
         }
-        
+
         double[] coverages = new double[topkIndex.length];
-        for( Set<Integer> cfsSet : cfsSets ) {
+        for (Set<Integer> cfsSet : cfsSets) {
             Set<Integer> topkSet = new HashSet<>();
-            for( int k=0; k<topkIndex.length ; k++ ) {
+            for (int k = 0; k < topkIndex.length; k++) {
                 topkSet.add(topkIndex[k]);
-                coverages[k] += (coverage(topkSet, cfsSet)/traindataSet.size());
+                coverages[k] += (coverage(topkSet, cfsSet) / traindataSet.size());
             }
         }
         double bestCoverageValue = Double.MIN_VALUE;
         int bestCoverageIndex = 0;
-        for( int i=0; i<coverages.length; i++ ) {
-            if( coverages[i]>bestCoverageValue) {
+        for (int i = 0; i < coverages.length; i++) {
+            if (coverages[i] > bestCoverageValue) {
                 bestCoverageValue = coverages[i];
                 bestCoverageIndex = i;
             }
@@ -179,78 +181,80 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         // build correlation matrix
         SpearmansCorrelation corr = new SpearmansCorrelation();
         double[][] correlationMatrix = new double[bestCoverageIndex][bestCoverageIndex];
-        for( Instances traindata : traindataSet ) {
+        for (Instances traindata : traindataSet) {
             double[][] vectors = new double[bestCoverageIndex][traindata.size()];
-            for( int i=0; i<traindata.size(); i++ ) {
-                for( int j=0; j<bestCoverageIndex; j++) {
+            for (int i = 0; i < traindata.size(); i++) {
+                for (int j = 0; j < bestCoverageIndex; j++) {
                     vectors[j][i] = traindata.get(i).value(topkIndex[j]);
                 }
             }
-            for( int j=0; j<bestCoverageIndex; j++ ) {
-                for( int k=j+1; k<bestCoverageIndex; k++ ) {
+            for (int j = 0; j < bestCoverageIndex; j++) {
+                for (int k = j + 1; k < bestCoverageIndex; k++) {
                     correlationMatrix[j][k] = Math.abs(corr.correlation(vectors[j], vectors[k]));
                 }
             }
         }
         Set<Integer> topkSetIndexSet = new TreeSet<>();
-        // j<30 ensures that the computational time does not explode since the powerset is 2^n in complexity
-        for( int j=0; j<bestCoverageIndex && j<30 ; j++ ) {
+        // j<30 ensures that the computational time does not explode since the powerset is 2^n in
+        // complexity
+        for (int j = 0; j < bestCoverageIndex && j < 30; j++) {
             topkSetIndexSet.add(j);
         }
         Set<Set<Integer>> allCombinations = Sets.powerSet(topkSetIndexSet);
         double bestOptCoverage = Double.MIN_VALUE;
         Set<Integer> opttopkSetIndexSet = null;
-        for( Set<Integer> combination : allCombinations ) {
-            if( isUncorrelated(correlationMatrix, combination) ) {
+        for (Set<Integer> combination : allCombinations) {
+            if (isUncorrelated(correlationMatrix, combination)) {
                 double currentCoverage = 0.0;
                 Set<Integer> topkCombination = new TreeSet<>();
-                for( Integer index : combination ) {
+                for (Integer index : combination) {
                     topkCombination.add(topkIndex[index]);
                 }
-                for( Set<Integer> cfsSet : cfsSets ) {
-                    currentCoverage += (coverage(topkCombination, cfsSet)/traindataSet.size());
+                for (Set<Integer> cfsSet : cfsSets) {
+                    currentCoverage += (coverage(topkCombination, cfsSet) / traindataSet.size());
                 }
-                if( currentCoverage > bestOptCoverage ) {
+                if (currentCoverage > bestOptCoverage) {
                     bestOptCoverage = currentCoverage;
                     opttopkSetIndexSet = combination;
                 }
             }
         }
         Set<Integer> opttopkIndex = new TreeSet<>();
-        for( Integer index : opttopkSetIndexSet) {
+        for (Integer index : opttopkSetIndexSet) {
             opttopkIndex.add(topkIndex[index]);
         }
         Console.traceln(Level.FINE, "selected the following metrics:");
-        for( Integer index : opttopkIndex) {
+        for (Integer index : opttopkIndex) {
             Console.traceln(Level.FINE, traindataSet.get(0).attribute(index).name());
         }
         // finally remove attributes
-        for( int j=testdata.numAttributes()-1; j>=0; j-- ) {
-            if( j!=testdata.classIndex() && !opttopkIndex.contains(j) ) {
+        for (int j = testdata.numAttributes() - 1; j >= 0; j--) {
+            if (j != testdata.classIndex() && !opttopkIndex.contains(j)) {
                 testdata.deleteAttributeAt(j);
-                for( Instances traindata : traindataSet ) {
+                for (Instances traindata : traindataSet) {
                     traindata.deleteAttributeAt(j);
                 }
             }
         }
     }
-    
+
     private boolean isUncorrelated(double[][] correlationMatrix, Set<Integer> combination) {
         Integer[] intCombination = combination.toArray(new Integer[0]);
         boolean areUncorrelated = true;
-        for( int i=0 ; areUncorrelated && i<intCombination.length ; i++ ) {
-            for( int j=i+1; areUncorrelated && j<intCombination.length ; j++ ) {
-                areUncorrelated &= correlationMatrix[intCombination[i]][intCombination[j]]>correlationThreshold;
+        for (int i = 0; areUncorrelated && i < intCombination.length; i++) {
+            for (int j = i + 1; areUncorrelated && j < intCombination.length; j++) {
+                areUncorrelated &=
+                    correlationMatrix[intCombination[i]][intCombination[j]] > correlationThreshold;
             }
         }
         return areUncorrelated;
     }
-    
+
     private double coverage(Set<Integer> topkSet, Set<Integer> cfsSet) {
         Set<Integer> topkSetCopy1 = new HashSet<>(topkSet);
         topkSetCopy1.retainAll(cfsSet);
         Set<Integer> topkSetCopy2 = new HashSet<>(topkSet);
         topkSetCopy2.addAll(cfsSet);
-        return ((double) topkSetCopy1.size())/topkSetCopy2.size();
+        return ((double) topkSetCopy1.size()) / topkSetCopy2.size();
     }
 }

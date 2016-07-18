@@ -45,7 +45,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
         path = location;
     }
 
-    /**
+    /*
      * @see de.ugoe.cs.cpdp.loader.IVersionLoader#load()
      */
     @Override
@@ -67,8 +67,9 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                         {
                             Instances data = instancesLoader.load(versionFile);
                             String versionName = data.relationName();
-                            List<Double> efforts = getEfforts(data); 
-                            versions.add(new SoftwareVersion(projectName, versionName, data, efforts));
+                            List<Double> efforts = getEfforts(data);
+                            versions
+                                .add(new SoftwareVersion(projectName, versionName, data, efforts));
                         }
                     }
                 }
@@ -76,7 +77,16 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
         }
         return versions;
     }
-    
+
+    /**
+     * <p>
+     * Sets the efforts for the instances
+     * </p>
+     *
+     * @param data
+     *            the data
+     * @return
+     */
     private List<Double> getEfforts(Instances data) {
         // attribute in the JURECZKO data and default
         Attribute effortAtt = data.attribute("loc");
@@ -92,11 +102,11 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
             // attribute in the RELINK data
             effortAtt = data.attribute("CountLineCodeExe");
         }
-        if( effortAtt == null ) {
+        if (effortAtt == null) {
             return null;
         }
         List<Double> efforts = new ArrayList<>(data.size());
-        for( int i=0; i<data.size(); i++ ) {
+        for (int i = 0; i < data.size(); i++) {
             efforts.add(data.get(i).value(effortAtt));
         }
         return efforts;
@@ -105,7 +115,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
     /**
      * Returns the concrete {@link SingleVersionLoader} to be used with this folder loader.
      * 
-     * @return
+     * @return the version loader
      */
     abstract protected SingleVersionLoader getSingleLoader();
 }

@@ -34,32 +34,53 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
 /**
+ * <p>
  * Trainer with reimplementation of WHERE clustering algorithm from: Tim Menzies, Andrew Butcher,
  * David Cok, Andrian Marcus, Lucas Layman, Forrest Shull, Burak Turhan, Thomas Zimmermann,
  * "Local versus Global Lessons for Defect Prediction and Effort Estimation," IEEE Transactions on
  * Software Engineering, vol. 39, no. 6, pp. 822-834, June, 2013
- * 
- * With WekaLocalFQTraining we do the following: 1) Run the Fastmap algorithm on all training data,
- * let it calculate the 2 most significant dimensions and projections of each instance to these
- * dimensions 2) With these 2 dimensions we span a QuadTree which gets recursively split on
- * median(x) and median(y) values. 3) We cluster the QuadTree nodes together if they have similar
- * density (50%) 4) We save the clusters and their training data 5) We only use clusters with >
- * ALPHA instances (currently Math.sqrt(SIZE)), rest is discarded with the training data of this
- * cluster 6) We train a Weka classifier for each cluster with the clusters training data 7) We
- * recalculate Fastmap distances for a single instance with the old pivots and then try to find a
- * cluster containing the coords of the instance. 7.1.) If we can not find a cluster (due to coords
- * outside of all clusters) we find the nearest cluster. 8) We classify the Instance with the
- * classifier and traindata from the Cluster we found in 7.
+ * </p>
+ * <p>
+ * With WekaLocalFQTraining we do the following:
+ * <ol>
+ * <li>Run the Fastmap algorithm on all training data, let it calculate the 2 most significant
+ * dimensions and projections of each instance to these dimensions</li>
+ * <li>With these 2 dimensions we span a QuadTree which gets recursively split on median(x) and
+ * median(y) values.</li>
+ * <li>We cluster the QuadTree nodes together if they have similar density (50%)</li>
+ * <li>We save the clusters and their training data</li>
+ * <li>We only use clusters with > ALPHA instances (currently Math.sqrt(SIZE)), the rest is
+ * discarded with the training data of this cluster</li>
+ * <li>We train a Weka classifier for each cluster with the clusters training data</li>
+ * <li>We recalculate Fastmap distances for a single instance with the old pivots and then try to
+ * find a cluster containing the coords of the instance. If we can not find a cluster (due to coords
+ * outside of all clusters) we find the nearest cluster.</li>
+ * <li>We classify the Instance with the classifier and traindata from the Cluster we found in 7.
+ * </li>
+ * </p>
  */
 public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingStrategy {
 
+    /**
+     * the classifier
+     */
     private final TraindatasetCluster classifier = new TraindatasetCluster();
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.WekaBaseTraining#getClassifier()
+     */
     @Override
     public Classifier getClassifier() {
         return classifier;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.ITrainingStrategy#apply(weka.core.Instances)
+     */
     @Override
     public void apply(Instances traindata) {
         try {
@@ -70,37 +91,75 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
     }
 
+    /**
+     * <p>
+     * Weka classifier for the local model with WHERE clustering
+     * </p>
+     * 
+     * @author Alexander Trautsch
+     */
     public class TraindatasetCluster extends AbstractClassifier {
 
+        /**
+         * default serialization ID
+         */
         private static final long serialVersionUID = 1L;
 
-        /* classifier per cluster */
+        /**
+         * classifiers for each cluster
+         */
         private HashMap<Integer, Classifier> cclassifier;
 
-        /* instances per cluster */
+        /**
+         * training data for each cluster
+         */
         private HashMap<Integer, Instances> ctraindata;
 
-        /*
+        /**
          * holds the instances and indices of the pivot objects of the Fastmap calculation in
          * buildClassifier
          */
         private HashMap<Integer, Instance> cpivots;
 
-        /* holds the indices of the pivot objects for x,y and the dimension [x,y][dimension] */
+        /**
+         * holds the indices of the pivot objects for x,y and the dimension [x,y][dimension]
+         */
         private int[][] cpivotindices;
 
-        /* holds the sizes of the cluster multiple "boxes" per cluster */
+        /**
+         * holds the sizes of the cluster multiple "boxes" per cluster
+         */
         private HashMap<Integer, ArrayList<Double[][]>> csize;
 
-        /* debug vars */
+        /**
+         * debug variable
+         */
         @SuppressWarnings("unused")
         private boolean show_biggest = true;
 
+        /**
+         * debug variable
+         */
         @SuppressWarnings("unused")
         private int CFOUND = 0;
+
+        /**
+         * debug variable
+         */
         @SuppressWarnings("unused")
         private int CNOTFOUND = 0;
 
+        /**
+         * <p>
+         * copies an instance such that is is compatible with the local model
+         * </p>
+         *
+         * @param instances
+         *            instance format
+         * @param instance
+         *            instance that is copied
+         * @return
+         */
         private Instance createInstance(Instances instances, Instance instance) {
             // attributes for feeding instance to classifier
             Set<String> attributeNames = new HashSet<>();
@@ -126,13 +185,21 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
+         * <p>
          * Because Fastmap saves only the image not the values of the attributes it used we can not
          * use the old data directly to classify single instances to clusters.
-         * 
-         * To classify a single instance we do a new fastmap computation with only the instance and
+         * </p>
+         * <p>
+         * To classify a single instance we do a new Fastmap computation with only the instance and
          * the old pivot elements.
+         * </p>
+         * </p>
+         * After that we find the cluster with our Fastmap result for x and y.
+         * </p>
          * 
-         * After that we find the cluster with our fastmap result for x and y.
+         * @param instance
+         *            instance that is classified
+         * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
          */
         @Override
         public double classifyInstance(Instance instance) {
@@ -168,73 +235,53 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 // order defined above
                 double[][] distmat = new double[2 * FMAP.target_dims + 1][2 * FMAP.target_dims + 1];
                 distmat[0][0] = 0;
-                distmat[0][1] =
-                    dist.distance(clusterInstance,
-                                  this.cpivots.get((Integer) this.cpivotindices[0][0]));
-                distmat[0][2] =
-                    dist.distance(clusterInstance,
-                                  this.cpivots.get((Integer) this.cpivotindices[1][0]));
-                distmat[0][3] =
-                    dist.distance(clusterInstance,
-                                  this.cpivots.get((Integer) this.cpivotindices[0][1]));
-                distmat[0][4] =
-                    dist.distance(clusterInstance,
-                                  this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[0][1] = dist.distance(clusterInstance,
+                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
+                distmat[0][2] = dist.distance(clusterInstance,
+                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
+                distmat[0][3] = dist.distance(clusterInstance,
+                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
+                distmat[0][4] = dist.distance(clusterInstance,
+                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
 
-                distmat[1][0] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                  clusterInstance);
+                distmat[1][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
+                                              clusterInstance);
                 distmat[1][1] = 0;
-                distmat[1][2] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                  this.cpivots.get((Integer) this.cpivotindices[1][0]));
-                distmat[1][3] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                  this.cpivots.get((Integer) this.cpivotindices[0][1]));
-                distmat[1][4] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                  this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[1][2] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
+                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
+                distmat[1][3] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
+                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
+                distmat[1][4] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
+                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
 
-                distmat[2][0] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                  clusterInstance);
-                distmat[2][1] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                  this.cpivots.get((Integer) this.cpivotindices[0][0]));
+                distmat[2][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
+                                              clusterInstance);
+                distmat[2][1] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
+                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
                 distmat[2][2] = 0;
-                distmat[2][3] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                  this.cpivots.get((Integer) this.cpivotindices[0][1]));
-                distmat[2][4] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                  this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[2][3] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
+                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
+                distmat[2][4] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
+                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
 
-                distmat[3][0] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                  clusterInstance);
-                distmat[3][1] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                  this.cpivots.get((Integer) this.cpivotindices[0][0]));
-                distmat[3][2] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                  this.cpivots.get((Integer) this.cpivotindices[1][0]));
+                distmat[3][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
+                                              clusterInstance);
+                distmat[3][1] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
+                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
+                distmat[3][2] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
+                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
                 distmat[3][3] = 0;
-                distmat[3][4] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                  this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[3][4] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
+                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
 
-                distmat[4][0] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                  clusterInstance);
-                distmat[4][1] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                  this.cpivots.get((Integer) this.cpivotindices[0][0]));
-                distmat[4][2] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                  this.cpivots.get((Integer) this.cpivotindices[1][0]));
-                distmat[4][3] =
-                    dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                  this.cpivots.get((Integer) this.cpivotindices[0][1]));
+                distmat[4][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
+                                              clusterInstance);
+                distmat[4][1] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
+                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
+                distmat[4][2] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
+                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
+                distmat[4][3] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
+                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
                 distmat[4][4] = 0;
 
                 /*
@@ -242,8 +289,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                  * biggest = 0; for(int i=0; i < distmat.length; i++) { for(int j=0; j <
                  * distmat[0].length; j++) { if(biggest < distmat[i][j]) { biggest = distmat[i][j];
                  * } } } if(this.show_biggest) { Console.traceln(Level.INFO,
-                 * String.format(""+clusterInstance)); Console.traceln(Level.INFO,
-                 * String.format("biggest distances: "+ biggest)); this.show_biggest = false; }
+                 * String.format(""+clusterInstance)); Console.traceln(Level.INFO, String.format(
+                 * "biggest distances: "+ biggest)); this.show_biggest = false; }
                  */
 
                 FMAP.setDistmat(distmat);
@@ -315,7 +362,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                     while (clusternumber.hasNext()) {
                         cnumber = clusternumber.next();
                         for (int i = 0; i < ctraindata.get(cnumber).size(); i++) {
-                            if (dist.distance(instance, ctraindata.get(cnumber).get(i)) <= min_distance)
+                            if (dist.distance(instance,
+                                              ctraindata.get(cnumber).get(i)) <= min_distance)
                             {
                                 found_cnumber = cnumber;
                                 min_distance =
@@ -346,6 +394,11 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             return ret;
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
+         */
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
 
@@ -420,7 +473,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             }
 
             // Console.traceln(Level.INFO,
-            // String.format("size for cluster ("+small[0]+","+small[1]+") - ("+big[0]+","+big[1]+")"));
+            // String.format("size for cluster ("+small[0]+","+small[1]+") -
+            // ("+big[0]+","+big[1]+")"));
 
             // 5. generate quadtree
             QuadTree TREE = new QuadTree(null, qtp);
@@ -438,7 +492,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 { small[1], big[1] });
 
             // recursive split und grid clustering eher static
-            TREE.recursiveSplit(TREE);
+            QuadTree.recursiveSplit(TREE);
 
             // generate list of nodes sorted by density (childs only)
             ArrayList<QuadTree> l = new ArrayList<QuadTree>(TREE.getList(TREE));
@@ -464,9 +518,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                     }
                 }
                 else {
-                    Console.traceln(Level.INFO,
-                                    String.format("drop cluster, only: " + current.size() +
-                                        " instances"));
+                    Console.traceln(Level.INFO, String
+                        .format("drop cluster, only: " + current.size() + " instances"));
                 }
             }
 
@@ -504,7 +557,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 // Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
                 // traindata_count += ctraindata.get(cnumber).size();
                 // Console.traceln(Level.INFO,
-                // String.format("building classifier in cluster "+cnumber +"  with "+
+                // String.format("building classifier in cluster "+cnumber +" with "+
                 // ctraindata.get(cnumber).size() +" traindata instances"));
             }
 
@@ -515,59 +568,116 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
     }
 
     /**
-     * Payload for the QuadTree. x and y are the calculated Fastmap values. T is a weka instance.
+     * <p>
+     * Payload for the QuadTree. x and y are the calculated Fastmap values. T is a Weka instance.
+     * </p>
+     * 
+     * @author Alexander Trautsch
      */
     public class QuadTreePayload<T> {
 
-        public double x;
-        public double y;
+        /**
+         * x-value
+         */
+        public final double x;
+
+        /**
+         * y-value
+         */
+        public final double y;
+
+        /**
+         * associated instance
+         */
         private T inst;
 
+        /**
+         * <p>
+         * Constructor. Creates the payload.
+         * </p>
+         *
+         * @param x
+         *            x-value
+         * @param y
+         *            y-value
+         * @param value
+         *            associated instace
+         */
         public QuadTreePayload(double x, double y, T value) {
             this.x = x;
             this.y = y;
             this.inst = value;
         }
 
+        /**
+         * <p>
+         * returns the instance
+         * </p>
+         *
+         * @return
+         */
         public T getInst() {
             return this.inst;
         }
     }
 
     /**
-     * Fastmap implementation
-     * 
-     * Faloutsos, C., & Lin, K. I. (1995). FastMap: A fast algorithm for indexing, data-mining and
+     * <p>
+     * Fastmap implementation after:<br>
+     * * Faloutsos, C., & Lin, K. I. (1995). FastMap: A fast algorithm for indexing, data-mining and
      * visualization of traditional and multimedia datasets (Vol. 24, No. 2, pp. 163-174). ACM.
+     * </p>
      */
     public class Fastmap {
 
-        /* N x k Array, at the end, the i-th row will be the image of the i-th object */
+        /**
+         * N x k Array, at the end, the i-th row will be the image of the i-th object
+         */
         private double[][] X;
 
-        /* 2 x k pivot Array one pair per recursive call */
+        /**
+         * 2 x k pivot Array one pair per recursive call
+         */
         private int[][] PA;
 
-        /* Objects we got (distance matrix) */
+        /**
+         * Objects we got (distance matrix)
+         */
         private double[][] O;
 
-        /* column of X currently updated (also the dimension) */
+        /**
+         * column of X currently updated (also the dimension)
+         */
         private int col = 0;
 
-        /* number of dimensions we want */
+        /**
+         * number of dimensions we want
+         */
         private int target_dims = 0;
 
-        // if we already have the pivot elements
+        /**
+         * if we already have the pivot elements
+         */
         private boolean pivot_set = false;
 
+        /**
+         * <p>
+         * Constructor. Creates a new Fastmap object.
+         * </p>
+         *
+         * @param k
+         */
         public Fastmap(int k) {
             this.target_dims = k;
         }
 
         /**
-         * Sets the distance matrix and params that depend on this
+         * <p>
+         * Sets the distance matrix and params that depend on this.
+         * </p>
          * 
          * @param O
+         *            distance matrix
          */
         public void setDistmat(double[][] O) {
             this.O = O;
@@ -577,10 +687,13 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
+         * <p>
          * Set pivot elements, we need that to classify instances after the calculation is complete
          * (because we then want to reuse only the pivot elements).
+         * </p>
          * 
          * @param pi
+         *            the pivots
          */
         public void setPivots(int[][] pi) {
             this.pivot_set = true;
@@ -588,25 +701,29 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
+         * <p>
          * Return the pivot elements that were chosen during the calculation
+         * </p>
          * 
-         * @return
+         * @return the pivots
          */
         public int[][] getPivots() {
             return this.PA;
         }
 
         /**
-         * The distance function for euclidean distance
-         * 
-         * Acts according to equation 4 of the fastmap paper
+         * <p>
+         * The distance function for euclidean distance. Acts according to equation 4 of the Fastmap
+         * paper.
+         * </p>
          * 
          * @param x
          *            x index of x image (if k==0 x object)
          * @param y
          *            y index of y image (if k==0 y object)
-         * @param kdimensionality
-         * @return distance
+         * @param k
+         *            dimensionality
+         * @return the distance
          */
         private double dist(int x, int y, int k) {
 
@@ -623,8 +740,10 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
-         * Find the object farthest from the given index This method is a helper Method for
-         * findDistandObjects
+         * <p>
+         * Find the object farthest from the given index. This method is a helper Method for
+         * findDistandObjects.
+         * </p>
          * 
          * @param index
          *            of the object
@@ -645,11 +764,11 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
-         * Finds the pivot objects
+         * <p>
+         * Finds the pivot objects. This method is basically algorithm 1 of the Fastmap paper.
+         * </p>
          * 
-         * This method is basically algorithm 1 of the fastmap paper.
-         * 
-         * @return 2 indexes of the choosen pivot objects
+         * @return 2 indexes of the chosen pivot objects
          */
         private int[] findDistantObjects() {
             // 1. choose object randomly
@@ -667,14 +786,11 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
-         * Calculates the new k-vector values (projections)
-         * 
-         * This is basically algorithm 2 of the fastmap paper. We just added the possibility to
-         * pre-set the pivot elements because we need to classify single instances after the
-         * computation is already done.
-         * 
-         * @param dims
-         *            dimensionality
+         * <p>
+         * Calculates the new k-vector values (projections) This is basically algorithm 2 of the
+         * fastmap paper. We just added the possibility to pre-set the pivot elements because we
+         * need to classify single instances after the computation is already done.
+         * </p>
          */
         public void calculate() {
 
@@ -712,7 +828,9 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
         }
 
         /**
+         * <p>
          * returns the result matrix of the projections
+         * </p>
          * 
          * @return calculated result
          */

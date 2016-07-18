@@ -52,7 +52,7 @@ public class Runner {
             if (file.isFile()) {
                 createConfig(threadPool, file.getAbsolutePath());
             }
-            else if (file.isDirectory() && file.listFiles()!=null ) {
+            else if (file.isDirectory() && file.listFiles() != null) {
                 for (File subfile : file.listFiles()) {
                     if (subfile.isFile()) {
                         createConfig(threadPool, subfile.getAbsolutePath());

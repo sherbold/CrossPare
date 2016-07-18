@@ -36,23 +36,47 @@ import weka.core.Instances;
  * used for defect prediction by Nam et al. (Transfer Defect Learning)
  * </p>
  * 
- * TODO comment class
  * @author Steffen Herbold
  */
 public class TransferComponentAnalysis implements IProcessesingStrategy {
 
+    /**
+     * Dimension of the reduced data.
+     */
     int reducedDimension = 5;
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.IParameterizable#setParameter(java.lang.String)
+     */
     @Override
     public void setParameter(String parameters) {
-        
+        // dummy, paramters ignored
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
+     * weka.core.Instances)
+     */
     @Override
     public void apply(Instances testdata, Instances traindata) {
         applyTCA(testdata, traindata);
     }
 
+    /**
+     * <p>
+     * calculates the linear kernel function between two instances
+     * </p>
+     *
+     * @param x1
+     *            first instance
+     * @param x2
+     *            second instance
+     * @return kernel value
+     */
     private double linearKernel(Instance x1, Instance x2) {
         double value = 0.0d;
         for (int j = 0; j < x1.numAttributes(); j++) {
@@ -63,6 +87,16 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         return value;
     }
 
+    /**
+     * <p>
+     * Applies TCA to the test and training data.
+     * </p>
+     *
+     * @param testdata
+     *            the test data
+     * @param traindata
+     *            the training data
+     */
     private void applyTCA(Instances testdata, Instances traindata) {
         final int sizeTest = testdata.numInstances();
         final int sizeTrain = traindata.numInstances();
@@ -124,6 +158,17 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         }
     }
 
+    /**
+     * <p>
+     * Creates the kernel matrix of the test and training data
+     * </p>
+     *
+     * @param testdata
+     *            the test data
+     * @param traindata
+     *            the training data
+     * @return kernel matrix
+     */
     private PrimitiveMatrix buildKernel(Instances testdata, Instances traindata) {
         final int kernelDim = traindata.numInstances() + testdata.numInstances();
 
@@ -161,6 +206,18 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         return kernelBuilder.build();
     }
 
+    /**
+     * <p>
+     * Calculates the kernel norm matrix, i.e., the matrix which is used for matrix multiplication
+     * to calculate the kernel norm.
+     * </p>
+     *
+     * @param dimTest
+     *            dimension of the test data
+     * @param sizeTrain
+     *            number of instances of the training data
+     * @return kernel norm matrix
+     */
     private PrimitiveMatrix buildKernelNormMatrix(final int dimTest, final int sizeTrain) {
         final double trainSquared = 1.0 / (sizeTrain * (double) sizeTrain);
         final double testSquared = 1.0 / (dimTest * (double) dimTest);
@@ -198,6 +255,17 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         return kernelNormBuilder.build();
     }
 
+    /**
+     * <p>
+     * Creates the center matrix
+     * </p>
+     *
+     * @param sizeTest
+     *            number of instances of the test data
+     * @param sizeTrain
+     *            number of instances of the training data
+     * @return center matrix
+     */
     private PrimitiveMatrix buildCenterMatrix(final int sizeTest, final int sizeTrain) {
         Builder<PrimitiveMatrix> centerMatrix =
             PrimitiveMatrix.getBuilder(sizeTest + sizeTrain, sizeTest + sizeTrain);
@@ -207,6 +275,19 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         return centerMatrix.build();
     }
 
+    /**
+     * <p>
+     * Builds the mu-Matrix for offsetting values.
+     * </p>
+     *
+     * @param sizeTest
+     *            number of instances of the test data
+     * @param sizeTrain
+     *            number of instances of the training data
+     * @param mu
+     *            mu parameter
+     * @return mu-Matrix
+     */
     private PrimitiveMatrix buildMuMatrix(final int sizeTest,
                                           final int sizeTrain,
                                           final double mu)

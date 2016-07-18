@@ -22,19 +22,21 @@ import weka.core.Utils;
 import weka.core.Capabilities.Capability;
 
 /**
- * Simple classifier that always predicts the same class
+ * Simple classifier that always predicts the same class.
  * 
  * @author Steffen Herbold
  */
 public class FixClass extends AbstractClassifier {
 
+    /**
+     * default serialization ID
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * default prediction: non-defective
+     */
     private double fixedClassValue = 0.0d;
-
-    public FixClass() {
-        // TODO Auto-generated constructor stub
-    }
 
     /**
      * Returns default capabilities of the classifier.
@@ -65,16 +67,31 @@ public class FixClass extends AbstractClassifier {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.AbstractClassifier#setOptions(java.lang.String[])
+     */
     @Override
     public void setOptions(String[] options) throws Exception {
         fixedClassValue = Double.parseDouble(Utils.getOption('C', options));
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
+     */
     @Override
     public double classifyInstance(Instance instance) {
         return fixedClassValue;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
+     */
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         // do nothing

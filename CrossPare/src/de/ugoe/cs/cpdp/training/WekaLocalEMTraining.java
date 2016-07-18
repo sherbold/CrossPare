@@ -32,27 +32,45 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
 /**
- * WekaLocalEMTraining
- * 
+ * <p>
  * Local Trainer with EM Clustering for data partitioning. Currently supports only EM Clustering.
+ * </p>
+ * <ol>
+ * <li>Cluster training data</li>
+ * <li>for each cluster train a classifier with training data from cluster</li>
+ * <li>match test data instance to a cluster, then classify with classifier from the cluster</li>
+ * </ol>
  * 
- * 1. Cluster training data 2. for each cluster train a classifier with training data from cluster
- * 3. match test data instance to a cluster, then classify with classifier from the cluster
+ * XML configuration:
  * 
- * XML configuration: <!-- because of clustering --> <preprocessor name="Normalization" param=""/>
- * 
- * <!-- cluster trainer --> <trainer name="WekaLocalEMTraining"
- * param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
+ * <pre>
+ * {@code
+ * <trainer name="WekaLocalEMTraining" param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
+ * }
+ * </pre>
  */
 public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingStrategy {
 
+    /**
+     * the classifier
+     */
     private final TraindatasetCluster classifier = new TraindatasetCluster();
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.WekaBaseTraining#getClassifier()
+     */
     @Override
     public Classifier getClassifier() {
         return classifier;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.ITrainingStrategy#apply(weka.core.Instances)
+     */
     @Override
     public void apply(Instances traindata) {
         try {
@@ -63,13 +81,33 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
         }
     }
 
+    /**
+     * <p>
+     * Weka classifier for the local model with EM clustering.
+     * </p>
+     * 
+     * @author Alexander Trautsch
+     */
     public class TraindatasetCluster extends AbstractClassifier {
 
+        /**
+         * default serializtion ID
+         */
         private static final long serialVersionUID = 1L;
 
+        /**
+         * EM clusterer used
+         */
         private EM clusterer = null;
 
+        /**
+         * classifiers for each cluster
+         */
         private HashMap<Integer, Classifier> cclassifier;
+
+        /**
+         * training data for each cluster
+         */
         private HashMap<Integer, Instances> ctraindata;
 
         /**
@@ -106,6 +144,11 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
             return instCopy;
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
+         */
         @Override
         public double classifyInstance(Instance instance) {
             double ret = 0;
@@ -138,6 +181,11 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
             return ret;
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
+         */
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
 

@@ -26,21 +26,49 @@ import weka.classifiers.meta.CVParameterSelection;
 import weka.classifiers.meta.Vote;
 
 /**
- * WekaBaseTraining2
- * 
+ * <p>
  * Allows specification of the Weka classifier and its params in the XML experiment configuration.
- * 
+ * </p>
+ * <p>
  * Important conventions of the XML format: Cross Validation params always come last and are
- * prepended with -CVPARAM Example: <trainer name="WekaTraining"
- * param="RandomForestLocal weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5"/>
+ * prepended with -CVPARAM.<br>
+ * Example:
+ * 
+ * <pre>
+ * {@code
+ * <trainer name="WekaTraining" param="RandomForestLocal weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5"/>
+ * }
+ * </pre>
+ * 
+ * @author Alexander Trautsch
  */
 public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
 
+    /**
+     * reference to the Weka classifier
+     */
     protected Classifier classifier = null;
+
+    /**
+     * qualified class name of the weka classifier
+     */
     protected String classifierClassName;
+
+    /**
+     * name of the classifier
+     */
     protected String classifierName;
+
+    /**
+     * parameters of the training
+     */
     protected String[] classifierParams;
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.IParameterizable#setParameter(java.lang.String)
+     */
     @Override
     public void setParameter(String parameters) {
         String[] params = parameters.split(" ");
@@ -57,14 +85,26 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         // weka.classifiers.functions.supportVector.RBFKernel)
         classifierParams = Arrays.copyOfRange(params, 2, params.length);
 
-        //classifier = setupClassifier();
+        // classifier = setupClassifier();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer#getClassifier()
+     */
     @Override
     public Classifier getClassifier() {
         return classifier;
     }
 
+    /**
+     * <p>
+     * helper function that sets up the Weka classifier including its parameters
+     * </p>
+     *
+     * @return
+     */
     protected Classifier setupClassifier() {
         Classifier cl = null;
         try {
@@ -94,10 +134,10 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
             ((OptionHandler) obj).setOptions(param);
             cl = obj;
 
-            if( cl instanceof Vote ) {
+            if (cl instanceof Vote) {
                 Vote votingClassifier = (Vote) cl;
-                for( Classifier classifier : votingClassifier.getClassifiers() ) {
-                    if( classifier instanceof BayesNet ) {
+                for (Classifier classifier : votingClassifier.getClassifiers()) {
+                    if (classifier instanceof BayesNet) {
                         ((BayesNet) classifier).setUseADTree(false);
                     }
                 }
@@ -140,6 +180,11 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         return cl;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer#getName()
+     */
     @Override
     public String getName() {
         return classifierName;

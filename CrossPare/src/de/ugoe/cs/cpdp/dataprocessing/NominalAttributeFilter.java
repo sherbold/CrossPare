@@ -94,8 +94,8 @@ public class NominalAttributeFilter implements IProcessesingStrategy {
             Instance wekaInstance = traindata.get(j);
 
             // delete all instances where nominal attribute has the value of one of the parameter
-            if (indexOfnominalAttributeValues.contains(wekaInstance
-                .value(indexOfConfidenceAttribute)))
+            if (indexOfnominalAttributeValues
+                .contains(wekaInstance.value(indexOfConfidenceAttribute)))
             {
                 traindata.delete(j);
             }

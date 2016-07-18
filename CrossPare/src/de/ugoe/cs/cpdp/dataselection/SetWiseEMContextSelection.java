@@ -40,8 +40,16 @@ import weka.filters.unsupervised.attribute.Normalize;
  */
 public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy {
 
+    /**
+     * context factors
+     */
     private String[] project_context_factors; // = new String[]{"TND", "TNC", "TNF", "TLOC"};
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.IParameterizable#setParameter(java.lang.String)
+     */
     @Override
     public void setParameter(String parameters) {
         if (parameters != null) {
@@ -102,12 +110,17 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
             Console.traceln(Level.INFO, "instances nach dem clustern: " + traindataSet.size());
         }
         catch (Exception e) {
-            throw new RuntimeException(
-                                       "error applying setwise EM clustering training data selection",
+            throw new RuntimeException("error applying setwise EM clustering training data selection",
                                        e);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * org.apache.commons.collections4.list.SetUniqueList)
+     */
     @Override
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
         // issuetracking und pl muss passen
@@ -130,7 +143,8 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
      * @param traindataSet
      * @return
      */
-    protected Instances getContextFactors(Instances testdata, SetUniqueList<Instances> traindataSet)
+    protected Instances getContextFactors(Instances testdata,
+                                          SetUniqueList<Instances> traindataSet)
     {
         // setup weka Instances for clustering
         final ArrayList<Attribute> atts = new ArrayList<Attribute>();
@@ -189,7 +203,9 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
             {
                 remove.add(traindata);
                 // Console.traceln(Level.WARNING,
-                // "rmove attribute "+attribute+" test: "+testdata.firstInstance().value(testdata.attribute(attribute))+" train: "+traindata.firstInstance().value(traindata.attribute(attribute)));
+                // "rmove attribute "+attribute+" test:
+                // "+testdata.firstInstance().value(testdata.attribute(attribute))+" train:
+                // "+traindata.firstInstance().value(traindata.attribute(attribute)));
             }
         }
 
@@ -217,8 +233,7 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
             data = Filter.useFilter(data, normalizer);
         }
         catch (Exception e) {
-            throw new RuntimeException(
-                                       "Unexpected exception during normalization of distributional characteristics.",
+            throw new RuntimeException("Unexpected exception during normalization of distributional characteristics.",
                                        e);
         }
         return data;

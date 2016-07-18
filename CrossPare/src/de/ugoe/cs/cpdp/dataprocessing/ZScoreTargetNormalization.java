@@ -23,7 +23,8 @@ import weka.core.Instances;
  * 
  * @author Steffen Herbold
  */
-public class ZScoreTargetNormalization implements ISetWiseProcessingStrategy, IProcessesingStrategy
+public class ZScoreTargetNormalization
+    implements ISetWiseProcessingStrategy, IProcessesingStrategy
 {
 
     /**

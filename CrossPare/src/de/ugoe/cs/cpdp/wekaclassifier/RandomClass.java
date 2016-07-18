@@ -21,23 +21,43 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
+ * <p>
  * Assigns a random class label to the instance it is evaluated on.
- * 
+ * </p>
  * The range of class labels are hardcoded in fixedClassValues. This can later be extended to take
  * values from the XML configuration.
+ * </p>
+ * 
+ * @author Alexander Trautsch
  */
 public class RandomClass extends AbstractClassifier {
 
+    /**
+     * default serialization id
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * class values
+     */
     private double[] fixedClassValues =
         { 0.0d, 1.0d };
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
+     */
     @Override
     public void buildClassifier(Instances arg0) throws Exception {
         // do nothing
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
+     */
     @Override
     public double classifyInstance(Instance instance) {
         Random rand = new Random();

@@ -30,19 +30,27 @@ import de.ugoe.cs.util.console.Console;
 /**
  * Use in Config:
  * 
- * Specify number of clusters -N = Num Clusters <pointwiseselector
- * name="PointWiseEMClusterSelection" param="-N 10"/>
+ * Specify number of clusters -N = Num Clusters
+ * <pointwiseselector name="PointWiseEMClusterSelection" param="-N 10"/>
  * 
  * Try to determine the number of clusters: -I 10 = max iterations -X 5 = 5 folds for cross
- * evaluation -max = max number of clusters <pointwiseselector name="PointWiseEMClusterSelection"
- * param="-I 10 -X 5 -max 300"/>
+ * evaluation -max = max number of clusters
+ * <pointwiseselector name="PointWiseEMClusterSelection" param="-I 10 -X 5 -max 300"/>
  * 
  * Don't forget to add: <preprocessor name="Normalization" param=""/>
  */
 public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrategy {
 
+    /**
+     * paramters passed to the selection
+     */
     private String[] params;
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.IParameterizable#setParameter(java.lang.String)
+     */
     @Override
     public void setParameter(String parameters) {
         params = parameters.split(" ");
@@ -107,9 +115,8 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
                 }
             }
 
-            Console.traceln(Level.INFO,
-                            String.format("our testdata is in: " + selectedCluster.size() +
-                                " different clusters"));
+            Console.traceln(Level.INFO, String
+                .format("our testdata is in: " + selectedCluster.size() + " different clusters"));
 
             // 5. get cluster membership of our traindata
             AddCluster cfilter = new AddCluster();
@@ -126,9 +133,8 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
 
             for (int j = 0; j < ctrain.numInstances(); j++) {
                 // get the cluster number from the attributes
-                cnumber =
-                    Integer.parseInt(ctrain.get(j).stringValue(ctrain.get(j).numAttributes() - 1)
-                        .replace("cluster", ""));
+                cnumber = Integer.parseInt(ctrain.get(j)
+                    .stringValue(ctrain.get(j).numAttributes() - 1).replace("cluster", ""));
 
                 // Console.traceln(Level.INFO,
                 // String.format("instance "+j+" is in cluster: "+cnumber));
@@ -144,9 +150,8 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
                 }
             }
 
-            Console.traceln(Level.INFO,
-                            String.format("that leaves us with: " + selected.numInstances() +
-                                " traindata instances from " + traindata.numInstances()));
+            Console.traceln(Level.INFO, String.format("that leaves us with: " +
+                selected.numInstances() + " traindata instances from " + traindata.numInstances()));
         }
         catch (Exception e) {
             Console.traceln(Level.WARNING, String.format("ERROR"));

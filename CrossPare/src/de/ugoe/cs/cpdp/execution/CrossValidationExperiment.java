@@ -137,7 +137,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 testVersionCount++;
             }
         }
-        
+
         numTrainers += config.getSetWiseTrainers().size();
         numTrainers += config.getSetWiseTestdataAwareTrainers().size();
         numTrainers += config.getTrainers().size();
@@ -153,7 +153,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                               config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
-                if (numResultsAvailable >= numTrainers*config.getRepetitions()) {
+                if (numResultsAvailable >= numTrainers * config.getRepetitions()) {
                     Console.traceln(Level.INFO,
                                     String.format(
                                                   "[%s] [%02d/%02d] %s: results already available; skipped",
@@ -166,7 +166,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
-                
+
                 for (ITrainingStrategy trainer : config.getTrainers()) {
                     Console.traceln(Level.FINE,
                                     String.format("[%s] [%02d/%02d] %s: applying trainer %s",
@@ -175,7 +175,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                                   trainer.getName()));
                     trainer.apply(testdata);
                 }
-                
+
                 File resultsDir = new File(config.getResultsPath());
                 if (!resultsDir.exists()) {
                     resultsDir.mkdir();
@@ -235,11 +235,20 @@ public class CrossValidationExperiment implements IExecutionStrategy {
         return result;
     }
 
+    /**
+     * <p>
+     * helper function that checks if the results are already in the data store
+     * </p>
+     *
+     * @param version
+     *            version for which the results are checked
+     * @return
+     */
     private int resultsAvailable(SoftwareVersion version) {
         if (config.getResultStorages().isEmpty()) {
             return 0;
         }
-        
+
         List<ITrainer> allTrainers = new LinkedList<>();
         for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
             allTrainers.add(setwiseTrainer);
@@ -255,12 +264,13 @@ public class CrossValidationExperiment implements IExecutionStrategy {
         for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
             allTrainers.add(trainer);
         }
-        
+
         int available = Integer.MAX_VALUE;
         for (IResultStorage storage : config.getResultStorages()) {
             String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
-            int curAvailable = storage.containsResult(config.getExperimentName(), version.getVersion(), classifierName);
-            if( curAvailable<available ) {
+            int curAvailable = storage.containsResult(config.getExperimentName(),
+                                                      version.getVersion(), classifierName);
+            if (curAvailable < available) {
                 available = curAvailable;
             }
         }

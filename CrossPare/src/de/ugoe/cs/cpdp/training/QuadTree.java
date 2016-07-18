@@ -23,52 +23,116 @@ import weka.core.Instance;
 import de.ugoe.cs.cpdp.training.WekaLocalFQTraining.QuadTreePayload;
 
 /**
- * QuadTree implementation
+ * <p>
+ * QuadTree implementation.
+ * </p>
+ * <p>
+ * QuadTree gets a list of instances and then recursively split them into 4 children For this it
+ * uses the median of the 2 values x,y.
+ * </p>
  * 
- * QuadTree gets a list of instances and then recursively split them into 4 childs For this it uses
- * the median of the 2 values x,y
+ * @author Alexander Trautsch
  */
 public class QuadTree {
 
-    /* 1 parent or null */
+    /**
+     * 1 parent or null
+     */
     private QuadTree parent = null;
 
-    /* 4 childs, 1 per quadrant */
+    /**
+     * north-west quadrant
+     */
     private QuadTree child_nw;
+
+    /**
+     * north-east quadrant
+     */
     private QuadTree child_ne;
+
+    /**
+     * south-east quadrant
+     */
     private QuadTree child_se;
+
+    /**
+     * south-west quadrant
+     */
     private QuadTree child_sw;
 
-    /* list (only helps with generation of list of childs!) */
+    /**
+     * helper list for child quadrant generation
+     */
     private ArrayList<QuadTree> l = new ArrayList<QuadTree>();
 
-    /* level only used for debugging */
+    /**
+     * debugging attribute
+     */
     public int level = 0;
 
-    /* size of the quadrant */
+    /**
+     * size of the quadrant in x-dimension
+     */
     private double[] x;
+
+    /**
+     * size of the quadrant in y-dimension
+     */
     private double[] y;
 
+    /**
+     * debugging parameter
+     */
     public static boolean verbose = false;
+
+    /**
+     * global size of the QuadTree.
+     */
     public static int size = 0;
+
+    /**
+     * recursion parameter alpha
+     */
     public static double alpha = 0;
 
-    /* cluster payloads */
+    /**
+     * data for each cluster
+     */
     public static ArrayList<ArrayList<QuadTreePayload<Instance>>> ccluster =
         new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
 
-    /* cluster sizes (index is cluster number, arraylist is list of boxes (x0,y0,x1,y1) */
+    /**
+     * cluster sizes (index is cluster number, {@link ArrayList} is list of boxes (x0,y0,x1,y1
+     */
     public static HashMap<Integer, ArrayList<Double[][]>> csize =
         new HashMap<Integer, ArrayList<Double[][]>>();
 
-    /* payload of this instance */
+    /**
+     * data within this quadrant
+     */
     private ArrayList<QuadTreePayload<Instance>> payload;
 
+    /**
+     * <p>
+     * Constructor. Creates a new QuadTree.
+     * </p>
+     *
+     * @param parent
+     *            parent of this tree
+     * @param payload
+     *            data within the quadrant
+     */
     public QuadTree(QuadTree parent, ArrayList<QuadTreePayload<Instance>> payload) {
         this.parent = parent;
         this.payload = payload;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
     public String toString() {
         String n = "";
         if (this.parent == null) {
@@ -80,21 +144,25 @@ public class QuadTree {
     }
 
     /**
+     * <p>
      * Returns the payload, used for clustering in the clustering list we only have children with
-     * paylod
+     * payload
+     * </p>
      * 
-     * @return payload
+     * @return payload the payload
      */
     public ArrayList<QuadTreePayload<Instance>> getPayload() {
         return this.payload;
     }
 
     /**
-     * Calculate the density of this quadrant
+     * <p>
+     * Calculate the density of this quadrant as
+     * <ul>
+     * <li>density = number of instances / global size (all instances)</li>
+     * </ul>
      * 
-     * density = number of instances / global size (all instances)
-     * 
-     * @return density
+     * @return density the density
      */
     public double getDensity() {
         double dens = 0;
@@ -102,16 +170,40 @@ public class QuadTree {
         return dens;
     }
 
+    /**
+     * <p>
+     * sets the size coordinates of the quadrant
+     * </p>
+     *
+     * @param x
+     *            x-dimension
+     * @param y
+     *            y-dimension
+     */
     public void setSize(double[] x, double[] y) {
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * <p>
+     * returns the size of the quadrant
+     * </p>
+     *
+     * @return size of the current quadrant
+     */
     public double[][] getSize() {
         return new double[][]
             { this.x, this.y };
     }
 
+    /**
+     * <p>
+     * returns the size of the quadrant
+     * </p>
+     *
+     * @return size of the current quadrant
+     */
     public Double[][] getSizeDouble() {
         Double[] tmpX = new Double[2];
         Double[] tmpY = new Double[2];
@@ -127,7 +219,9 @@ public class QuadTree {
     }
 
     /**
-     * TODO: DRY, median ist immer dasselbe
+     * <p>
+     * calculates the median for the x axis
+     * </p>
      * 
      * @return median for x
      */
@@ -160,6 +254,13 @@ public class QuadTree {
         return med_x;
     }
 
+    /**
+     * <p>
+     * calculates the median for the y axis
+     * </p>
+     * 
+     * @return median for y
+     */
     private double getMedianForY() {
         double med_y = 0;
 
@@ -190,9 +291,11 @@ public class QuadTree {
     }
 
     /**
-     * Reurns the number of instances in the payload
+     * <p>
+     * Returns the number of instances in the payload
+     * </p>
      * 
-     * @return int number of instances
+     * @return number of instances
      */
     public int getNumbers() {
         int number = 0;
@@ -203,7 +306,9 @@ public class QuadTree {
     }
 
     /**
+     * <p>
      * Calculate median values of payload for x, y and split into 4 sectors
+     * </p>
      * 
      * @return Array of QuadTree nodes (4 childs)
      * @throws Exception
@@ -294,11 +399,14 @@ public class QuadTree {
     }
 
     /**
-     * TODO: static method
-     * 
+     * <p>
+     * creates the children of a QuadTree and recursively splits them as well
+     * </p>
+     *
      * @param q
+     *            tree that is split
      */
-    public void recursiveSplit(QuadTree q) {
+    public static void recursiveSplit(QuadTree q) {
         if (QuadTree.verbose) {
             System.out.println("splitting: " + q);
         }
@@ -309,10 +417,10 @@ public class QuadTree {
             // exception is thrown if we would run into an endless loop (see comments in split())
             try {
                 QuadTree[] childs = q.split();
-                this.recursiveSplit(childs[0]);
-                this.recursiveSplit(childs[1]);
-                this.recursiveSplit(childs[2]);
-                this.recursiveSplit(childs[3]);
+                recursiveSplit(childs[0]);
+                recursiveSplit(childs[1]);
+                recursiveSplit(childs[2]);
+                recursiveSplit(childs[3]);
             }
             catch (Exception e) {
                 return;
@@ -321,11 +429,12 @@ public class QuadTree {
     }
 
     /**
-     * returns an list of childs sorted by density
+     * <p>
+     * returns an list of children sorted by density
+     * </p>
      * 
      * @param q
      *            QuadTree
-     * @return list of QuadTrees
      */
     private void generateList(QuadTree q) {
 
@@ -349,7 +458,9 @@ public class QuadTree {
     }
 
     /**
+     * <p>
      * Checks if passed QuadTree is neighboring to us
+     * </p>
      * 
      * @param q
      *            QuadTree
@@ -395,16 +506,23 @@ public class QuadTree {
     }
 
     /**
+     * <p>
      * Perform pruning and clustering of the quadtree
-     * 
+     * </p>
+     * <p>
      * Pruning according to: Tim Menzies, Andrew Butcher, David Cok, Andrian Marcus, Lucas Layman,
      * Forrest Shull, Burak Turhan, Thomas Zimmermann,
      * "Local versus Global Lessons for Defect Prediction and Effort Estimation," IEEE Transactions
      * on Software Engineering, vol. 39, no. 6, pp. 822-834, June, 2013
-     * 
-     * 1) get list of leaf quadrants 2) sort by their density 3) set stop_rule to 0.5 * highest
-     * Density in the list 4) merge all nodes with a density > stop_rule to the new cluster and
-     * remove all from list 5) repeat
+     * </p>
+     * <ol>
+     * <li>get list of leaf quadrants</li>
+     * <li>sort by their density</li>
+     * <li>set stop_rule to 0.5*highest Density in the list</li>
+     * <li>merge all nodes with a density > stop_rule to the new cluster and remove all from list
+     * </li>
+     * <li>repeat</li>
+     * </ol>
      * 
      * @param q
      *            List of QuadTree (children only)
@@ -478,6 +596,12 @@ public class QuadTree {
         this.gridClustering(list);
     }
 
+    /**
+     * <p>
+     * debugging function that prints information about the QuadTree
+     * </p>
+     *
+     */
     public void printInfo() {
         System.out.println("we have " + ccluster.size() + " clusters");
 
@@ -487,7 +611,9 @@ public class QuadTree {
     }
 
     /**
+     * <p>
      * Helper Method to get a sorted list (by density) for all children
+     * </p>
      * 
      * @param q
      *            QuadTree

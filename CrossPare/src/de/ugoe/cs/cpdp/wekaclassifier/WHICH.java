@@ -267,7 +267,7 @@ public class WHICH extends AbstractClassifier {
                 e2 = 0;
                 score = 0;
             }
-            if( score==0 ) {
+            if (score == 0) {
                 score = 0.000000001; // to disallow 0 total score
             }
         }
@@ -295,9 +295,10 @@ public class WHICH extends AbstractClassifier {
                 }
                 else {
                     String range = ranges.get(k);
-                    if( "'All'".equals(range) ) {
+                    if ("'All'".equals(range)) {
                         result = true;
-                    } else {
+                    }
+                    else {
                         double instanceValue = instance.value(attrIndex);
                         double lowerBound;
                         double upperBound;
@@ -326,11 +327,13 @@ public class WHICH extends AbstractClassifier {
                             }
                             else {
                                 // first value is positive
-                                if( splitResult[0].substring(2, splitResult[0].length()).equals("ll'")) {
+                                if (splitResult[0].substring(2, splitResult[0].length())
+                                    .equals("ll'"))
+                                {
                                     System.out.println("foo");
                                 }
-                                lowerBound = Double
-                                    .parseDouble(splitResult[0].substring(2, splitResult[0].length()));
+                                lowerBound = Double.parseDouble(splitResult[0]
+                                    .substring(2, splitResult[0].length()));
                                 if (splitResult[1].startsWith("inf")) {
                                     upperBound = Double.POSITIVE_INFINITY;
                                 }
@@ -345,7 +348,8 @@ public class WHICH extends AbstractClassifier {
                                 (range.charAt(1) == '[' && instanceValue >= lowerBound);
                         boolean upperBoundMatch = (range.charAt(range.length() - 2) == ')' &&
                             instanceValue < upperBound) ||
-                            (range.charAt(range.length() - 2) == ']' && instanceValue <= upperBound);
+                            (range.charAt(range.length() - 2) == ']' &&
+                                instanceValue <= upperBound);
                         result = lowerBoundMatch && upperBoundMatch;
                     }
                 }

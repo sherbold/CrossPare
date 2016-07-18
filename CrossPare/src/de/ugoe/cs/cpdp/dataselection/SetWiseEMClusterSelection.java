@@ -73,8 +73,7 @@ public class SetWiseEMClusterSelection extends AbstractCharacteristicSelection {
             }
         }
         catch (Exception e) {
-            throw new RuntimeException(
-                                       "error applying setwise EM clustering training data selection",
+            throw new RuntimeException("error applying setwise EM clustering training data selection",
                                        e);
         }
     }

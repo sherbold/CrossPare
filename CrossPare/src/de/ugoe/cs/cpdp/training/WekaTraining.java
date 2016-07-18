@@ -21,15 +21,12 @@ import weka.classifiers.rules.ZeroR;
 import weka.core.Instances;
 
 /**
- * Programmatic WekaTraining
- * 
- * first parameter is Trainer Name. second parameter is class name
- * 
- * all subsequent parameters are configuration params (for example for trees) Cross Validation
- * params always come last and are prepended with -CVPARAM
- * 
- * XML Configurations for Weka Classifiers:
- * 
+ * <p>
+ * The first parameter is the trainer name, second parameter is class name. All subsequent
+ * parameters are configuration parameters of the algorithms. Cross validation parameters always
+ * come last and are prepended with -CVPARAM
+ * </p>
+ * XML Configurations for Weka Classifiers: 
  * <pre>
  * {@code
  * <!-- examples -->

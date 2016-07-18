@@ -39,7 +39,6 @@ public class BayesNetWrapper extends BayesNet {
     /**
      * generated ID
      */
-    /**  */
     private static final long serialVersionUID = -4835134612921456157L;
 
     /**

@@ -79,9 +79,6 @@ public class Oversampling implements IProcessesingStrategy, ISetWiseProcessingSt
             }
 
             Resample resample = new Resample();
-            // TODO: resample.setSampleSizePercent((100.0*counts[1])/100+0.01);
-            // Ohne +0.01 wird bei tomcat, xerces-1.2 und jedit-4.0 ein negative
-            // weniger zurückgegeben
             resample.setSampleSizePercent((100.0 * counts[0]) / counts[1]);
             try {
                 resample.setInputFormat(traindata);

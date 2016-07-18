@@ -128,7 +128,8 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
         for (int i = 0; i < traindata.numInstances(); i++) {
             Instance instance = traindata.instance(i);
             for (int j = 0; j < traindata.numAttributes(); j++) {
-                if (traindata.attribute(j) != classAttribute && traindata.attribute(j).isNumeric())
+                if (traindata.attribute(j) != classAttribute &&
+                    traindata.attribute(j).isNumeric())
                 {
                     instance.setValue(j, instance.value(j) + (median[j] - currentmedian[j]));
                 }

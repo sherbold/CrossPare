@@ -24,9 +24,10 @@ import weka.core.Instances;
 import de.ugoe.cs.util.FileTools;
 
 /**
- * TODO
+ * Loads data from the automative defect data set from Audi Electronic Ventures donated by Altinger
+ * et al. at the MSR 2015. This loader creates overall defect labels, for the final revision.
  * 
- * @author sherbold
+ * @author Steffen Herbold
  * 
  */
 class AUDIDataLoader implements SingleVersionLoader {

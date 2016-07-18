@@ -27,22 +27,55 @@ import weka.core.Instances;
 import de.ugoe.cs.util.FileTools;
 
 /**
- * TODO
+ * <p>
+ * Loads data from the automative defect data set from Audi Electronic Ventures donated by Altinger
+ * et al. at the MSR 2015. This loader contains the changes per commit, i.e., it is for JIT defect
+ * prediction.
+ * </p>
  * 
- * @author sherbold
- * 
+ * @author Steffen Herbold
  */
 class AUDIChangeLoader implements SingleVersionLoader {
 
+    /**
+     * <p>
+     * Internal helper class.
+     * </p>
+     * 
+     * @author Steffen Herbold
+     */
     private class EntityRevisionPair implements Comparable<EntityRevisionPair> {
+
+        /**
+         * string that defines an entity
+         */
         private final String entity;
+
+        /**
+         * revision number of the entity
+         */
         private final int revision;
 
+        /**
+         * <p>
+         * Constructor. Creates a new EntityRevisionPair.
+         * </p>
+         *
+         * @param entity
+         *            the entity
+         * @param revision
+         *            the revision
+         */
         public EntityRevisionPair(String entity, int revision) {
             this.entity = entity;
             this.revision = revision;
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
         @Override
         public boolean equals(Object other) {
             if (!(other instanceof EntityRevisionPair)) {
@@ -53,11 +86,21 @@ class AUDIChangeLoader implements SingleVersionLoader {
             }
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#hashCode()
+         */
         @Override
         public int hashCode() {
             return entity.hashCode() + revision;
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Comparable#compareTo(java.lang.Object)
+         */
         @Override
         public int compareTo(EntityRevisionPair other) {
             int strCmp = this.entity.compareTo(other.entity);
@@ -67,12 +110,22 @@ class AUDIChangeLoader implements SingleVersionLoader {
             return Integer.compare(revision, other.revision);
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString()
+         */
         @Override
         public String toString() {
             return entity + "@" + revision;
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.loader.SingleVersionLoader#load(java.io.File)
+     */
     @Override
     public Instances load(File file) {
         final String[] lines;
@@ -138,8 +191,11 @@ class AUDIChangeLoader implements SingleVersionLoader {
         SortedMap<EntityRevisionPair, Integer> entityRevisionPairs = new TreeMap<>();
         for (int i = 1; i < linesBug.length; i++) {
             lineSplitBug = linesBug[i].split(";");
-            entityRevisionPairs.put(new EntityRevisionPair(lineSplitBug[0], Integer
-                                        .parseInt(lineSplitBug[revisionIndex])), i);
+            entityRevisionPairs.put(
+                                    new EntityRevisionPair(lineSplitBug[0],
+                                                           Integer
+                                                               .parseInt(lineSplitBug[revisionIndex])),
+                                    i);
         }
 
         // prepare weka instances

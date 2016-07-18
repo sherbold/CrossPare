@@ -28,13 +28,12 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Programmatic WekaBaggingTraining
- * 
- * first parameter is Trainer Name. second parameter is class name
- * 
- * all subsequent parameters are configuration params (for example for trees) Cross Validation
- * params always come last and are prepended with -CVPARAM
- * 
+ * <p>
+ * The first parameter is the trainer name, second parameter is class name. All subsequent
+ * parameters are configuration parameters of the algorithms. Cross validation parameters always
+ * come last and are prepended with -CVPARAM
+ * </p>
+ * <p>
  * XML Configurations for Weka Classifiers:
  * 
  * <pre>
@@ -44,17 +43,34 @@ import weka.core.Instances;
  * <setwisetrainer name="WekaBaggingTraining" param="LogisticBagging weka.classifiers.functions.Logistic -R 1.0E-8 -M -1" />
  * }
  * </pre>
+ * </p>
  * 
+ * @author Alexander Trautsch
  */
 public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTrainingStrategy {
 
+    /**
+     * the classifier
+     */
     private final TraindatasetBagging classifier = new TraindatasetBagging();
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.ugoe.cs.cpdp.training.WekaBaseTraining#getClassifier()
+     */
     @Override
     public Classifier getClassifier() {
         return classifier;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy#apply(org.apache.commons.collections4.list.
+     * SetUniqueList)
+     */
     @Override
     public void apply(SetUniqueList<Instances> traindataSet) {
         try {
@@ -65,14 +81,35 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
         }
     }
 
+    /**
+     * <p>
+     * Helper class for bagging classifiers.
+     * </p>
+     * 
+     * @author Steffen Herbold
+     */
     public class TraindatasetBagging extends AbstractClassifier {
 
+        /**
+         * default serialization ID.
+         */
         private static final long serialVersionUID = 1L;
 
+        /**
+         * internal storage of the training data
+         */
         private List<Instances> trainingData = null;
 
+        /**
+         * bagging classifier for each training data set
+         */
         private List<Classifier> classifiers = null;
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
+         */
         @Override
         public double classifyInstance(Instance instance) {
             if (classifiers == null) {
@@ -114,6 +151,17 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
             return (classification >= 0.5) ? 1.0 : 0.0;
         }
 
+        /**
+         * <p>
+         * trains a new dataset wise bagging classifier
+         * </p>
+         *
+         * @param traindataSet
+         *            the training data per prodcut
+         * @throws Exception
+         *             thrown if an error occurs during the training of the classifiers for any
+         *             product
+         */
         public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
             classifiers = new LinkedList<>();
             trainingData = new LinkedList<>();
@@ -125,6 +173,11 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
             }
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
+         */
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
             classifiers = new LinkedList<>();

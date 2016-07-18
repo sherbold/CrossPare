@@ -98,7 +98,8 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
                 for (DBIDIter clusterIter = cluster.getIDs().iter(); clusterIter
                     .valid(); clusterIter.advance())
                 {
-                    int internalIndex = clusterIter.internalGetIndex() - testdata.size() - firstInternalIndex;
+                    int internalIndex =
+                        clusterIter.internalGetIndex() - testdata.size() - firstInternalIndex;
                     if (internalIndex >= 0) {
                         // index belongs to a training instance
                         filteredTraindata.add(traindata.get(internalIndex));

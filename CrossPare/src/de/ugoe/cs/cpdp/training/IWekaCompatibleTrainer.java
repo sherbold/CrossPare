@@ -16,9 +16,30 @@ package de.ugoe.cs.cpdp.training;
 
 import weka.classifiers.Classifier;
 
+/**
+ * <p>
+ * Common interface for all training strategies that internally use the {@link Classifier} from WEKA. 
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public interface IWekaCompatibleTrainer extends ITrainer {
 
+    /**
+     * <p>
+     * returns the WEKA classifier
+     * </p>
+     *
+     * @return the classifier
+     */
     Classifier getClassifier();
 
+    /**
+     * <p>
+     * returns the name of the training strategy
+     * </p>
+     *
+     * @return the name
+     */
     String getName();
 }

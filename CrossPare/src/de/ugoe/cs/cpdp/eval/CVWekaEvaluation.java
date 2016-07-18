@@ -30,7 +30,7 @@ import weka.core.Instances;
  */
 public class CVWekaEvaluation extends AbstractWekaEvaluation {
 
-    /**
+    /*
      * @see de.ugoe.cs.cpdp.eval.AbstractWekaEvaluation#createEvaluator(weka.core.Instances,
      *      weka.classifiers.Classifier)
      */

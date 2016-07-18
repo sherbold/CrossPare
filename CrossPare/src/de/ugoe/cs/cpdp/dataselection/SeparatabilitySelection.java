@@ -85,9 +85,8 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
                     inst.setDataset(sample);
                     inst.setClassValue(1.0);
                     sample.add(inst);
-                    inst =
-                        new DenseInstance(
-                                          traindata.instance(rand.nextInt(traindata.numInstances())));
+                    inst = new DenseInstance(traindata
+                        .instance(rand.nextInt(traindata.numInstances())));
                     inst.setDataset(sample);
                     inst.setClassValue(0.0);
                     sample.add(inst);
@@ -100,8 +99,7 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
                     eval.crossValidateModel(new Logistic(), sample, 5, rand);
                 }
                 catch (Exception e) {
-                    throw new RuntimeException(
-                                               "cross-validation during calculation of separatability failed",
+                    throw new RuntimeException("cross-validation during calculation of separatability failed",
                                                e);
                 }
                 distance += eval.pctCorrect() / 100.0;

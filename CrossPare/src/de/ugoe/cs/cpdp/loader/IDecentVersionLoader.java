@@ -18,8 +18,23 @@ import java.util.List;
 
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
+/**
+ * <p>
+ * Extends the version load for the loading of DECENT models
+ * </p>
+ * 
+ * @author Fabian Trautsch
+ */
 public interface IDecentVersionLoader extends IVersionLoader {
 
+    /**
+     * <p>
+     * loads the versions and defines the DECENT attributes to be used
+     * </p>
+     *
+     * @param decentAttributes the attributes
+     * @return the versions
+     */
     public List<SoftwareVersion> load(List<String> decentAttributes);
 
 }

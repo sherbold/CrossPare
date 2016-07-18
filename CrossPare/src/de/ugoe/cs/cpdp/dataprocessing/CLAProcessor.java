@@ -43,8 +43,7 @@ public class CLAProcessor implements IProcessesingStrategy {
      */
     @Override
     public void setParameter(String parameters) {
-        // TODO Auto-generated method stub
-
+        // dummy, parameters not used
     }
 
     /*
