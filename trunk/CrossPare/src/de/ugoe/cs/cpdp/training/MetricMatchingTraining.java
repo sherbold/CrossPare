@@ -39,23 +39,25 @@ import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
-import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Implements Heterogenous Defect Prediction after Nam et al.
+ * Implements Heterogenous Defect Prediction after Nam et al.  2015.
+ * 
+ * We extend WekaBaseTraining because we have to Wrap the Classifier to use MetricMatching.
+ * This also means we can use any Weka Classifier not just LogisticRegression.
  * 
  * TODO:
  * - spacing, coding conventions
- * - we depend on having exactly one class attribute on multiple locations
- * - 
+ * - clean up attribute selection on train data
+ * - percentile test run
  */
 public class MetricMatchingTraining extends WekaBaseTraining implements ISetWiseTestdataAwareTrainingStrategy {
 
     private SetUniqueList<Instances> traindataSet;
-    private MetricMatch mm;
-    private final Classifier classifier = new MetricMatchingClassifier();
+    private MetricMatch mm = null;
+    private Classifier classifier = new MetricMatchingClassifier();
     
     private String method;
     private float threshold;
@@ -69,13 +71,17 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
         return this.classifier;
     }
 
-
+    /**
+     * Set similarity measure method.
+     */
     @Override
     public void setMethod(String method) {
         this.method = method;
     }
 
-
+    /**
+     * Set threshold for similarity measure.
+     */
     @Override
     public void setThreshold(String threshold) {
         this.threshold = Float.parseFloat(threshold);
@@ -87,14 +93,12 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	 */
 	@Override
 	public void apply(SetUniqueList<Instances> traindataSet, Instances testdata) {
-		this.traindataSet = traindataSet;
 
-		double score = 0; // custom ranking score to select the best training data from the set
+		double score = 0; // matching score to select the best matching training data from the set
 		int num = 0;
 		int biggest_num = 0;
 		MetricMatch tmp;
-		MetricMatch biggest = null;
-		for (Instances traindata : this.traindataSet) {
+		for (Instances traindata : traindataSet) {
 			num++;
 
 			tmp = new MetricMatch(traindata, testdata);
@@ -109,40 +113,36 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			}
 			
 			// we only select the training data from our set with the most matching attributes
-			if (tmp.getScore() > score) {
+			if (tmp.getScore() > score && tmp.attributes.size() > 0) {
 				score = tmp.getScore();
-				biggest = tmp;
+				this.mm = tmp;
 				biggest_num = num;
 			}
 		}
 		
-		if (biggest == null) {
-		    throw new RuntimeException("not enough matching attributes found");
-		}
-
-		// we use the best match according to our matching score
-		this.mm = biggest;
-		Instances ilist = this.mm.getMatchedTrain();
-		Console.traceln(Level.INFO, "Chosing the trainingdata set num "+biggest_num +" with " + score + " matching score, " + ilist.size() + " instances, and " + biggest.attributes.size() + " matched attributes out of a possible set of " + traindataSet.size() + " sets");
+		// if we have found a matching instance we use it
+		Instances ilist = null;
+		if (this.mm != null) {
+    		ilist = this.mm.getMatchedTrain();
+    		Console.traceln(Level.INFO, "[MATCH FOUND] match: ["+biggest_num +"], score: [" + score + "], instances: [" + ilist.size() + "], attributes: [" + this.mm.attributes.size() + "], ilist attrs: ["+ilist.numAttributes()+"]");
+    		for(Map.Entry<Integer, Integer> attmatch : this.mm.attributes.entrySet()) {
+    		    Console.traceln(Level.INFO, "[MATCHED ATTRIBUTE] source attribute: [" + this.mm.train.attribute(attmatch.getKey()).name() + "], target attribute: [" + this.mm.test.attribute(attmatch.getValue()).name() + "]");
+    		}
+    		
+    		// replace traindataSet
+    		//traindataSet.clear();
+    		//traindataSet.add(ilist);
+	    }
 		
-		for(int i = 0; i < this.mm.attributes.size(); i++) {
-		    Console.traceln(Level.INFO, "Matched Attribute: " + this.mm.train.attribute(i).name() + " with " + this.mm.test.attribute((int)this.mm.attributes.get(i)).name());
-		}
-		// replace traindataSEt
-		//traindataSet = new SetUniqueList<Instances>();
-		traindataSet.clear();
-		traindataSet.add(ilist);
-		
-		// we have to build the classifier here:
+		// if we have a match we build the special classifier, if not we fall back to FixClass
 		try {
-		    
-			//
-		    if (this.classifier == null) {
-		        Console.traceln(Level.SEVERE, "Classifier is null");
-		    }
-			//Console.traceln(Level.INFO, "Building classifier with the matched training data with " + ilist.size() + " instances and "+ ilist.numAttributes() + " attributes");
-			this.classifier.buildClassifier(ilist);
-			((MetricMatchingClassifier) this.classifier).setMetricMatching(this.mm);
+			if(this.mm != null) {
+			    this.classifier.buildClassifier(ilist);
+			    ((MetricMatchingClassifier) this.classifier).setMetricMatching(this.mm);
+			}else {
+			    this.classifier = new FixClass();
+			    this.classifier.buildClassifier(ilist);  // this is null, but the FixClass Classifier does not use it anyway
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -165,16 +165,21 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			this.classifier = setupClassifier();  // parent method from WekaBase
 			this.classifier.buildClassifier(traindata);
 		}
-
+		
+		/**
+		 * Sets the MetricMatch instance so that we can use matched test data later.
+		 * @param mm
+		 */
 		public void setMetricMatching(MetricMatch mm) {
 			this.mm = mm;
 		}
 		
 		/**
-		 * Here we can not do the metric matching because we only get one instance
+		 * Here we can not do the metric matching because we only get one instance.
+		 * Therefore we need a MetricMatch instance beforehand to use here.
 		 */
 		public double classifyInstance(Instance testdata) {
-			// todo: maybe we can pull the instance out of our matched testdata?
+		    // get a copy of testdata Instance with only the matched attributes
 			Instance ntest = this.mm.getMatchedTestInstance(testdata);
 
 			double ret = 0.0;
@@ -190,40 +195,41 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	}
 	
 	/**
-	 * Encapsulates MetricMatching on Instances Arrays
+	 * Encapsulates one MetricMatching process.
+	 * One source (train) matches against one target (test).
 	 */
     public class MetricMatch {
 	    Instances train;
 		Instances test;
 		
 		// used to sum up the matching values of all attributes
-		double p_sum = 0;
+		protected double p_sum = 0;
 		
 		// attribute matching, train -> test
 		HashMap<Integer, Integer> attributes = new HashMap<Integer,Integer>();
-		//double[][] weights;  /* weight matrix, needed to find maximum weighted bipartite matching */
-		 
-		ArrayList<double[]> train_values;
-		ArrayList<double[]> test_values;
+		
+		// used for similarity tests
+		protected ArrayList<double[]> train_values;
+		protected ArrayList<double[]> test_values;
 
-		// todo: this constructor does not work
-		public MetricMatch() {
-		}
 		 
 		public MetricMatch(Instances train, Instances test) {
-		    // expensive! but we are dropping the attributes so we have to copy all of the data
-		    this.train = new Instances(train);
-			this.test = new Instances(test);
-			 
-			// 1. convert metrics of testdata and traindata to later use in test
+			this.train = train;
+			this.test = test;
+			
+			// convert metrics of testdata and traindata to later use in similarity tests
 			this.train_values = new ArrayList<double[]>();
-			for (int i = 0; i < this.train.numAttributes()-1; i++) {
-			    this.train_values.add(train.attributeToDoubleArray(i));
+			for (int i = 0; i < this.train.numAttributes(); i++) {
+			    if(this.train.classIndex() != i) {
+			        this.train_values.add(this.train.attributeToDoubleArray(i));
+			    }
 			}
 			
 			this.test_values = new ArrayList<double[]>();
-			for (int i=0; i < this.test.numAttributes()-1; i++) {
-			    this.test_values.add(this.test.attributeToDoubleArray(i));
+			for (int i=0; i < this.test.numAttributes(); i++) {
+			    if(this.test.classIndex() != i) {
+			        this.test_values.add(this.test.attributeToDoubleArray(i));
+			    }
 			}
 		}
 		 
@@ -234,7 +240,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		 * @return double matching score
 		 */
 	    public double getScore() {
-	        int as = this.attributes.size();
+	        int as = this.attributes.size();  // # of attributes that were matched
 	        
 	        // we use thresholding ranking approach for numInstances to influence the matching score
 	        int instances = this.train.numInstances();
@@ -249,104 +255,133 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	        return this.p_sum + as + inst_rank;
 	    }
 		 
-		 public HashMap<Integer, Integer> getAttributes() {
-		     return this.attributes;
-		 }
+		public HashMap<Integer, Integer> getAttributes() {
+		    return this.attributes;
+		}
 		 
-		 public int getNumInstances() {
-		     return this.train_values.get(0).length;
-		 }
-		 
-		 public Instance getMatchedTestInstance(Instance test) {
-			 // create new instance with our matched number of attributes + 1 (the class attribute)
-			 //Console.traceln(Level.INFO, "getting matched instance");
-			 Instances testdata = this.getMatchedTest();
-			 
-			 //Instance ni = new DenseInstance(this.attmatch.size()+1);
-			 Instance ni = new DenseInstance(this.attributes.size()+1);
-			 ni.setDataset(testdata);
-			 
-			 //Console.traceln(Level.INFO, "Attributes to match: " + this.attmatch.size() + "");
-			 
-			 Iterator it = this.attributes.entrySet().iterator();
-			 int j = 0;
-			 while (it.hasNext()) {
-				 Map.Entry values = (Map.Entry)it.next();
-				 ni.setValue(testdata.attribute(j), test.value((int)values.getValue()));
-				 j++;
-				 
-			 }
-			 
-			 ni.setClassValue(test.value(test.classAttribute()));
+		public int getNumInstances() {
+		    return this.train_values.get(0).length;
+		}
+		
+		/** 
+		 * This creates a new Instance out of the passed Instance and the previously matched attributes.
+		 * We do this because the evaluation phase requires an original Instance with every attribute.
+		 * 
+		 * @param test instance
+		 * @return new instance
+		 */
+		public Instance getMatchedTestInstance(Instance test) {
+		    //create new instance with our matched number of attributes + 1 (the class attribute)
+			Instances testdata = this.getMatchedTest();
 
-			 return ni;
-		 }
+			Instance ni = new DenseInstance(this.attributes.size()+1);
+			ni.setDataset(testdata);
+			 
+	        for(Map.Entry<Integer, Integer> attmatch : this.attributes.entrySet()) {
+	            ni.setValue(testdata.attribute(attmatch.getKey()), test.value(attmatch.getValue()));
+	        }
+	        
+			ni.setClassValue(test.value(test.classAttribute()));
 
-         /**
-          * returns a new instances array with the metric matched training data
-          * 
-          * @return instances
-          */
-		 public Instances getMatchedTrain() {
-			 return this.getMatchedInstances("train", this.train);
-		 }
-		 
-		 /**
-		  * returns a new instances array with the metric matched test data
-		  * 
-		  * @return instances
-		  */
-		 public Instances getMatchedTest() {
-			 return this.getMatchedInstances("test", this.test);
-		 }
-		 
-		 // todo: there must be a better way
-		 // https://weka.wikispaces.com/Programmatic+Use
-		 private Instances getMatchedInstances(String name, Instances data) {
-			 //Console.traceln(Level.INFO, "Constructing instances from: " + name);
-		     // construct our new attributes
-			 Attribute[] attrs = new Attribute[this.attributes.size()+1];
-			 FastVector fwTrain = new FastVector(this.attributes.size());
-			 for (int i=0; i < this.attributes.size(); i++) {
-				 attrs[i] = new Attribute(String.valueOf(i));
-				 fwTrain.addElement(attrs[i]);
-			 }
-			 // add our ClassAttribute (which is not numeric!)
-			 ArrayList<String> acl= new ArrayList<String>();
-			 acl.add("0");
-			 acl.add("1");
-			 
-			 fwTrain.addElement(new Attribute("bug", acl));
-			 Instances newTrain = new Instances(name, fwTrain, data.size());
-			 newTrain.setClassIndex(newTrain.numAttributes()-1);
-			 
-			 //Console.traceln(Level.INFO, "data attributes: " + data.numAttributes() + ", this.attributes: "+this.attributes.size());
-			 
-			 for (int i=0; i < data.size(); i++) {
-				 Instance ni = new DenseInstance(this.attributes.size()+1);
-				
-				 Iterator it = this.attributes.entrySet().iterator();
-				 int j = 0;
-				 while (it.hasNext()) {
-					 Map.Entry values = (Map.Entry)it.next();
-					 int value = (int)values.getValue();
-					 
-					 // key ist traindata
-					 if (name.equals("train")) {
-						 value = (int)values.getKey();
-					 }
-					 //Console.traceln(Level.INFO, "setting attribute " + j + " with data from instance: " + i);
-					 ni.setValue(newTrain.attribute(j), data.instance(i).value(value));
-					 j++;
-				 }
-				 ni.setValue(ni.numAttributes()-1, data.instance(i).value(data.classAttribute()));
-				 
-				 newTrain.add(ni);
-			 }
-			 
-		    return newTrain;
+			return ni;
         }
+
+        /**
+         * returns a new instances array with the metric matched training data
+         * 
+         * @return instances
+         */
+		public Instances getMatchedTrain() {
+		    return this.getMatchedInstances("train", this.train);
+		}
 		 
+        /**
+		 * returns a new instances array with the metric matched test data
+		 * 
+		 * @return instances
+		 */
+		public Instances getMatchedTest() {
+		    return this.getMatchedInstances("test", this.test);
+		}
+		
+		/**
+		 * We could drop unmatched attributes from our instances datasets.
+		 * Alas, that would not be nice for the following postprocessing jobs and would not work at all for evaluation.
+		 * We keep this as a warning for future generations.
+		 * 
+		 * @param name
+		 * @param data
+		 */
+		@SuppressWarnings("unused")
+        private void dropUnmatched(String name, Instances data) {
+		    for(int i = 0; i < data.numAttributes(); i++) {
+		        if(data.classIndex() == i) {
+		            continue;
+		        }
+		        
+		        if(name.equals("train") && !this.attributes.containsKey(i)) { 
+		            data.deleteAttributeAt(i);
+		        }
+		        
+		        if(name.equals("test") && !this.attributes.containsValue(i)) {
+		            data.deleteAttributeAt(i);
+		        }
+		    }
+		}
+
+		
+        /**
+         * Returns a deep copy of passed Instances data for Train or Test data.
+         * It only keeps attributes that have been matched.
+         * 
+         * @param name
+         * @param data
+         * @return matched Instances
+         */
+		private Instances getMatchedInstances(String name, Instances data) {
+		    ArrayList<Attribute> attrs = new ArrayList<Attribute>();
+            
+		    // bug attr is a string, really!
+		    ArrayList<String> bug = new ArrayList<String>();
+            bug.add("0");
+            bug.add("1");
+            
+            // add our matched attributes and last the bug
+		    for(Map.Entry<Integer, Integer> attmatch : this.attributes.entrySet()) {
+		        attrs.add(new Attribute(String.valueOf(attmatch.getValue())));
+		    }
+		    attrs.add(new Attribute("bug", bug));
+		    
+		    // create new instances object of the same size (at least for instances)
+		    Instances newInst = new Instances(name, attrs, data.size());
+		    
+		    // set last as class
+		    newInst.setClassIndex(newInst.numAttributes()-1);
+		    
+		    // copy data for matched attributes, this depends if we return train or test data
+            for (int i=0; i < data.size(); i++) {
+                Instance ni = new DenseInstance(this.attributes.size()+1);
+                
+                int j = 0; // new indices!
+                for(Map.Entry<Integer, Integer> attmatch : this.attributes.entrySet()) {
+  
+                    // test attribute match
+                    int value = attmatch.getValue();
+                    
+                    // train attribute match
+                    if(name.equals("train")) {
+                        value = attmatch.getKey();
+                    }
+                    
+                    ni.setValue(newInst.attribute(j), data.instance(i).value(value));
+                    j++;
+                }
+                ni.setValue(ni.numAttributes()-1, data.instance(i).value(data.classAttribute()));
+                newInst.add(ni);
+            }
+
+            return newInst;
+		}
 		 
 		/**
 		 * performs the attribute selection
@@ -363,6 +398,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			//this.attributeSelection(this.test);
 			//Console.traceln(Level.INFO, "-----");
 		}
+		
 		
 		private void attributeSelection(Instances which) throws Exception {
 			// 1. step we have to categorize the attributes
@@ -430,10 +466,16 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		}
 		 
 		
-        
+        /**
+         * Executes the similarity matching between train and test data.
+         * 
+         * After this function is finished we have this.attributes with the correct matching between train and test data attributes.
+         * 
+         * @param type
+         * @param cutoff
+         */
 		public void matchAttributes(String type, double cutoff) {
 		    
-
 		    MWBMatchingAlgorithm mwbm = new MWBMatchingAlgorithm(this.train.numAttributes(), this.test.numAttributes());
 		    
 		    if (type.equals("spearman")) {
@@ -446,7 +488,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		        throw new RuntimeException("unknown matching method");
 		    }
 		    
-		    // resulting maximal match
+		    // resulting maximal match gets assigned to this.attributes
             int[] result = mwbm.getMatching();
             for( int i = 0; i < result.length; i++) {
                 
@@ -467,7 +509,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		public void percentiles(double cutoff, MWBMatchingAlgorithm mwbm) {
 		    for( int i = 0; i < this.train.numAttributes(); i++ ) {
                 for( int j = 0; j < this.test.numAttributes(); j++ ) {
-                    // negative infinity counts as not present, we do this so we don't have to map between attribute indexs in weka
+                    // negative infinity counts as not present, we do this so we don't have to map between attribute indexes in weka
                     // and the result of the mwbm computation
                     mwbm.setWeight(i, j, Double.NEGATIVE_INFINITY);
                     
@@ -509,24 +551,24 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
             }
 		}
 		 
-		 /**
-		  * Calculate Spearmans rank correlation coefficient as matching score
-		  * The number of instances for the source and target needs to be the same so we randomly sample from the bigger one.
-		  * 
-		  * @param cutoff
-		  * @param mwbmatching
-		  */
-		 public void spearmansRankCorrelation(double cutoff, MWBMatchingAlgorithm mwbm) {
-			 double p = 0;
+		/**
+		 * Calculate Spearmans rank correlation coefficient as matching score
+		 * The number of instances for the source and target needs to be the same so we randomly sample from the bigger one.
+		 * 
+		 * @param cutoff
+		 * @param mwbmatching
+		 */
+		public void spearmansRankCorrelation(double cutoff, MWBMatchingAlgorithm mwbm) {
+		    double p = 0;
 
-			 SpearmansCorrelation t = new SpearmansCorrelation();
+			SpearmansCorrelation t = new SpearmansCorrelation();
 
-			 // size has to be the same so we randomly sample the number of the smaller sample from the big sample
-			 if (this.train.size() > this.test.size()) {
-			     this.sample(this.train, this.test, this.train_values);
-			 }else if (this.test.size() > this.train.size()) {
-			     this.sample(this.test, this.train, this.test_values);
-			 }
+			// size has to be the same so we randomly sample the number of the smaller sample from the big sample
+			if (this.train.size() > this.test.size()) {
+			    this.sample(this.train, this.test, this.train_values);
+			}else if (this.test.size() > this.train.size()) {
+			    this.sample(this.test, this.train, this.test_values);
+			}
 			
             // try out possible attribute combinations
             for (int i=0; i < this.train.numAttributes(); i++) {
@@ -621,6 +663,8 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
                     
                     // this may invoke exactP on small sample sizes which will not terminate in all cases
 					//p = t.kolmogorovSmirnovTest(this.train_values.get(i), this.test_values.get(j), false);
+
+                    // this uses approximateP everytime
 					p = t.approximateP(t.kolmogorovSmirnovStatistic(this.train_values.get(i), this.test_values.get(j)), this.train_values.get(i).length, this.test_values.get(j).length);
 					if (p > cutoff) {
                         this.p_sum += p;
