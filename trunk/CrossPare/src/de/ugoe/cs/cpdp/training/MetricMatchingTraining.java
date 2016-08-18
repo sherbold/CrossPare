@@ -24,12 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
-import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
@@ -43,19 +43,14 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Implements Heterogenous Defect Prediction after Nam et al.  2015.
+ * Implements Heterogenous Defect Prediction after Nam et al. 2015.
  * 
  * We extend WekaBaseTraining because we have to Wrap the Classifier to use MetricMatching.
  * This also means we can use any Weka Classifier not just LogisticRegression.
  * 
- * TODO:
- * - spacing, coding conventions
- * - clean up attribute selection on train data
- * - percentile test run
  */
 public class MetricMatchingTraining extends WekaBaseTraining implements ISetWiseTestdataAwareTrainingStrategy {
 
-    private SetUniqueList<Instances> traindataSet;
     private MetricMatch mm = null;
     private Classifier classifier = new MetricMatchingClassifier();
     
@@ -63,7 +58,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
     private float threshold;
     
     /**
-     * We wrap the classifier here because of classifyInstance
+     * We wrap the classifier here because of classifyInstance with our MetricMatchingClassfier
      * @return
      */
     @Override
@@ -128,13 +123,11 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
     		for(Map.Entry<Integer, Integer> attmatch : this.mm.attributes.entrySet()) {
     		    Console.traceln(Level.INFO, "[MATCHED ATTRIBUTE] source attribute: [" + this.mm.train.attribute(attmatch.getKey()).name() + "], target attribute: [" + this.mm.test.attribute(attmatch.getValue()).name() + "]");
     		}
-    		
-    		// replace traindataSet
-    		//traindataSet.clear();
-    		//traindataSet.add(ilist);
+	    }else {
+	        Console.traceln(Level.INFO, "[NO MATCH FOUND]");
 	    }
 		
-		// if we have a match we build the special classifier, if not we fall back to FixClass
+		// if we have a match we build the MetricMatchingClassifier, if not we fall back to FixClass Classifier
 		try {
 			if(this.mm != null) {
 			    this.classifier.buildClassifier(ilist);
@@ -162,7 +155,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		
 		@Override
 		public void buildClassifier(Instances traindata) throws Exception {
-			this.classifier = setupClassifier();  // parent method from WekaBase
+			this.classifier = setupClassifier();
 			this.classifier.buildClassifier(traindata);
 		}
 		
@@ -212,10 +205,11 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		protected ArrayList<double[]> train_values;
 		protected ArrayList<double[]> test_values;
 
-		 
+		
 		public MetricMatch(Instances train, Instances test) {
-			this.train = train;
-			this.test = test;
+			// this is expensive but we need to keep the original data intact
+		    this.train = this.deepCopy(train);
+			this.test = test; // we do not need a copy here because we do not drop attributes before the matching and after the matching we create a new Instances with only the matched attributes
 			
 			// convert metrics of testdata and traindata to later use in similarity tests
 			this.train_values = new ArrayList<double[]>();
@@ -329,7 +323,28 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		    }
 		}
 
-		
+        /**
+         * Deep Copy (well, reasonably deep, not sure about header information of attributes) Weka Instances.
+         * 
+         * @param data Instances
+         * @return copy of Instances passed
+         */
+		private Instances deepCopy(Instances data) {
+		    Instances newInst = new Instances(data);
+		    
+		    newInst.clear();
+		    
+            for (int i=0; i < data.size(); i++) {
+                Instance ni = new DenseInstance(data.numAttributes());
+                for(int j = 0; j < data.numAttributes(); j++) {
+                    ni.setValue(newInst.attribute(j), data.instance(i).value(data.attribute(j)));
+                }
+                newInst.add(ni);
+            }
+            
+            return newInst;
+		}
+
         /**
          * Returns a deep copy of passed Instances data for Train or Test data.
          * It only keeps attributes that have been matched.
@@ -391,80 +406,64 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		 * we retain the top 15% attributes (if 15% is a float we just use the integer part)
 		 */
 		public void attributeSelection() throws Exception {
-			//Console.traceln(Level.INFO, "Attribute Selection on Training Attributes ("+this.train.numAttributes()+")");
-			this.attributeSelection(this.train);
-			//Console.traceln(Level.INFO, "-----");
-			//Console.traceln(Level.INFO, "Attribute Selection on Test Attributes ("+this.test.numAttributes()+")");
-			//this.attributeSelection(this.test);
-			//Console.traceln(Level.INFO, "-----");
+		    
+		    // it is a wrapper, we may decide to implement ChiSquare or other means of selecting attributes
+			this.attributeSelectionBySignificance(this.train);
 		}
 		
-		
-		private void attributeSelection(Instances which) throws Exception {
-			// 1. step we have to categorize the attributes
-			//http://weka.sourceforge.net/doc.packages/probabilisticSignificanceAE/weka/attributeSelection/SignificanceAttributeEval.html
-			
+		private void attributeSelectionBySignificance(Instances which) throws Exception {
+			// Uses: http://weka.sourceforge.net/doc.packages/probabilisticSignificanceAE/weka/attributeSelection/SignificanceAttributeEval.html
 			SignificanceAttributeEval et = new SignificanceAttributeEval();
 			et.buildEvaluator(which);
-			//double tmp[] = new double[this.train.numAttributes()];
-			HashMap<String,Double> saeval = new HashMap<String,Double>();
+			
 			// evaluate all training attributes
-			// select top 15% of metrics
+			HashMap<String,Double> saeval = new HashMap<String,Double>();
 			for(int i=0; i < which.numAttributes(); i++) { 
 				if(which.classIndex() != i) {
 					saeval.put(which.attribute(i).name(), et.evaluateAttribute(i));
 				}
-				//Console.traceln(Level.SEVERE, "Significance Attribute Eval: " + tmp);
 			}
 			
-			HashMap<String, Double> sorted = sortByValues(saeval);
+			// sort by significance
+			HashMap<String, Double> sorted = (HashMap<String, Double>) sortByValues(saeval);
 			
-			// die besten 15% wollen wir haben
+			// Keep the best 15%
 			double last = ((double)saeval.size() / 100.0) * 15.0;
 			int drop_first = saeval.size() - (int)last;
 			
-			//Console.traceln(Level.INFO, "Dropping "+ drop_first + " of " + sorted.size() + " attributes (we only keep the best 15% "+last+")");
-			/*
-			Iterator it = sorted.entrySet().iterator();
-		    while (it.hasNext()) {
-		    	Map.Entry pair = (Map.Entry)it.next();
-		    	Console.traceln(Level.INFO, "key: "+(int)pair.getKey()+", value: " + (double)pair.getValue() + "");
-		    }*/
-			
 			// drop attributes above last
-			Iterator it = sorted.entrySet().iterator();
+			Iterator<Entry<String, Double>> it = sorted.entrySet().iterator();
 		    while (drop_first > 0) {
-	    		Map.Entry pair = (Map.Entry)it.next();
+	    		Map.Entry<String, Double> pair = (Map.Entry<String, Double>)it.next();
 	    		if(which.attribute((String)pair.getKey()).index() != which.classIndex()) {
-	    			
 	    			which.deleteAttributeAt(which.attribute((String)pair.getKey()).index());
-	    			//Console.traceln(Level.INFO, "dropping attribute: "+ (String)pair.getKey());
 	    		}
 		    	drop_first-=1;
 		    }
-		    //Console.traceln(Level.INFO, "Now we have " + which.numAttributes() + " attributes left (incl. class attribute!)");
 		}
 		
-		
-		private HashMap sortByValues(HashMap map) {
-	       List list = new LinkedList(map.entrySet());
+		/**
+		 * Helper method to sort a hashmap by its values.
+		 * 
+		 * @param map
+		 * @return sorted map
+		 */
+		private HashMap<String, Double> sortByValues(HashMap<String, Double> map) {
+	       List<Map.Entry<String, Double>> list = new LinkedList<Map.Entry<String, Double>>(map.entrySet());
 
-	       Collections.sort(list, new Comparator() {
-	            public int compare(Object o1, Object o2) {
-	               return ((Comparable) ((Map.Entry) (o1)).getValue())
-	                  .compareTo(((Map.Entry) (o2)).getValue());
+	       Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+	            public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+	               return (o1.getValue()).compareTo( o2.getValue() );
 	            }
 	       });
 
-
-	       HashMap sortedHashMap = new LinkedHashMap();
-	       for (Iterator it = list.iterator(); it.hasNext();) {
-	              Map.Entry entry = (Map.Entry) it.next();
-	              sortedHashMap.put(entry.getKey(), entry.getValue());
-	       } 
+	       HashMap<String, Double> sortedHashMap = new LinkedHashMap<String, Double>();
+	       for(Map.Entry<String, Double> item : list) {
+	           sortedHashMap.put(item.getKey(), item.getValue());
+	       }
 	       return sortedHashMap;
 		}
-		 
+		
 		
         /**
          * Executes the similarity matching between train and test data.
@@ -552,7 +551,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		}
 		 
 		/**
-		 * Calculate Spearmans rank correlation coefficient as matching score
+		 * Calculate Spearmans rank correlation coefficient as matching score.
 		 * The number of instances for the source and target needs to be the same so we randomly sample from the bigger one.
 		 * 
 		 * @param cutoff
@@ -572,7 +571,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			
             // try out possible attribute combinations
             for (int i=0; i < this.train.numAttributes(); i++) {
-
                 for (int j=0; j < this.test.numAttributes(); j++) {
                     // negative infinity counts as not present, we do this so we don't have to map between attribute indexs in weka
                     // and the result of the mwbm computation
@@ -590,16 +588,19 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 					if (p > cutoff) {
 					    this.p_sum += p;
                         mwbm.setWeight(i, j, p);
-					    //Console.traceln(Level.INFO, "Found match: p-val: " + p);
 					}
 				}
 		    }
-
-            //Console.traceln(Level.INFO, "Found " + this.attributes.size() + " matching attributes");
         }
 
-		 
-        public void sample(Instances bigger, Instances smaller, ArrayList<double[]> values) {
+		/**
+		 * Helper method to sample instances for the Spearman rank correlation coefficient method.
+		 * 
+		 * @param bigger
+		 * @param smaller
+		 * @param values
+		 */
+        private void sample(Instances bigger, Instances smaller, ArrayList<double[]> values) {
             // we want to at keep the indices we select the same
             int indices_to_draw = smaller.size();
             ArrayList<Integer> indices = new ArrayList<Integer>();
@@ -645,8 +646,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			double p = 0;
             
 			KolmogorovSmirnovTest t = new KolmogorovSmirnovTest();
-
-			//Console.traceln(Level.INFO, "Starting Kolmogorov-Smirnov test for traindata size: " + this.train.size() + " attributes("+this.train.numAttributes()+") and testdata size: " + this.test.size() + " attributes("+this.test.numAttributes()+")");
 			for (int i=0; i < this.train.numAttributes(); i++) {
 				for ( int j=0; j < this.test.numAttributes(); j++) {
                     // negative infinity counts as not present, we do this so we don't have to map between attribute indexs in weka
@@ -672,7 +671,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 					}
 				}
 			}
-			//Console.traceln(Level.INFO, "Found " + this.attributes.size() + " matching attributes");
 	    }
     }
 
