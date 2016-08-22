@@ -48,11 +48,19 @@ import weka.core.Instances;
  * We extend WekaBaseTraining because we have to Wrap the Classifier to use MetricMatching.
  * This also means we can use any Weka Classifier not just LogisticRegression.
  * 
+ * Config: <setwisetestdataawaretrainer name="MetricMatchingTraining" param="Logistic weka.classifiers.functions.Logistic" threshold="0.05" method="spearman"/>
+ * Instead of spearman metchod it also takes ks, percentile.
+ * Instead of Logistic every other weka classifier can be chosen.
+ * 
+ * Future work:
+ * implement chisquare test in addition to significance for attribute selection
+ * http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/stat/inference/ChiSquareTest.html
+ * use chiSquareTestDataSetsComparison
  */
 public class MetricMatchingTraining extends WekaBaseTraining implements ISetWiseTestdataAwareTrainingStrategy {
 
     private MetricMatch mm = null;
-    private Classifier classifier = new MetricMatchingClassifier();
+    private Classifier classifier = null;
     
     private String method;
     private float threshold;
@@ -88,7 +96,10 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 	 */
 	@Override
 	public void apply(SetUniqueList<Instances> traindataSet, Instances testdata) {
-
+	    // reset these for each run
+	    this.mm = null;
+	    this.classifier = null;
+	    
 		double score = 0; // matching score to select the best matching training data from the set
 		int num = 0;
 		int biggest_num = 0;
@@ -115,7 +126,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 			}
 		}
 		
-		// if we have found a matching instance we use it
+		// if we have found a matching instance we use it, log information about the match for additional eval later
 		Instances ilist = null;
 		if (this.mm != null) {
     		ilist = this.mm.getMatchedTrain();
@@ -130,6 +141,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		// if we have a match we build the MetricMatchingClassifier, if not we fall back to FixClass Classifier
 		try {
 			if(this.mm != null) {
+			    this.classifier = new MetricMatchingClassifier();
 			    this.classifier.buildClassifier(ilist);
 			    ((MetricMatchingClassifier) this.classifier).setMetricMatching(this.mm);
 			}else {
@@ -256,30 +268,40 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
 		public int getNumInstances() {
 		    return this.train_values.get(0).length;
 		}
+
 		
-		/** 
-		 * This creates a new Instance out of the passed Instance and the previously matched attributes.
-		 * We do this because the evaluation phase requires an original Instance with every attribute.
+		/**
+		 * The test instance must be of the same dataset as the train data, otherwise WekaEvaluation will die.
+		 * This means we have to force the dataset of this.train (after matching) and only 
+		 * set the values for the attributes we matched but with the index of the traindata attributes we matched.
 		 * 
-		 * @param test instance
-		 * @return new instance
+		 * @param test
+		 * @return
 		 */
 		public Instance getMatchedTestInstance(Instance test) {
-		    //create new instance with our matched number of attributes + 1 (the class attribute)
-			Instances testdata = this.getMatchedTest();
+            Instance ni = new DenseInstance(this.attributes.size()+1);
+            
+            Instances inst = this.getMatchedTrain();
+            
+            ni.setDataset(inst);
+            
+            // assign only the matched attributes to new indexes
+            double val;
+            int k = 0;
+            for(Map.Entry<Integer, Integer> attmatch : this.attributes.entrySet()) {
+                // get value from matched attribute
+                val = test.value(attmatch.getValue());
+                
+                // set it to new index, the order of the attributes is the same
+                ni.setValue(k, val);
+                k++;
+            }
+            ni.setClassValue(test.value(test.classAttribute()));
 
-			Instance ni = new DenseInstance(this.attributes.size()+1);
-			ni.setDataset(testdata);
-			 
-	        for(Map.Entry<Integer, Integer> attmatch : this.attributes.entrySet()) {
-	            ni.setValue(testdata.attribute(attmatch.getKey()), test.value(attmatch.getValue()));
-	        }
-	        
-			ni.setClassValue(test.value(test.classAttribute()));
+            return ni;
+		}
 
-			return ni;
-        }
-
+		
         /**
          * returns a new instances array with the metric matched training data
          * 
@@ -493,7 +515,7 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
                 
                 // -1 means that it is not in the set of maximal matching
                 if( i != -1 && result[i] != -1) {
-                    //Console.traceln(Level.INFO, "Found maximal bipartite match between: "+ i + " and " + result[i]);
+                    this.p_sum += mwbm.weights[i][result[i]];  // we add the weight of the returned matching for scoring the complete match later
                     this.attributes.put(i, result[i]);
                 }
             }
@@ -543,7 +565,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
                     }
                     
                     if( score > cutoff ) {
-                        this.p_sum += score;
                         mwbm.setWeight(i, j, score);
                     }
                 }
@@ -586,7 +607,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
                     
 					p = t.correlation(this.train_values.get(i), this.test_values.get(j));
 					if (p > cutoff) {
-					    this.p_sum += p;
                         mwbm.setWeight(i, j, p);
 					}
 				}
@@ -666,7 +686,6 @@ public class MetricMatchingTraining extends WekaBaseTraining implements ISetWise
                     // this uses approximateP everytime
 					p = t.approximateP(t.kolmogorovSmirnovStatistic(this.train_values.get(i), this.test_values.get(j)), this.train_values.get(i).length, this.test_values.get(j).length);
 					if (p > cutoff) {
-                        this.p_sum += p;
                         mwbm.setWeight(i, j, p);
 					}
 				}
