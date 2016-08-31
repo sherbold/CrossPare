@@ -25,6 +25,8 @@ import weka.core.Instances;
  */
 public class SoftwareVersion implements Comparable<SoftwareVersion> {
 
+    private final String dataset;
+    
     /**
      * name of the project
      */
@@ -57,17 +59,23 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @param efforts
      *            review efforts for the version
      */
-    public SoftwareVersion(String project,
+    public SoftwareVersion(String dataset,
+                           String project,
                            String version,
                            Instances instances,
                            List<Double> efforts)
     {
+        this.dataset = dataset;
         this.project = project;
         this.version = version;
         this.instances = instances;
         this.efforts = efforts;
     }
 
+    public String getDataset() {
+        return dataset;
+    }
+    
     /**
      * returns the project name
      * 
