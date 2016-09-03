@@ -67,8 +67,8 @@ public class MySQLResultStorage implements IResultStorage {
         String dbHost = dbProperties.getProperty("db.host", "localhost");
         String dbPort = dbProperties.getProperty("db.port", "3306");
         String dbName = dbProperties.getProperty("db.name", "crosspare");
-        String dbUser = dbProperties.getProperty("db.user", "crosspare");
-        String dbPass = dbProperties.getProperty("db.pass", "benchmark");
+        String dbUser = dbProperties.getProperty("db.user", "root");
+        String dbPass = dbProperties.getProperty("db.pass", "balla");
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
     }
 
@@ -111,6 +111,7 @@ public class MySQLResultStorage implements IResultStorage {
         sql.append("INSERT INTO crosspare.results VALUES (NULL,");
         sql.append("\'" + result.getConfigurationName() + "\',");
         sql.append("\'" + result.getProductName() + "\',");
+        sql.append("\'" + result.getTrainProductName() + "\',");
         sql.append("\'" + result.getClassifier() + "\',");
         sql.append(result.getSizeTestData() + ",");
         sql.append(result.getSizeTrainingData() + ",");
@@ -170,4 +171,9 @@ public class MySQLResultStorage implements IResultStorage {
             return 0;
         }
     }
+    
+    public int containsHeterogeneousResult(String experimentName, String productName, String classifierName, String trainProductName) {
+    	return 0;
+    }
+ 
 }

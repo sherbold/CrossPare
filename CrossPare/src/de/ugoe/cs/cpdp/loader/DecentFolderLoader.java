@@ -28,7 +28,6 @@ import de.ugoe.cs.cpdp.versions.SoftwareVersion;
  * @author Fabian Trautsch
  */
 public class DecentFolderLoader extends AbstractFolderLoader {
-
     /*
      * (non-Javadoc)
      * 
@@ -103,7 +102,7 @@ public class DecentFolderLoader extends AbstractFolderLoader {
         if (versionFile.isFile() && instancesLoader.filenameFilter(versionFile.getName())) {
             String versionName = versionFile.getName();
             Instances data = instancesLoader.load(versionFile);
-            versions.add(new SoftwareVersion(projectName, versionName, data, null));
+            versions.add(new SoftwareVersion("decent", projectName, versionName, data, null));
         }
     }
 

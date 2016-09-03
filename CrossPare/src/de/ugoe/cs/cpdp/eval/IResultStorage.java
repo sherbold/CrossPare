@@ -47,4 +47,22 @@ public interface IResultStorage {
      * @return number of contained resultsfor the given product and experiment
      */
     public int containsResult(String experimentName, String productName, String classifierName);
+
+    /**
+     * <p>
+     * Checks if a heterogeneous result is already contained in the storage.
+     * </p>
+     *
+     * @param experimentName
+     *            name of the experiment
+     * @param productName
+     *            name of the product
+     * @param classifierName
+     *            name of the first classifier in the configuration
+ 	 * @param trainProductName
+     *            name of the trainProduct
+     *
+     * @return number of contained resultsfor the given product and experiment
+     */
+    public int containsHeterogeneousResult(String experimentName, String productName, String classifierName, String trainProductName);
 }
