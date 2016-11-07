@@ -171,6 +171,11 @@ public class ExperimentConfiguration extends DefaultHandler {
      * ClassifierCreationExecution). Default is CrossProjectExperiment.
      */
     private String executionStrategy = "CrossProjectExperiment";
+    
+    /**
+     * parameters to be used by execution strategy (if any)
+     */
+    private String executionStrategyParameters = null;
 
     /**
      * Constructor. Creates a new configuration from a given file.
@@ -450,6 +455,15 @@ public class ExperimentConfiguration extends DefaultHandler {
     public String getExecutionStrategy() {
         return executionStrategy;
     }
+    
+    /**
+     * returns the parameters of an execution strategy
+     * 
+     * @return execution strategy paramters
+     */
+    public String getExecutionStrategyParameters() {
+        return executionStrategyParameters;
+    }
 
     /*
      * (non-Javadoc)
@@ -590,6 +604,7 @@ public class ExperimentConfiguration extends DefaultHandler {
             }
             else if (qName.equals("executionStrategy")) {
                 executionStrategy = attributes.getValue("name");
+                executionStrategyParameters = attributes.getValue("param");
             }
             else if (qName.equals("partialconfig")) {
                 String path = attributes.getValue("path");
