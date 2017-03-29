@@ -111,7 +111,6 @@ public class MySQLResultStorage implements IResultStorage {
         sql.append("INSERT INTO crosspare.results VALUES (NULL,");
         sql.append("\'" + result.getConfigurationName() + "\',");
         sql.append("\'" + result.getProductName() + "\',");
-        sql.append("\'" + result.getTrainProductName() + "\',");
         sql.append("\'" + result.getClassifier() + "\',");
         sql.append(result.getSizeTestData() + ",");
         sql.append(result.getSizeTrainingData() + ",");
@@ -131,7 +130,7 @@ public class MySQLResultStorage implements IResultStorage {
         sql.append(result.getFn() + ",");
         sql.append(result.getTn() + ",");
         sql.append(result.getFp() + ");");
-
+        
         Statement stmt;
         try {
             stmt = connectionPool.getConnection().createStatement();
