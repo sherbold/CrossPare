@@ -35,6 +35,9 @@ import de.ugoe.cs.util.console.Console;
  */
 public class MySQLResultStorage implements IResultStorage {
     
+    /**
+     * Name of the table where the results are stored. 
+     */
     final String resultsTableName;
     
     /**
@@ -45,14 +48,14 @@ public class MySQLResultStorage implements IResultStorage {
     /**
      * <p>
      * Creates a new results storage. Tries to read a properties file mysql.cred located in the
-     * working directory. If this file is not found, the default database configuration is used:
+     * working directory. If this file is not found or any parameter is not defined, the following default values are used:
      * <ul>
-     * <li>dbHost = localhost</li>
-     * <li>dbPort = 3306</li>
-     * <li>dbName = crosspare</li>
-     * <li>dbUser = crosspare</li>
-     * <li>dbPass = benchmark</li>
-     * <li>resultsTable = results</li>
+     * <li>db.host = localhost</li>
+     * <li>db.port = 3306</li>
+     * <li>db.name = crosspare</li>
+     * <li>db.user = crosspare</li>
+     * <li>db.pass = benchmark</li>
+     * <li>db.results.tablename = results</li>
      * <li>db.results.createtable = false</li>
      * </p>
      */
