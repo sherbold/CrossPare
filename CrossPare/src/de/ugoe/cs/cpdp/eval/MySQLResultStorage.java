@@ -36,7 +36,7 @@ import de.ugoe.cs.util.console.Console;
 public class MySQLResultStorage implements IResultStorage {
     
     final String resultsTableName;
-
+    
     /**
      * Connection pool for the data base.
      */
@@ -53,6 +53,7 @@ public class MySQLResultStorage implements IResultStorage {
      * <li>dbUser = crosspare</li>
      * <li>dbPass = benchmark</li>
      * <li>resultsTable = results</li>
+     * <li>db.results.createtable = false</li>
      * </p>
      */
     public MySQLResultStorage() {
@@ -73,7 +74,13 @@ public class MySQLResultStorage implements IResultStorage {
         String dbUser = dbProperties.getProperty("db.user", "root");
         String dbPass = dbProperties.getProperty("db.pass", "balla");
         resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
+        boolean createTableIfNotExists = Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
+        
+        // create the results table if required
+        if( checkIfTableExists() && createTableIfNotExists ) {
+            createResultsTable();
+        }
     }
 
     /**
@@ -173,6 +180,27 @@ public class MySQLResultStorage implements IResultStorage {
             Console.printerr("VendorError: " + e.getErrorCode() + "\n");
             return 0;
         }
+    }
+    
+    /**
+     * <p>
+     * Checks if the results table exists. 
+     * </p>
+     *
+     * @return
+     */
+    public boolean checkIfTableExists() {
+        // TODO implement method
+        return true;
+    }
+    
+    /**
+     * <p>
+     * Tries to create the results table in the DB. 
+     * </p>
+     */
+    public void createResultsTable() {
+        // TODO immplement method
     }
     
     public int containsHeterogeneousResult(String experimentName, String productName, String classifierName, String trainProductName) {
