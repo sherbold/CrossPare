@@ -34,6 +34,8 @@ import de.ugoe.cs.util.console.Console;
  * @author Steffen Herbold
  */
 public class MySQLResultStorage implements IResultStorage {
+    
+    final String resultsTableName;
 
     /**
      * Connection pool for the data base.
@@ -50,6 +52,7 @@ public class MySQLResultStorage implements IResultStorage {
      * <li>dbName = crosspare</li>
      * <li>dbUser = crosspare</li>
      * <li>dbPass = benchmark</li>
+     * <li>resultsTable = results</li>
      * </p>
      */
     public MySQLResultStorage() {
@@ -69,6 +72,7 @@ public class MySQLResultStorage implements IResultStorage {
         String dbName = dbProperties.getProperty("db.name", "crosspare");
         String dbUser = dbProperties.getProperty("db.user", "root");
         String dbPass = dbProperties.getProperty("db.pass", "balla");
+        resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
     }
 
@@ -108,7 +112,7 @@ public class MySQLResultStorage implements IResultStorage {
     @Override
     public void addResult(ExperimentResult result) {
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO crosspare.results VALUES (NULL,");
+        sql.append("INSERT INTO " + resultsTableName + " VALUES (NULL,");
         sql.append("\'" + result.getConfigurationName() + "\',");
         sql.append("\'" + result.getProductName() + "\',");
         sql.append("\'" + result.getClassifier() + "\',");
@@ -152,7 +156,7 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public int containsResult(String experimentName, String productName, String classifierName) {
-        String sql = "SELECT COUNT(*) as cnt FROM crosspare.results WHERE configurationName=\'" +
+        String sql = "SELECT COUNT(*) as cnt FROM " + resultsTableName + " WHERE configurationName=\'" +
             experimentName + "\' AND productName=\'" + productName + "\' AND classifier=\'" +
             classifierName + "\';";
         Statement stmt;
