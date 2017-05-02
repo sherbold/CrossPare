@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.eval;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -121,34 +122,57 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public void addResult(ExperimentResult result) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO " + resultsTableName + " VALUES (NULL,");
-        sql.append("\'" + result.getConfigurationName() + "\',");
-        sql.append("\'" + result.getProductName() + "\',");
-        sql.append("\'" + result.getClassifier() + "\',");
-        sql.append(result.getSizeTestData() + ",");
-        sql.append(result.getSizeTrainingData() + ",");
-        sql.append(result.getError() + ",");
-        sql.append(result.getRecall() + ",");
-        sql.append(result.getPrecision() + ",");
-        sql.append(result.getFscore() + ",");
-        sql.append(result.getGscore() + ",");
-        sql.append(result.getMcc() + ",");
-        sql.append(result.getAuc() + ",");
-        sql.append(result.getAucec() + ",");
-        sql.append(result.getTpr() + ",");
-        sql.append(result.getTnr() + ",");
-        sql.append(result.getFpr() + ",");
-        sql.append(result.getFnr() + ",");
-        sql.append(result.getTp() + ",");
-        sql.append(result.getFn() + ",");
-        sql.append(result.getTn() + ",");
-        sql.append(result.getFp() + ");");
+        StringBuilder preparedSql = new StringBuilder(); 
+        preparedSql.append("INSERT INTO " + resultsTableName + " (");
+        preparedSql.append("`configurationName`,");
+        preparedSql.append("`productName`,");
+        preparedSql.append("`classifier`,");
+        preparedSql.append("`testsize`,");
+        preparedSql.append("`trainsize`,");
+        preparedSql.append("`error`,");
+        preparedSql.append("`recall`,");
+        preparedSql.append("`precision`,");
+        preparedSql.append("`fscore`,");
+        preparedSql.append("`gscore`,");
+        preparedSql.append("`mcc`,");
+        preparedSql.append("`auc`,");
+        preparedSql.append("`aucec`,");
+        preparedSql.append("`tpr`,");
+        preparedSql.append("`tnr`,");
+        preparedSql.append("`fpr`,");
+        preparedSql.append("`fnr`,");
+        preparedSql.append("`tp`,");
+        preparedSql.append("`fn`,");
+        preparedSql.append("`tn`,");
+        preparedSql.append("`fp`) VALUES ");
+        preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         
-        Statement stmt;
+        PreparedStatement stmt;
         try {
-            stmt = connectionPool.getConnection().createStatement();
-            stmt.executeUpdate(sql.toString().replace("NaN", "NULL"));
+            stmt = connectionPool.getConnection().prepareStatement(preparedSql.toString());
+            stmt.setString(1, result.getConfigurationName());
+            stmt.setString(2, result.getProductName());
+            stmt.setString(3, result.getClassifier());
+            stmt.setInt(4, result.getSizeTestData());
+            stmt.setInt(5, result.getSizeTrainingData());
+            stmt.setDouble(6, result.getError());
+            stmt.setDouble(7, result.getRecall());
+            stmt.setDouble(8, result.getPrecision());
+            stmt.setDouble(9, result.getFscore());
+            stmt.setDouble(10, result.getGscore());
+            stmt.setDouble(11, result.getMcc());
+            stmt.setDouble(12, result.getAuc());
+            stmt.setDouble(13, result.getAucec());
+            stmt.setDouble(14, result.getTpr());
+            stmt.setDouble(15, result.getTnr());
+            stmt.setDouble(16, result.getFpr());
+            stmt.setDouble(17, result.getFnr());
+            stmt.setDouble(18, result.getTp());
+            stmt.setDouble(19, result.getFn());
+            stmt.setDouble(20, result.getTn());
+            stmt.setDouble(21, result.getFp());
+            
+            stmt.executeUpdate();
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: ");
@@ -166,13 +190,15 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public int containsResult(String experimentName, String productName, String classifierName) {
-        String sql = "SELECT COUNT(*) as cnt FROM " + resultsTableName + " WHERE configurationName=\'" +
-            experimentName + "\' AND productName=\'" + productName + "\' AND classifier=\'" +
-            classifierName + "\';";
-        Statement stmt;
+        String preparedSql = "SELECT COUNT(*) as cnt FROM " + resultsTableName + 
+                " WHERE configurationName=? AND productName=? AND classifier=?";
+        PreparedStatement stmt;
         try {
-            stmt = connectionPool.getConnection().createStatement();
-            ResultSet results = stmt.executeQuery(sql);
+            stmt = connectionPool.getConnection().prepareStatement(preparedSql);
+            stmt.setString(1, experimentName);
+            stmt.setString(2, productName);
+            stmt.setString(3, classifierName);
+            ResultSet results = stmt.executeQuery();
             results.next();
             return results.getInt("cnt");
         }
