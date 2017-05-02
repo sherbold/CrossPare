@@ -203,7 +203,43 @@ public class MySQLResultStorage implements IResultStorage {
      * </p>
      */
     public void createResultsTable() {
-        // TODO immplement method
+        String sql = "CREATE TABLE `" + resultsTableName + "` ("+
+                "`idresults` int(11) NOT NULL AUTO_INCREMENT,"+
+                "`configurationName` varchar(45) NOT NULL,"+
+                "`productName` varchar(45) NOT NULL,"+
+                "`classifier` varchar(45) NOT NULL,"+
+                "`testsize` int(11) DEFAULT NULL,"+
+                "`trainsize` int(11) DEFAULT NULL,"+
+                "`error` double DEFAULT NULL,"+
+                "`recall` double DEFAULT NULL,"+
+                "`precision` double DEFAULT NULL,"+
+                "`fscore` double DEFAULT NULL,"+
+                "`gscore` double DEFAULT NULL,"+
+                "`mcc` double DEFAULT NULL,"+
+                "`auc` double DEFAULT NULL,"+
+                "`aucec` double DEFAULT NULL,"+
+                "`tpr` double DEFAULT NULL,"+
+                "`tnr` double DEFAULT NULL,"+
+                "`fpr` double DEFAULT NULL,"+
+                "`fnr` double DEFAULT NULL,"+
+                "`tp` double DEFAULT NULL,"+
+                "`fn` double DEFAULT NULL,"+
+                "`tn` double DEFAULT NULL,"+
+                "`fp` double DEFAULT NULL,"+
+                "PRIMARY KEY (`idresults`)"+
+                ") ENGINE=InnoDB AUTO_INCREMENT=77777 DEFAULT CHARSET=utf8;";
+        Statement stmt;
+        try {
+            stmt = connectionPool.getConnection().createStatement();
+            ResultSet results = stmt.executeQuery(sql);
+            // TODO check if insert was successful
+        }
+        catch (SQLException e) {
+            Console.printerr("Problem with MySQL connection: \n");
+            Console.printerr("SQLException: " + e.getMessage() + "\n");
+            Console.printerr("SQLState: " + e.getSQLState() + "\n");
+            Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+        }
     }
     
     public int containsHeterogeneousResult(String experimentName, String productName, String classifierName, String trainProductName) {
