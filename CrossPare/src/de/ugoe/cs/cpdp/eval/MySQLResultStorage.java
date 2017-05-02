@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.eval;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -82,7 +83,7 @@ public class MySQLResultStorage implements IResultStorage {
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
         
         // create the results table if required
-        if( checkIfTableExists() && createTableIfNotExists ) {
+        if( !doesResultsTableExist() && createTableIfNotExists ) {
             createResultsTable();
         }
     }
@@ -172,7 +173,10 @@ public class MySQLResultStorage implements IResultStorage {
             stmt.setDouble(20, result.getTn());
             stmt.setDouble(21, result.getFp());
             
-            stmt.executeUpdate();
+            int qryResult = stmt.executeUpdate();
+            if( qryResult<1 ) {
+                Console.printerr("Insert failed.");
+            }
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: ");
@@ -216,11 +220,22 @@ public class MySQLResultStorage implements IResultStorage {
      * Checks if the results table exists. 
      * </p>
      *
-     * @return
+     * @return true if exists, false otherwise
      */
-    public boolean checkIfTableExists() {
-        // TODO implement method
-        return true;
+    public boolean doesResultsTableExist() {
+        boolean exists = false;
+        try {
+            DatabaseMetaData meta = connectionPool.getConnection().getMetaData();
+            ResultSet res = meta.getTables(null, null, resultsTableName, null);
+            exists = res.next();
+        }
+        catch (SQLException e) {
+            Console.printerr("Problem with MySQL connection: \n");
+            Console.printerr("SQLException: " + e.getMessage() + "\n");
+            Console.printerr("SQLState: " + e.getSQLState() + "\n");
+            Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+        }
+        return exists;
     }
     
     /**
@@ -257,8 +272,8 @@ public class MySQLResultStorage implements IResultStorage {
         Statement stmt;
         try {
             stmt = connectionPool.getConnection().createStatement();
-            ResultSet results = stmt.executeQuery(sql);
-            // TODO check if insert was successful
+            stmt.execute(sql);
+            Console.traceln(Level.FINE, "Created new table " + resultsTableName);
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: \n");
