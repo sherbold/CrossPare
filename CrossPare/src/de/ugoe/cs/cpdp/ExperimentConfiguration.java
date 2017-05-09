@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -171,7 +172,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * ClassifierCreationExecution). Default is CrossProjectExperiment.
      */
     private String executionStrategy = "CrossProjectExperiment";
-    
+
     /**
      * parameters to be used by execution strategy (if any)
      */
@@ -455,7 +456,7 @@ public class ExperimentConfiguration extends DefaultHandler {
     public String getExecutionStrategy() {
         return executionStrategy;
     }
-    
+
     /**
      * returns the parameters of an execution strategy
      * 
@@ -592,9 +593,23 @@ public class ExperimentConfiguration extends DefaultHandler {
                 evaluators.add(evaluator);
             }
             else if (qName.equals("storage")) {
-                final IResultStorage resultStorage = (IResultStorage) Class
-                    .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).newInstance();
+                IResultStorage resultStorage;
+                String param = attributes.getValue("param");
+                if (param != null && !param.isEmpty()) {
+                    // use constructor that takes string parameters
+                    resultStorage = (IResultStorage) Class
+                        .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name"))
+                        .getConstructor(String.class).newInstance(param);
+                }
+                else {
+                    // use default contructor
+                    resultStorage = (IResultStorage) Class
+                        .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name"))
+                        .newInstance();
+                }
                 resultStorages.add(resultStorage);
+
+                // <storage name="MySQLResultStorage" param="" />
             }
             else if (qName.equals("saveClassifier")) {
                 saveClassifier = true;
@@ -629,7 +644,8 @@ public class ExperimentConfiguration extends DefaultHandler {
             }
         }
         catch (NoClassDefFoundError | ClassNotFoundException | IllegalAccessException
-                | InstantiationException | ClassCastException e)
+                | InstantiationException | ClassCastException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e)
         {
             throw new SAXException("Could not initialize class correctly", (Exception) e);
         }
