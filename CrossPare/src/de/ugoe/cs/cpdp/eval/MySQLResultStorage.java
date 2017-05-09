@@ -36,12 +36,12 @@ import de.ugoe.cs.util.console.Console;
  * @author Steffen Herbold
  */
 public class MySQLResultStorage implements IResultStorage {
-    
+
     /**
-     * Name of the table where the results are stored. 
+     * Name of the table where the results are stored.
      */
     final String resultsTableName;
-    
+
     /**
      * Connection pool for the data base.
      */
@@ -49,8 +49,21 @@ public class MySQLResultStorage implements IResultStorage {
 
     /**
      * <p>
-     * Creates a new results storage. Tries to read a properties file mysql.cred located in the
-     * working directory. If this file is not found or any parameter is not defined, the following default values are used:
+     * Creates a MySQLResultStorage with the default parameter file mysql.cred from the working
+     * directory.
+     * </p>
+     * 
+     * @see #MySQLResultStorage(String)
+     */
+    public MySQLResultStorage() {
+        this("mysql.cred");
+    }
+
+    /**
+     * <p>
+     * Creates a new results storage. Tries to read a properties file located in the working
+     * directory. If this file is not found or any parameter is not defined, the following default
+     * values are used:
      * <ul>
      * <li>db.host = localhost</li>
      * <li>db.port = 3306</li>
@@ -60,11 +73,14 @@ public class MySQLResultStorage implements IResultStorage {
      * <li>db.results.tablename = results</li>
      * <li>db.results.createtable = false</li>
      * </p>
+     * 
+     * @param parameterFile
+     *            name of the parameter file
      */
-    public MySQLResultStorage() {
+    public MySQLResultStorage(String parameterFile) {
         Properties dbProperties = new Properties();
         try {
-            dbProperties.load(new FileInputStream("mysql.cred"));
+            dbProperties.load(new FileInputStream(parameterFile));
         }
         catch (IOException e) {
             Console.printerr("Could not load mysql.cred file: " + e.getMessage());
@@ -79,11 +95,12 @@ public class MySQLResultStorage implements IResultStorage {
         String dbUser = dbProperties.getProperty("db.user", "root");
         String dbPass = dbProperties.getProperty("db.pass", "balla");
         resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
-        boolean createTableIfNotExists = Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));
+        boolean createTableIfNotExists =
+            Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
-        
+
         // create the results table if required
-        if( !doesResultsTableExist() && createTableIfNotExists ) {
+        if (!doesResultsTableExist() && createTableIfNotExists) {
             createResultsTable();
         }
     }
@@ -123,7 +140,7 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public void addResult(ExperimentResult result) {
-        StringBuilder preparedSql = new StringBuilder(); 
+        StringBuilder preparedSql = new StringBuilder();
         preparedSql.append("INSERT INTO " + resultsTableName + " (");
         preparedSql.append("`configurationName`,");
         preparedSql.append("`productName`,");
@@ -147,7 +164,7 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`tn`,");
         preparedSql.append("`fp`) VALUES ");
         preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-        
+
         PreparedStatement stmt;
         try {
             stmt = connectionPool.getConnection().prepareStatement(preparedSql.toString());
@@ -172,9 +189,9 @@ public class MySQLResultStorage implements IResultStorage {
             stmt.setDouble(19, result.getFn());
             stmt.setDouble(20, result.getTn());
             stmt.setDouble(21, result.getFp());
-            
+
             int qryResult = stmt.executeUpdate();
-            if( qryResult<1 ) {
+            if (qryResult < 1) {
                 Console.printerr("Insert failed.");
             }
         }
@@ -194,8 +211,8 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public int containsResult(String experimentName, String productName, String classifierName) {
-        String preparedSql = "SELECT COUNT(*) as cnt FROM " + resultsTableName + 
-                " WHERE configurationName=? AND productName=? AND classifier=?";
+        String preparedSql = "SELECT COUNT(*) as cnt FROM " + resultsTableName +
+            " WHERE configurationName=? AND productName=? AND classifier=?";
         PreparedStatement stmt;
         try {
             stmt = connectionPool.getConnection().prepareStatement(preparedSql);
@@ -214,10 +231,10 @@ public class MySQLResultStorage implements IResultStorage {
             return 0;
         }
     }
-    
+
     /**
      * <p>
-     * Checks if the results table exists. 
+     * Checks if the results table exists.
      * </p>
      *
      * @return true if exists, false otherwise
@@ -237,38 +254,27 @@ public class MySQLResultStorage implements IResultStorage {
         }
         return exists;
     }
-    
+
     /**
      * <p>
-     * Tries to create the results table in the DB. 
+     * Tries to create the results table in the DB.
      * </p>
      */
     public void createResultsTable() {
-        String sql = "CREATE TABLE `" + resultsTableName + "` ("+
-                "`idresults` int(11) NOT NULL AUTO_INCREMENT,"+
-                "`configurationName` varchar(45) NOT NULL,"+
-                "`productName` varchar(45) NOT NULL,"+
-                "`classifier` varchar(45) NOT NULL,"+
-                "`testsize` int(11) DEFAULT NULL,"+
-                "`trainsize` int(11) DEFAULT NULL,"+
-                "`error` double DEFAULT NULL,"+
-                "`recall` double DEFAULT NULL,"+
-                "`precision` double DEFAULT NULL,"+
-                "`fscore` double DEFAULT NULL,"+
-                "`gscore` double DEFAULT NULL,"+
-                "`mcc` double DEFAULT NULL,"+
-                "`auc` double DEFAULT NULL,"+
-                "`aucec` double DEFAULT NULL,"+
-                "`tpr` double DEFAULT NULL,"+
-                "`tnr` double DEFAULT NULL,"+
-                "`fpr` double DEFAULT NULL,"+
-                "`fnr` double DEFAULT NULL,"+
-                "`tp` double DEFAULT NULL,"+
-                "`fn` double DEFAULT NULL,"+
-                "`tn` double DEFAULT NULL,"+
-                "`fp` double DEFAULT NULL,"+
-                "PRIMARY KEY (`idresults`)"+
-                ") ENGINE=InnoDB AUTO_INCREMENT=77777 DEFAULT CHARSET=utf8;";
+        String sql = "CREATE TABLE `" + resultsTableName + "` (" +
+            "`idresults` int(11) NOT NULL AUTO_INCREMENT," +
+            "`configurationName` varchar(45) NOT NULL," + "`productName` varchar(45) NOT NULL," +
+            "`classifier` varchar(45) NOT NULL," + "`testsize` int(11) DEFAULT NULL," +
+            "`trainsize` int(11) DEFAULT NULL," + "`error` double DEFAULT NULL," +
+            "`recall` double DEFAULT NULL," + "`precision` double DEFAULT NULL," +
+            "`fscore` double DEFAULT NULL," + "`gscore` double DEFAULT NULL," +
+            "`mcc` double DEFAULT NULL," + "`auc` double DEFAULT NULL," +
+            "`aucec` double DEFAULT NULL," + "`tpr` double DEFAULT NULL," +
+            "`tnr` double DEFAULT NULL," + "`fpr` double DEFAULT NULL," +
+            "`fnr` double DEFAULT NULL," + "`tp` double DEFAULT NULL," +
+            "`fn` double DEFAULT NULL," + "`tn` double DEFAULT NULL," +
+            "`fp` double DEFAULT NULL," + "PRIMARY KEY (`idresults`)" +
+            ") ENGINE=InnoDB AUTO_INCREMENT=77777 DEFAULT CHARSET=utf8;";
         Statement stmt;
         try {
             stmt = connectionPool.getConnection().createStatement();
@@ -282,9 +288,13 @@ public class MySQLResultStorage implements IResultStorage {
             Console.printerr("VendorError: " + e.getErrorCode() + "\n");
         }
     }
-    
-    public int containsHeterogeneousResult(String experimentName, String productName, String classifierName, String trainProductName) {
-    	return 0;
+
+    public int containsHeterogeneousResult(String experimentName,
+                                           String productName,
+                                           String classifierName,
+                                           String trainProductName)
+    {
+        return 0;
     }
- 
+
 }
