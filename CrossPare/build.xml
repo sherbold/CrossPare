@@ -13,7 +13,7 @@
 	<!-- Crosspare Properties -->
 	<property name="Crosspare.jarname" value="crosspare.jar" />
 	<path id="Crosspare.classpath">
-		<pathelement location="${build.location.eventbenchconsole}" />
+		<pathelement location="${build.location}" />
 		<pathelement location="lib/commons-collections4-4.0-alpha1.jar" />
 		<pathelement location="lib/commons-io-2.4.jar" />
 		<pathelement location="lib/java-utils-0.0.1.jar" />
@@ -41,6 +41,7 @@
 		<pathelement location="lib/commons-lang3-3.4.jar" />
 		<pathelement location="lib/dbcp2-2.1.1.jar" />
 		<pathelement location="lib/jgap.jar" />
+		<pathelement location="lib/json-20160810.jar" />
 	</path>
 
 	<!-- Initialization Targets -->
