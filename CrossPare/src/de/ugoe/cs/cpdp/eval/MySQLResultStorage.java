@@ -69,7 +69,7 @@ public class MySQLResultStorage implements IResultStorage {
      * <li>db.port = 3306</li>
      * <li>db.name = crosspare</li>
      * <li>db.user = crosspare</li>
-     * <li>db.pass = benchmark</li>
+     * <li>db.pass = crosspare</li>
      * <li>db.results.tablename = results</li>
      * <li>db.results.createtable = false</li>
      * </p>
@@ -92,8 +92,8 @@ public class MySQLResultStorage implements IResultStorage {
         String dbHost = dbProperties.getProperty("db.host", "localhost");
         String dbPort = dbProperties.getProperty("db.port", "3306");
         String dbName = dbProperties.getProperty("db.name", "crosspare");
-        String dbUser = dbProperties.getProperty("db.user", "root");
-        String dbPass = dbProperties.getProperty("db.pass", "balla");
+        String dbUser = dbProperties.getProperty("db.user", "crosspare");
+        String dbPass = dbProperties.getProperty("db.pass", "crosspare");
         resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
         boolean createTableIfNotExists =
             Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));
