@@ -52,7 +52,7 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
             classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
-            if (e.getMessage().contains("Not enough training instances with class labels")) {
+            if (e.getMessage()!=null && e.getMessage().contains("Not enough training instances with class labels")) {
                 Console.traceln(Level.SEVERE,
                                 "failure due to lack of instances: " + e.getMessage());
                 Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
