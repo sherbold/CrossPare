@@ -90,25 +90,36 @@ public class JsonDataLoader implements SingleVersionLoader {
             JSONObject entity = entityArray.getJSONObject(i);
             double[] values = new double[data.numAttributes()];
             int j = 0;
+            boolean hasMissingValue = false;
             for (String key : keySet) {
                 // filter keys that are not metrics
                 if (!ignoredKeys.contains(key)) {
-                    if (key.equals("gui") || key.equals("db") || key.equals("multithreading") ||
-                        key.equals("test") || key.equals("network") || key.equals("webservice") ||
-                        key.equals("fileio"))
-                    {
-                        // keys with boolean values
-                        values[j] = entity.getBoolean(key) ? 1.0 : 0.0;
+                    if (!entity.has(key)) {
+                        // missing key, entity is ignored
+                        // TODO consider allowing entities with missing values
+                        hasMissingValue = true;
                     }
                     else {
-                        // keys with numeric values
-                        values[j] = entity.getDouble(key);
+                        if (key.equals("gui") || key.equals("db") || key.equals("multithreading") ||
+                            key.equals("test") || key.equals("network") ||
+                            key.equals("webservice") || key.equals("fileio"))
+                        {
+                            // keys with boolean values
+                            values[j] = entity.getBoolean(key) ? 1.0 : 0.0;
+                        }
+                        else {
+                            // keys with numeric values
+                            values[j] = entity.getDouble(key);
+                        }
                     }
                     j++;
                 }
             }
-            values[values.length - 1] = entity.getBoolean("label") ? 1.0 : 0.0;
-            data.add(new DenseInstance(1.0, values));
+            if (!hasMissingValue) {
+                // only add instances without missing values.
+                values[values.length - 1] = entity.getBoolean("label") ? 1.0 : 0.0;
+                data.add(new DenseInstance(1.0, values));
+            }
         }
         return data;
     }
