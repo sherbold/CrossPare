@@ -15,7 +15,7 @@ public class InstanceRemovalTest {
 
     @Test
     public void testSetParameter() {
-        new InstanceRemoval().setParameter("test=0,another=1");
+        new InstanceRemoval().setParameter("test:0,another:1");
     }
     
     @Test
@@ -38,15 +38,19 @@ public class InstanceRemovalTest {
         traindata.add(new DenseInstance(1.0, new double[]{0.0, 1.0, 0.0}));
         
         InstanceRemoval filter = new InstanceRemoval();
-        filter.setParameter("test=0,another=1");
+        filter.setParameter("test:0,another:1");
         filter.apply(testdata, traindata);
+
+        assertTrue(traindata.numInstances() == 2);
+        assertTrue(traindata.get(0).value(traindata.attribute("test")) == 1.0);
+        assertTrue(traindata.get(0).value(traindata.attribute("another")) == 0.0);
+        assertTrue(traindata.get(1).value(traindata.attribute("test")) == 0.0);
+        assertTrue(traindata.get(1).value(traindata.attribute("another")) == 0.0);
         
-        assertTrue(traindata.numInstances() == 1);
-        assertTrue(traindata.get(0).value(traindata.attribute("test")) == 0.0);
-        assertTrue(traindata.get(0).value(traindata.attribute("another")) == 1.0);
-        
-        assertTrue(testdata.numInstances() == 1);
-        assertTrue(testdata.get(0).value(testdata.attribute("test")) == 0.0);
-        assertTrue(testdata.get(0).value(testdata.attribute("another")) == 1.0);
+        assertTrue(testdata.numInstances() == 2);
+        assertTrue(testdata.get(0).value(testdata.attribute("test")) == 1.0);
+        assertTrue(testdata.get(0).value(testdata.attribute("another")) == 0.0);
+        assertTrue(testdata.get(1).value(testdata.attribute("test")) == 0.0);
+        assertTrue(testdata.get(1).value(testdata.attribute("another")) == 0.0);
     }
 }

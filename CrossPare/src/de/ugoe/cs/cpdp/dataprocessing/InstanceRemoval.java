@@ -49,11 +49,12 @@ public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesin
         for (int i = 0; i < ilist.numInstances(); i++) {
             Boolean matchFound[] = new Boolean[condList.length];
             int j = 0;
+            System.out.println("");
             for(String cond : condList) {
                 String[] match = cond.split(":");
                 matchFound[j] = ilist.get(i).value(ilist.attribute(match[0])) == Double.parseDouble(match[1]);
             }
-            // remove Instance only if every condition is true
+            // remove Instance only if every condition is true (the Boolean array does not contain any false)
             if (!Arrays.asList(matchFound).contains(false)) {
                 ilist.delete(i);
             }
