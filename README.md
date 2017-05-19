@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sherbold/CrossPare.svg?branch=master)](https://travis-ci.org/sherbold/CrossPare)
+
 Introduction
 ============
 
