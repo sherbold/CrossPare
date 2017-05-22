@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="ARFFFolderLoader" datalocation="benchmark/data/AEEEM_LDHH" relative="false"/>
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <setwisetrainer name="WekaBaggingTraining" param="NB weka.classifiers.bayes.NaiveBayes" />
+ <setwisetrainer name="WekaBaggingTraining" param="RF weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5" />
+ <setwisetrainer name="WekaBaggingTraining" param="DT weka.classifiers.trees.J48 -CVPARAM C 0.1 0.3 5" />
+ <setwisetrainer name="WekaBaggingTraining" param="LR weka.classifiers.functions.Logistic" />
+ <setwisetrainer name="WekaBaggingTraining" param="NET weka.classifiers.functions.RBFNetwork -CVPARAM W 0.1 10.0 3.0 L 2.0 18.0 3.0" />
+ <setwisetrainer name="WekaBaggingTraining" param="SVM weka.classifiers.functions.SMO -K weka.classifiers.functions.supportVector.RBFKernel" />
+ <setwisepreprocessor name="Normalization" param="" />
+ <setwiseselector name="SeparatabilitySelection" param="1" />
+ <setwisepostprocessor name="Undersampling" param="" />
+ <eval name="NormalWekaEvaluation" param="" />
+ <repetitions number="10" />
+ <storage name="MySQLResultStorage" param="" />
+</config>

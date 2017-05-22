@@ -14,7 +14,7 @@ public class InstanceNumberFilterTest {
 	@Test
 	public void testApply_1() {
 		CSVFolderLoader loader = new CSVFolderLoader();
-		loader.setLocation("data");
+		loader.setLocation("testdata/JURECZKO");
 		List<SoftwareVersion> versions = loader.load();
 		
 		int sizeVersions = versions.size();
@@ -28,7 +28,7 @@ public class InstanceNumberFilterTest {
 	@Test
 	public void testApply_2() {
 		CSVFolderLoader loader = new CSVFolderLoader();
-		loader.setLocation("data");
+		loader.setLocation("testdata/JURECZKO");
 		List<SoftwareVersion> versions = loader.load();
 		
 		int expected = 0;

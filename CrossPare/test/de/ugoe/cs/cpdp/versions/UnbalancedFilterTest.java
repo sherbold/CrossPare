@@ -15,7 +15,7 @@ public class UnbalancedFilterTest {
 	@Test
 	public void testApply() {
 		CSVFolderLoader loader = new CSVFolderLoader();
-		loader.setLocation("data");
+		loader.setLocation("testdata/JURECZKO");
 		List<SoftwareVersion> versions = loader.load();
 		
 		UnbalancedFilter filter = new UnbalancedFilter();

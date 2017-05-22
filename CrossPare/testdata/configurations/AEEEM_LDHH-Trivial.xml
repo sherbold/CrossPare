@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="ARFFFolderLoader" datalocation="benchmark/data/AEEEM_LDHH" relative="false"/>
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <trainer name="WekaTraining" param="FIX de.ugoe.cs.cpdp.wekaclassifier.FixClass -C 1" />
+ <eval name="NormalWekaEvaluation" param="" />
+ <storage name="MySQLResultStorage" param="" />
+</config>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="CSVFolderLoader" datalocation="benchmark/data/JURECZKO" relative="false"/>
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <trainer name="WekaTraining" param="NB weka.classifiers.bayes.NaiveBayes" />
+ <trainer name="WekaTraining" param="RF weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5" />
+ <trainer name="WekaTraining" param="DT weka.classifiers.trees.J48 -CVPARAM C 0.1 0.3 5" />
+ <trainer name="WekaTraining" param="LR weka.classifiers.functions.Logistic" />
+ <trainer name="WekaTraining" param="NET weka.classifiers.functions.RBFNetwork -CVPARAM W 0.1 10.0 3.0 L 2.0 18.0 3.0" />
+ <trainer name="WekaTraining" param="SVM weka.classifiers.functions.SMO -K weka.classifiers.functions.supportVector.RBFKernel" />
+ <preprocessor name="LogarithmTransform" param="" />
+ <pointwiseselector name="TurhanFilter" param="10" />
+ <eval name="NormalWekaEvaluation" param="" />
+ <storage name="MySQLResultStorage" param="" />
+</config>

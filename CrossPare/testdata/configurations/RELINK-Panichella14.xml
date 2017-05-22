@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="RelinkFolderLoader" datalocation="benchmark/data/RELINK" relative="false"/>
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <trainer name="WekaTraining" param="CODEP-LR de.ugoe.cs.cpdp.wekaclassifier.LogisticCODEP" />
+ <trainer name="WekaTraining" param="CODEP-BN de.ugoe.cs.cpdp.wekaclassifier.BayesNetCODEP" />
+ <eval name="NormalWekaEvaluation" param="" />
+ <storage name="MySQLResultStorage" param="" />
+</config>

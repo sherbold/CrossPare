@@ -6,16 +6,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// TODO update test
+/**
+ * <p>
+ * Tests the ExperimentConfiguration
+ * </p>
+ * 
+ * @author Steffen Herbold
+ */
 public class ExperimentConfigurationTest {
 
 	@Test
 	public void validateConfigurations() {
-		/*validateConfigurations("config_shared");
-		validateConfigurations("config_singleclassifier");
-		validateConfigurations("config_bagging");*/
-		validateConfigurations("exp-java/config");
-		validateConfigurations("exp-nasa/config");
+		validateConfigurations("testdata/configurations");
 	}
 	
 	public void validateConfigurations(String folder) {
