@@ -23,8 +23,7 @@ import weka.core.Instances;
  * <p>
  * Remove instances from training and testdata by attributes and their values.
  * 
- * Examle:
- * <setwisepreprocessor name="InstanceRemoval" param="test1:0,test2:1" />
+ * Examle: <setwisepreprocessor name="InstanceRemoval" param="test1:0,test2:1" />
  * 
  * Removes every instance where attribute test1 is 0 and test2 is 1 (value are parsed to Double).
  * </p>
@@ -32,11 +31,12 @@ import weka.core.Instances;
  * @author Alexander Trautsch
  */
 public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesingStrategy {
-    private String[] condList;  // holds an array of conditions, every condition needs to match to remove an instance.
-    
+    private String[] condList; // holds an array of conditions, every condition needs to match to
+                               // remove an instance.
+
     @Override
     public void setParameter(String parameters) {
-        condList = parameters.split(",");        
+        condList = parameters.split(",");
     }
 
     @Override
@@ -44,17 +44,19 @@ public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesin
         removeInstances(testdata);
         removeInstances(traindata);
     }
-    
+
     private void removeInstances(Instances ilist) {
         for (int i = 0; i < ilist.numInstances(); i++) {
             Boolean matchFound[] = new Boolean[condList.length];
             int j = 0;
             System.out.println("");
-            for(String cond : condList) {
+            for (String cond : condList) {
                 String[] match = cond.split(":");
-                matchFound[j] = ilist.get(i).value(ilist.attribute(match[0])) == Double.parseDouble(match[1]);
+                matchFound[j] =
+                    ilist.get(i).value(ilist.attribute(match[0])) == Double.parseDouble(match[1]);
             }
-            // remove Instance only if every condition is true (the Boolean array does not contain any false)
+            // remove Instance only if every condition is true (the Boolean array does not contain
+            // any false)
             if (!Arrays.asList(matchFound).contains(false)) {
                 ilist.delete(i);
             }

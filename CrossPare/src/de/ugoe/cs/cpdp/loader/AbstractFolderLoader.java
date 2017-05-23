@@ -36,7 +36,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      * Path of the data.
      */
     protected String path = "";
-    
+
     /**
      * @see de.ugoe.cs.cpdp.loader.IVersionLoader#setLocation(java.lang.String)
      */
@@ -58,7 +58,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
             return versions;
         }
         String datasetName = dataDir.getName();
-        
+
         for (File projectDir : dataDir.listFiles()) {
             if (projectDir.isDirectory()) {
                 String projectName = projectDir.getName();
@@ -70,8 +70,8 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             Instances data = instancesLoader.load(versionFile);
                             String versionName = data.relationName();
                             List<Double> efforts = getEfforts(data);
-                            versions
-                                .add(new SoftwareVersion(datasetName, projectName, versionName, data, efforts));
+                            versions.add(new SoftwareVersion(datasetName, projectName, versionName,
+                                                             data, efforts));
                         }
                     }
                 }

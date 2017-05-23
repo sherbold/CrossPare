@@ -70,7 +70,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
     /**
      * We wrap the classifier here because of classifyInstance with our MetricMatchingClassfier
      * 
-     * @return
+     * @return the classifier
      */
     @Override
     public Classifier getClassifier() {
@@ -232,6 +232,16 @@ public class MetricMatchingTraining extends WekaBaseTraining
         protected ArrayList<double[]> train_values;
         protected ArrayList<double[]> test_values;
 
+        /**
+         * <p>
+         * Matches the metrics between two sets
+         * </p>
+         *
+         * @param train
+         *            training data
+         * @param test
+         *            test data
+         */
         public MetricMatch(Instances train, Instances test) {
             // this is expensive but we need to keep the original data intact
             this.train = this.deepCopy(train);
@@ -276,10 +286,24 @@ public class MetricMatchingTraining extends WekaBaseTraining
             return this.p_sum + as + inst_rank;
         }
 
+        /**
+         * <p>
+         * Returns the matches
+         * </p>
+         *
+         * @return map with the metric matches
+         */
         public HashMap<Integer, Integer> getAttributes() {
             return this.attributes;
         }
 
+        /**
+         * <p>
+         * Returns the number of instances
+         * </p>
+         *
+         * @return number of instances
+         */
         public int getNumInstances() {
             return this.train_values.get(0).length;
         }
@@ -291,7 +315,8 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * attributes we matched.
          * 
          * @param test
-         * @return
+         *            instance that is matched
+         * @return the match
          */
         public Instance getMatchedTestInstance(Instance test) {
             Instance ni = new DenseInstance(this.attributes.size() + 1);
@@ -442,6 +467,9 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * 
          * attribute selection is only performed on the source dataset we retain the top 15%
          * attributes (if 15% is a float we just use the integer part)
+         * 
+         * @throws Exception
+         *             quick and dirty exception forwarding
          */
         public void attributeSelection() throws Exception {
 
@@ -550,6 +578,9 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * Calculates the Percentiles of the source and target metrics.
          * 
          * @param cutoff
+         *            cutoff value for percentiles that are considered similar
+         * @param mwbm
+         *            matching strategy
          */
         public void percentiles(double cutoff, MWBMatchingAlgorithm mwbm) {
             for (int i = 0; i < this.train.numAttributes(); i++) {
@@ -603,7 +634,9 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * bigger one.
          * 
          * @param cutoff
-         * @param mwbmatching
+         *            cutoff value for correlations that are considered similar
+         * @param mwbm
+         *            matching strategy
          */
         public void spearmansRankCorrelation(double cutoff, MWBMatchingAlgorithm mwbm) {
             double p = 0;
@@ -688,7 +721,9 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * distributions of the data are significantly different but we want them to be the same
          * 
          * @param cutoff
-         * @return p-val
+         *            cutoff value for p-values that are considered similar
+         * @param mwbm
+         *            matching strategy
          */
         public void kolmogorovSmirnovTest(double cutoff, MWBMatchingAlgorithm mwbm) {
             double p = 0;
@@ -829,6 +864,11 @@ public class MetricMatchingTraining extends WekaBaseTraining
         /**
          * Creates a BipartiteMatcher and prepares it to run on an n x m graph. All the weights are
          * initially set to 1.
+         * 
+         * @param n
+         *            size of the graph
+         * @param m
+         *            size of the graph
          */
         public MWBMatchingAlgorithm(int n, int m) {
             reset(n, m);
@@ -865,6 +905,13 @@ public class MetricMatchingTraining extends WekaBaseTraining
 
         /**
          * Sets the weight w<sub>ij</sub> to the given value w.
+         * 
+         * @param i
+         *            index i
+         * @param j
+         *            index j
+         * @param w
+         *            the weight
          *
          * @throws IllegalArgumentException
          *             if i or j is outside the range [0, n).
@@ -896,6 +943,8 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * Returns a maximum-weight perfect matching relative to the weights specified with
          * setWeight. The matching is represented as an array arr of length n, where arr[i] = j if
          * (i,j) is in the matching.
+         * 
+         * @return the matchings
          */
         public int[] getMatching() {
             if (n == -1 || m == -1) {

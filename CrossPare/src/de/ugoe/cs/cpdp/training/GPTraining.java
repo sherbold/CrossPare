@@ -455,8 +455,6 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
              *            the initial maximal depth of the S-expression tree
              * @param tournamentSize
              *            the tournament size for selection
-             * @param maxGenerations
-             *            the number of generations created
              * @param errorType2Weight
              *            weigth factor for the prediction errors
              * @param maxDepth
@@ -788,7 +786,8 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
              * 
              * @see MathCommand
              */
-            public GT(final GPConfiguration a_conf, @SuppressWarnings("rawtypes") java.lang.Class a_returnType)
+            public GT(final GPConfiguration a_conf,
+                      @SuppressWarnings("rawtypes") java.lang.Class a_returnType)
                 throws InvalidConfigurationException
             {
                 super(a_conf, 2, a_returnType);

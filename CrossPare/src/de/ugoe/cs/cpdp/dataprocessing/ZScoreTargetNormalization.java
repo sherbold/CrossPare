@@ -39,7 +39,7 @@ public class ZScoreTargetNormalization
     }
 
     /**
-     * @see de.ugoe.cs.cpdp.dataprocessing.SetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
@@ -48,8 +48,7 @@ public class ZScoreTargetNormalization
     }
 
     /**
-     * @see de.ugoe.cs.cpdp.dataprocessing.ProcessesingStrategy#apply(weka.core.Instances,
-     *      weka.core.Instances)
+     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
      */
     @Override
     public void apply(Instances testdata, Instances traindata) {

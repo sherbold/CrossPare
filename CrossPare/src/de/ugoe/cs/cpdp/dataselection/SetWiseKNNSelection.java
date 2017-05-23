@@ -36,7 +36,7 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
     private int k = 1;
 
     /**
-     * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override

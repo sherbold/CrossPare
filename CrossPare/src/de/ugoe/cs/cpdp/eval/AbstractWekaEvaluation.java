@@ -160,7 +160,9 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
             double aucec = calculateReviewEffort(testdata, classifier, efforts);
             double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
-            double succZi = eval.recall(1) >= 0.75 && eval.precision(1) >= 0.75 && eval.errorRate()<=0.25 ? 1.0 : 0.0;
+            double succZi =
+                eval.recall(1) >= 0.75 && eval.precision(1) >= 0.75 && eval.errorRate() <= 0.25
+                    ? 1.0 : 0.0;
             double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
             double succG60 = gmeasure > 0.6 ? 1.0 : 0.0;
 

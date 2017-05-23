@@ -63,7 +63,7 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
     }
 
     /**
-     * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override

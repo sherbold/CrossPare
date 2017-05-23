@@ -32,7 +32,8 @@ public interface IDecentVersionLoader extends IVersionLoader {
      * loads the versions and defines the DECENT attributes to be used
      * </p>
      *
-     * @param decentAttributes the attributes
+     * @param decentAttributes
+     *            the attributes
      * @return the versions
      */
     public List<SoftwareVersion> load(List<String> decentAttributes);

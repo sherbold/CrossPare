@@ -32,7 +32,7 @@ public class CVWekaEvaluation extends AbstractWekaEvaluation {
 
     /*
      * @see de.ugoe.cs.cpdp.eval.AbstractWekaEvaluation#createEvaluator(weka.core.Instances,
-     *      weka.classifiers.Classifier)
+     * weka.classifiers.Classifier)
      */
     @Override
     protected Evaluation createEvaluator(Instances testdata, Classifier classifier) {

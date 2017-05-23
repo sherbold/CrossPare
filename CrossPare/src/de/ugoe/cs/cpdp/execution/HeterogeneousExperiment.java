@@ -1,3 +1,4 @@
+
 package de.ugoe.cs.cpdp.execution;
 
 import java.io.File;
@@ -27,6 +28,13 @@ import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
 
+/**
+ * <p>
+ * Implements a execuction strategy for heterogeneous defect prediction.
+ * </p>
+ * 
+ * @author Alexander Trautsch
+ */
 public class HeterogeneousExperiment implements IExecutionStrategy {
 
     /**
@@ -44,7 +52,6 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
         this.config = config;
     }
 
-    
     /**
      * DUBLICATE FROM AbstractCrossProjectExperiment
      */
@@ -55,9 +62,14 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
         }
         return result;
     }
-    
+
     /**
      * DUBLICATE FROM AbstractCrossProjectExperiment
+     * 
+     * @param traindataSet
+     *            {@link AbstractCrossProjectExperiment#makeSingleTrainingSet(SetUniqueList)}
+     * @return {@link AbstractCrossProjectExperiment#makeSingleTrainingSet(SetUniqueList)}
+     * @see AbstractCrossProjectExperiment#makeSingleTrainingSet(SetUniqueList)
      */
     public static Instances makeSingleTrainingSet(SetUniqueList<Instances> traindataSet) {
         Instances traindataFull = null;
@@ -73,7 +85,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
         }
         return traindataFull;
     }
-    
+
     /**
      * <p>
      * Defines which products are allowed for training.
@@ -86,14 +98,15 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
      * @return true if test candidate can be used for training
      */
     protected boolean isTrainingVersion(SoftwareVersion trainingVersion,
-                                                 SoftwareVersion testVersion) {
-        if(testVersion.getDataset().equals(trainingVersion.getDataset())) {
+                                        SoftwareVersion testVersion)
+    {
+        if (testVersion.getDataset().equals(trainingVersion.getDataset())) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     @Override
     public void run() {
         final List<SoftwareVersion> versions = new LinkedList<>();
@@ -108,8 +121,8 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
         boolean writeHeader = true;
         int versionCount = 1;
         int testVersionCount = 0;
-        
-        // cahnged
+
+        // changed
         for (SoftwareVersion testVersion : versions) {
             if (isVersion(testVersion, config.getTestVersionFilters())) {
                 for (SoftwareVersion trainingVersion : versions) {
@@ -122,186 +135,216 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
 
         // sort versions
         Collections.sort(versions);
-        
+
         // todo: test version check problematic
-        // 
+        //
         for (SoftwareVersion testVersion : versions) {
             if (isVersion(testVersion, config.getTestVersionFilters())) {
-                
-                
+
                 // now iterate trainVersions
                 for (SoftwareVersion trainingVersion : versions) {
                     if (isVersion(trainingVersion, config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
-                            if (isTrainingVersion(trainingVersion, testVersion)) {  // checks if they are the same dataset
-                
-                Console.traceln(Level.INFO,
-                                String.format("[%s] [%02d/%02d] %s:%s starting",
-                                              config.getExperimentName(), versionCount,
-                                              testVersionCount, testVersion.getVersion(), trainingVersion.getVersion()));
-                int numResultsAvailable = resultsAvailable(testVersion, trainingVersion);
-                if (numResultsAvailable >= config.getRepetitions()) {
-                    Console.traceln(Level.INFO,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s:%s results already available; skipped",
-                                                  config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(), trainingVersion.getVersion()));
-                    versionCount++;
-                    continue;
-                }
+                            if (isTrainingVersion(trainingVersion, testVersion)) { // checks if they
+                                                                                   // are the same
+                                                                                   // dataset
 
-                // Setup testdata and training data
-                Instances testdata = testVersion.getInstances();
-                List<Double> efforts = testVersion.getEfforts();
-                Instances traindata = trainingVersion.getInstances();
+                                Console.traceln(Level.INFO,
+                                                String.format("[%s] [%02d/%02d] %s:%s starting",
+                                                              config.getExperimentName(),
+                                                              versionCount, testVersionCount,
+                                                              testVersion.getVersion(),
+                                                              trainingVersion.getVersion()));
+                                int numResultsAvailable =
+                                    resultsAvailable(testVersion, trainingVersion);
+                                if (numResultsAvailable >= config.getRepetitions()) {
+                                    Console.traceln(Level.INFO,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s:%s results already available; skipped",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  trainingVersion.getVersion()));
+                                    versionCount++;
+                                    continue;
+                                }
 
-                // only one set
-                SetUniqueList<Instances> traindataSet =
-                        SetUniqueList.setUniqueList(new LinkedList<Instances>());
-                traindataSet.add(traindata);
-                
-                for (ISetWiseProcessingStrategy processor : config.getSetWisePreprocessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s:%s applying setwise preprocessor %s",
-                                                  config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(), trainingVersion.getVersion(),
-                                                  processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
-                }
-                for (ISetWiseDataselectionStrategy dataselector : config.getSetWiseSelectors()) {
-                    Console
-                        .traceln(Level.FINE,
-                                 String.format("[%s] [%02d/%02d] %s: applying setwise selection %s",
-                                               config.getExperimentName(), versionCount,
-                                               testVersionCount, testVersion.getVersion(),
-                                               dataselector.getClass().getName()));
-                    dataselector.apply(testdata, traindataSet);
-                }
-                for (ISetWiseProcessingStrategy processor : config.getSetWisePostprocessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                                  config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
-                }
-                for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
-                    Console
-                        .traceln(Level.FINE,
-                                 String.format("[%s] [%02d/%02d] %s: applying setwise trainer %s",
-                                               config.getExperimentName(), versionCount,
-                                               testVersionCount, testVersion.getVersion(),
-                                               setwiseTrainer.getName()));
-                    setwiseTrainer.apply(traindataSet);
-                }
-                for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
-                    .getSetWiseTestdataAwareTrainers())
-                {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s:%s applying testdata aware setwise trainer %s",
-                                                  config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(), trainingVersion.getVersion(),
-                                                  setwiseTestdataAwareTrainer.getName()));
-                    setwiseTestdataAwareTrainer.apply(traindataSet, testdata);
-                }
-                
-                
-                // this part will not work in heterogeneous
-                //Instances traindata = makeSingleTrainingSet(traindataSet);
-                    for (IProcessesingStrategy processor : config.getPreProcessors()) {
-                        Console.traceln(Level.FINE,
-                                        String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
-                                                      config.getExperimentName(), versionCount,
-                                                      testVersionCount, testVersion.getVersion(),
-                                                      processor.getClass().getName()));
-                        processor.apply(testdata, traindata);
-                    }
-                    for (IPointWiseDataselectionStrategy dataselector : config
-                        .getPointWiseSelectors())
-                    {
-                        Console.traceln(Level.FINE,
-                                        String.format(
-                                                      "[%s] [%02d/%02d] %s: applying pointwise selection %s",
-                                                      config.getExperimentName(), versionCount,
-                                                      testVersionCount, testVersion.getVersion(),
-                                                      dataselector.getClass().getName()));
-                        traindata = dataselector.apply(testdata, traindata);
-                    }
-                    for (IProcessesingStrategy processor : config.getPostProcessors()) {
-                        Console.traceln(Level.FINE,
-                                        String.format(
-                                                      "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                                      config.getExperimentName(), versionCount,
-                                                      testVersionCount, testVersion.getVersion(),
-                                                      processor.getClass().getName()));
-                        processor.apply(testdata, traindata);
-                    }
-                    for (ITrainingStrategy trainer : config.getTrainers()) {
-                        Console.traceln(Level.FINE,
-                                        String.format("[%s] [%02d/%02d] %s: applying trainer %s",
-                                                      config.getExperimentName(), versionCount,
-                                                      testVersionCount, testVersion.getVersion(),
-                                                      trainer.getName()));
-                        trainer.apply(traindata);
-                    }
-                    for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
-                        Console.traceln(Level.FINE,
-                                        String.format("[%s] [%02d/%02d] %s: applying trainer %s",
-                                                      config.getExperimentName(), versionCount,
-                                                      testVersionCount, testVersion.getVersion(),
-                                                      trainer.getName()));
-                        trainer.apply(testdata, traindata);
-                    }
-                    File resultsDir = new File(config.getResultsPath());
-                    if (!resultsDir.exists()) {
-                        resultsDir.mkdir();
-                    }
-                    for (IEvaluationStrategy evaluator : config.getEvaluators()) {
-                        Console.traceln(Level.FINE,
-                                        String.format("[%s] [%02d/%02d] %s:%s applying evaluator %s",
-                                                      config.getExperimentName(), versionCount,
-                                                      testVersionCount, testVersion.getVersion(), trainingVersion.getVersion(),
-                                                      evaluator.getClass().getName()));
-                        List<ITrainer> allTrainers = new LinkedList<>();
-                        for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
-                            allTrainers.add(setwiseTrainer);
-                        }
-                        for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
-                            .getSetWiseTestdataAwareTrainers())
-                        {
-                            allTrainers.add(setwiseTestdataAwareTrainer);
-                        }
-                        for (ITrainingStrategy trainer : config.getTrainers()) {
-                            allTrainers.add(trainer);
-                        }
-                        for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
-                            allTrainers.add(trainer);
-                        }
-                        if (writeHeader) {
-                            evaluator.setParameter(config.getResultsPath() + "/" +
-                                config.getExperimentName() + ".csv");
-                        }
-                        evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
-                                        config.getResultStorages());
-                        writeHeader = false;
-                    }
-                    Console.traceln(Level.INFO,
-                                    String.format("[%s] [%02d/%02d] %s: finished",
-                                                  config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion()));
-                    versionCount++;
-                    
-                
-                
+                                // Setup testdata and training data
+                                Instances testdata = testVersion.getInstances();
+                                List<Double> efforts = testVersion.getEfforts();
+                                Instances traindata = trainingVersion.getInstances();
+
+                                // only one set
+                                SetUniqueList<Instances> traindataSet =
+                                    SetUniqueList.setUniqueList(new LinkedList<Instances>());
+                                traindataSet.add(traindata);
+
+                                for (ISetWiseProcessingStrategy processor : config
+                                    .getSetWisePreprocessors())
+                                {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s:%s applying setwise preprocessor %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  trainingVersion.getVersion(),
+                                                                  processor.getClass().getName()));
+                                    processor.apply(testdata, traindataSet);
+                                }
+                                for (ISetWiseDataselectionStrategy dataselector : config
+                                    .getSetWiseSelectors())
+                                {
+                                    Console.traceln(Level.FINE, String
+                                        .format("[%s] [%02d/%02d] %s: applying setwise selection %s",
+                                                config.getExperimentName(), versionCount,
+                                                testVersionCount, testVersion.getVersion(),
+                                                dataselector.getClass().getName()));
+                                    dataselector.apply(testdata, traindataSet);
+                                }
+                                for (ISetWiseProcessingStrategy processor : config
+                                    .getSetWisePostprocessors())
+                                {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  processor.getClass().getName()));
+                                    processor.apply(testdata, traindataSet);
+                                }
+                                for (ISetWiseTrainingStrategy setwiseTrainer : config
+                                    .getSetWiseTrainers())
+                                {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s: applying setwise trainer %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  setwiseTrainer.getName()));
+                                    setwiseTrainer.apply(traindataSet);
+                                }
+                                for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
+                                    .getSetWiseTestdataAwareTrainers())
+                                {
+                                    Console.traceln(Level.FINE, String
+                                        .format("[%s] [%02d/%02d] %s:%s applying testdata aware setwise trainer %s",
+                                                config.getExperimentName(), versionCount,
+                                                testVersionCount, testVersion.getVersion(),
+                                                trainingVersion.getVersion(),
+                                                setwiseTestdataAwareTrainer.getName()));
+                                    setwiseTestdataAwareTrainer.apply(traindataSet, testdata);
+                                }
+
+                                // this part will not work in heterogeneous
+                                // Instances traindata = makeSingleTrainingSet(traindataSet);
+                                for (IProcessesingStrategy processor : config.getPreProcessors()) {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s: applying preprocessor %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  processor.getClass().getName()));
+                                    processor.apply(testdata, traindata);
+                                }
+                                for (IPointWiseDataselectionStrategy dataselector : config
+                                    .getPointWiseSelectors())
+                                {
+                                    Console.traceln(Level.FINE, String
+                                        .format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
+                                                config.getExperimentName(), versionCount,
+                                                testVersionCount, testVersion.getVersion(),
+                                                dataselector.getClass().getName()));
+                                    traindata = dataselector.apply(testdata, traindata);
+                                }
+                                for (IProcessesingStrategy processor : config.getPostProcessors()) {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  processor.getClass().getName()));
+                                    processor.apply(testdata, traindata);
+                                }
+                                for (ITrainingStrategy trainer : config.getTrainers()) {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s: applying trainer %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  trainer.getName()));
+                                    trainer.apply(traindata);
+                                }
+                                for (ITestAwareTrainingStrategy trainer : config
+                                    .getTestAwareTrainers())
+                                {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s: applying trainer %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  trainer.getName()));
+                                    trainer.apply(testdata, traindata);
+                                }
+                                File resultsDir = new File(config.getResultsPath());
+                                if (!resultsDir.exists()) {
+                                    resultsDir.mkdir();
+                                }
+                                for (IEvaluationStrategy evaluator : config.getEvaluators()) {
+                                    Console.traceln(Level.FINE,
+                                                    String.format(
+                                                                  "[%s] [%02d/%02d] %s:%s applying evaluator %s",
+                                                                  config.getExperimentName(),
+                                                                  versionCount, testVersionCount,
+                                                                  testVersion.getVersion(),
+                                                                  trainingVersion.getVersion(),
+                                                                  evaluator.getClass().getName()));
+                                    List<ITrainer> allTrainers = new LinkedList<>();
+                                    for (ISetWiseTrainingStrategy setwiseTrainer : config
+                                        .getSetWiseTrainers())
+                                    {
+                                        allTrainers.add(setwiseTrainer);
+                                    }
+                                    for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
+                                        .getSetWiseTestdataAwareTrainers())
+                                    {
+                                        allTrainers.add(setwiseTestdataAwareTrainer);
+                                    }
+                                    for (ITrainingStrategy trainer : config.getTrainers()) {
+                                        allTrainers.add(trainer);
+                                    }
+                                    for (ITestAwareTrainingStrategy trainer : config
+                                        .getTestAwareTrainers())
+                                    {
+                                        allTrainers.add(trainer);
+                                    }
+                                    if (writeHeader) {
+                                        evaluator.setParameter(config.getResultsPath() + "/" +
+                                            config.getExperimentName() + ".csv");
+                                    }
+                                    evaluator.apply(testdata, traindata, allTrainers, efforts,
+                                                    writeHeader, config.getResultStorages());
+                                    writeHeader = false;
+                                }
+                                Console.traceln(Level.INFO,
+                                                String.format("[%s] [%02d/%02d] %s: finished",
+                                                              config.getExperimentName(),
+                                                              versionCount, testVersionCount,
+                                                              testVersion.getVersion()));
+                                versionCount++;
+
                             }
                         }
                     }
                 }
-                
-            } /* end if check training*/
+
+            } /* end if check training */
         } /* end for iteration test version */
     }
 
@@ -332,8 +375,9 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
         int available = Integer.MAX_VALUE;
         for (IResultStorage storage : config.getResultStorages()) {
             String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
-            int curAvailable = storage.containsHeterogeneousResult(config.getExperimentName(),
-                                                      version.getVersion(), classifierName, trainVersion.getVersion());
+            int curAvailable = storage
+                .containsHeterogeneousResult(config.getExperimentName(), version.getVersion(),
+                                             classifierName, trainVersion.getVersion());
             if (curAvailable < available) {
                 available = curAvailable;
             }

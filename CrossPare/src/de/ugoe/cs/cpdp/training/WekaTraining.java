@@ -26,7 +26,8 @@ import weka.core.Instances;
  * parameters are configuration parameters of the algorithms. Cross validation parameters always
  * come last and are prepended with -CVPARAM
  * </p>
- * XML Configurations for Weka Classifiers: 
+ * XML Configurations for Weka Classifiers:
+ * 
  * <pre>
  * {@code
  * <!-- examples -->
@@ -41,7 +42,7 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
     @Override
     public void apply(Instances traindata) {
         classifier = setupClassifier();
-        if( classifier==null ) {
+        if (classifier == null) {
             Console.printerr("classifier of WekaTraining is null");
             throw new RuntimeException("classifier of WekaTraining is null");
         }
@@ -52,7 +53,9 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
             classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
-            if (e.getMessage()!=null && e.getMessage().contains("Not enough training instances with class labels")) {
+            if (e.getMessage() != null &&
+                e.getMessage().contains("Not enough training instances with class labels"))
+            {
                 Console.traceln(Level.SEVERE,
                                 "failure due to lack of instances: " + e.getMessage());
                 Console.traceln(Level.SEVERE, "training ZeroR classifier instead");

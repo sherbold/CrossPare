@@ -50,8 +50,7 @@ public class TurhanFilter implements IPointWiseDataselectionStrategy {
     }
 
     /**
-     * @see de.ugoe.cs.cpdp.dataselection.PointWiseDataselectionStrategy#apply(weka.core.Instances,
-     *      weka.core.Instances)
+     * @see IPointWiseDataselectionStrategy#apply(weka.core.Instances, weka.core.Instances)
      */
     @Override
     public Instances apply(Instances testdata, Instances traindata) {

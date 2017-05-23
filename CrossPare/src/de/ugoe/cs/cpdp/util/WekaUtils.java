@@ -37,27 +37,27 @@ public class WekaUtils {
      * @author Steffen Herbold
      */
     public static class DistChar {
-        
+
         /**
          * mean distance
          */
         public final double mean;
-        
+
         /**
          * standard deviation
          */
         public final double std;
-        
+
         /**
          * minimal value
          */
         public final double min;
-        
+
         /**
          * maximal value
          */
         public final double max;
-        
+
         /**
          * number of instances
          */
@@ -65,14 +65,19 @@ public class WekaUtils {
 
         /**
          * <p>
-         * Constructor. Creates a new DistChar object. 
+         * Constructor. Creates a new DistChar object.
          * </p>
          *
-         * @param mean mean distance between instances
-         * @param std standard deviation of distances between instances
-         * @param min minimal distance between instances
-         * @param max maximal distance between instances
-         * @param num number of instance
+         * @param mean
+         *            mean distance between instances
+         * @param std
+         *            standard deviation of distances between instances
+         * @param min
+         *            minimal distance between instances
+         * @param max
+         *            maximal distance between instances
+         * @param num
+         *            number of instance
          */
         private DistChar(double mean, double std, double min, double max, int num) {
             this.mean = mean;

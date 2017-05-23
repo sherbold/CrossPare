@@ -43,6 +43,13 @@
 		<pathelement location="lib/jgap.jar" />
 		<pathelement location="lib/json-20160810.jar" />
 	</path>
+	
+	<path id="Javadoc.classpath">
+		<fileset dir="lib">
+		    <include name="*.jar"/>
+		    <exclude name="ojalgo-37.1.jar"/>
+		</fileset>
+	</path>
 
 	<!-- Initialization Targets -->
 	<target name="init.build">
@@ -124,7 +131,7 @@
 		description="o Create Javadocs (Requires Javadoc 1.4+)">
 		<javadoc destdir="${javadoc.location}"
 			additionalparam="-J-Dorg.apache.commons.attributes.javadoc.CATaglet.sources=${basedir}">
-			<classpath refid="Crosspare.classpath" />
+			<classpath refid="Javadoc.classpath" />
 			<link href="http://download.oracle.com/javase/7/docs/api/" />
 			<fileset dir="src" includes="**/*.java" />
 		</javadoc>

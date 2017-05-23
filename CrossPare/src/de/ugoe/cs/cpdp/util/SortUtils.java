@@ -14,6 +14,9 @@ public class SortUtils {
      * <p>
      * Implements a quick sort that sorts an index set together with the array.
      * </p>
+     * 
+     * @param <T>
+     *            type for sorting
      *
      * @param main
      *            the array that is sorted
@@ -28,6 +31,9 @@ public class SortUtils {
      * <p>
      * Implements a quick sort that sorts an index set together with the array.
      * </p>
+     * 
+     * @param <T>
+     *            type for sorting
      *
      * @param main
      *            the array that is sorted

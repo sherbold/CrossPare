@@ -32,7 +32,7 @@ import weka.core.Instances;
 public class SetWiseEMClusterSelection extends AbstractCharacteristicSelection {
 
     /**
-     * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override

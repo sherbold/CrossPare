@@ -52,7 +52,7 @@ import de.ugoe.cs.util.console.Console;
  * </ul>
  * </ul>
  * 
- * Note that this class implements {@link IExectuionStrategy}, i.e., each experiment can be started
+ * Note that this class implements {@link IExecutionStrategy}, i.e., each experiment can be started
  * in its own thread.
  * 
  * @author Fabian Trautsch

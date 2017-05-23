@@ -18,7 +18,8 @@ import weka.classifiers.Classifier;
 
 /**
  * <p>
- * Common interface for all training strategies that internally use the {@link Classifier} from WEKA. 
+ * Common interface for all training strategies that internally use the {@link Classifier} from
+ * WEKA.
  * </p>
  * 
  * @author Steffen Herbold

@@ -573,7 +573,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
      * </p>
      * 
      * @author Alexander Trautsch
-     * @param <T> type of the instance
+     * @param <T>
+     *            type of the instance
      */
     public class QuadTreePayload<T> {
 

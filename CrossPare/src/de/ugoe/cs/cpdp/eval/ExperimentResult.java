@@ -20,9 +20,8 @@ public class ExperimentResult {
      */
     private final String productName;
 
-    
     private String trainProductName = "";
-    
+
     /**
      * name of the classifier used
      */
@@ -135,8 +134,27 @@ public class ExperimentResult {
         this.productName = productName;
         this.classifier = classifier;
     }
-    
-    public ExperimentResult(String configurationName, String productName, String classifier, String trainProductName) {
+
+    /**
+     * 
+     * <p>
+     * Constructor. Creates a new ExperimentResult.
+     * </p>
+     *
+     * @param configurationName
+     *            the configuration name
+     * @param productName
+     *            the product name
+     * @param classifier
+     *            the classifier name
+     * @param trainProductName
+     *            the name of the training product
+     */
+    public ExperimentResult(String configurationName,
+                            String productName,
+                            String classifier,
+                            String trainProductName)
+    {
         this.configurationName = configurationName;
         this.productName = productName;
         this.classifier = classifier;
@@ -164,9 +182,18 @@ public class ExperimentResult {
     public String getProductName() {
         return productName;
     }
+
+    /**
+     * <p>
+     * returns the name of the training product
+     * </p>
+     *
+     * @return the name of the training product
+     */
     public String getTrainProductName() {
         return trainProductName;
     }
+
     /**
      * <p>
      * returns the classifier name
