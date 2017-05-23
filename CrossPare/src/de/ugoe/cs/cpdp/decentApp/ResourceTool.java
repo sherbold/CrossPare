@@ -54,7 +54,7 @@ public class ResourceTool {
     /**
      * Constructor
      * 
-     * @param loggedClass
+     * @param loggedClass class that is logged
      */
     public ResourceTool(String loggedClass) {
         System.setProperty("org.slf4j.simpleLogger.logFile", "validation.log");

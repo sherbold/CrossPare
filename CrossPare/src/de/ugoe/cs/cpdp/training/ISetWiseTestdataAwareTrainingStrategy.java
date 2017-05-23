@@ -36,7 +36,21 @@ public interface ISetWiseTestdataAwareTrainingStrategy extends ITrainer {
 
     // TODO: these two methods look like they should be removed and instead be handled using the
     // parameters
+    /**
+     * <p>
+     * Sets the method for the strategy
+     * </p>
+     *
+     * @param method the method
+     */
     void setMethod(String method);
 
+    /**
+     * <p>
+     * Sets the threshold for the strategy
+     * </p>
+     *
+     * @param threshold the threshold
+     */
     void setThreshold(String threshold);
 }

@@ -56,7 +56,7 @@ public class DECENTEpsilonModelHandler {
      * @param write
      *            indicates if data should be written in the model
      * @return EmFModel (IModel) instance from the decent model, which was loaded
-     * @throws Exception
+     * @throws Exception quick and dirty exception forwarding
      */
     public IModel getDECENTModel(String decentModelLocation, boolean read, boolean write)
         throws Exception
@@ -148,7 +148,7 @@ public class DECENTEpsilonModelHandler {
      * @param write
      *            indicates if data should be written in the model
      * @return EmFModel (IModel) instance from the arffx model, which was loaded
-     * @throws Exception
+     * @throws Exception quick and dirty exception forwarding
      */
 
     public IModel getARFFxModel(String arffxModelLocation, boolean read, boolean write)
@@ -241,7 +241,7 @@ public class DECENTEpsilonModelHandler {
      * @param write
      *            indicates if data should be written in the model
      * @return EmFModel (IModel) instance from the log model, which was loaded
-     * @throws Exception
+     * @throws Exception quick and dirty exception forwarding
      */
 
     public IModel getLOGModel(String logModelLocation, boolean read, boolean write)
@@ -303,7 +303,7 @@ public class DECENTEpsilonModelHandler {
      * @param fileName
      *            of the file
      * @return file name
-     * @throws URISyntaxException
+     * @throws URISyntaxException quick and dirty exception forwarding
      */
     public File getFile(String fileName) throws URISyntaxException {
         ;
@@ -349,7 +349,7 @@ public class DECENTEpsilonModelHandler {
     /**
      * Sets the boolean which indicates, if the decent binary model is used
      * 
-     * @param useDECENTBinary
+     * @param useDECENTBinary if true, binary format is used
      */
     public void setUseDECENTBinary(boolean useDECENTBinary) {
         this.useDECENTBinary = useDECENTBinary;
@@ -367,7 +367,7 @@ public class DECENTEpsilonModelHandler {
     /**
      * Sets the boolean which indicates, if the arffx binary model is used
      * 
-     * @param useARFFxBinary
+     * @param useARFFxBinary if true, binary format is used
      */
 
     public void setUseARFFxBinary(boolean useARFFxBinary) {

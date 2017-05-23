@@ -33,7 +33,7 @@ public abstract class FileWatcher extends TimerTask {
     /**
      * Constructor
      * 
-     * @param file
+     * @param file file that is watched
      */
     public FileWatcher(File file) {
         this.file = file;
