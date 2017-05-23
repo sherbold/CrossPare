@@ -2,6 +2,8 @@
 <project basedir="." default="dist" name="Crosspare">
 	<!-- General Properties -->
 	<property environment="env" />
+	<property name="source.location" value="src" />
+	<property name="source-generated.location" value="src-generated" />
 	<property name="build.location" value="bin" />
 	<property name="dist.location" value="dist" />
 	<property name="javadoc.location" value="javadoc" />
@@ -10,6 +12,11 @@
 	<property name="target" value="1.8" />
 	<property name="source" value="1.8" />
 
+	<path id="src.path">
+		<pathelement location="${source.location}" />
+		<pathelement location="${source-generated.location}" />
+	</path>
+	
 	<!-- Crosspare Properties -->
 	<property name="Crosspare.jarname" value="crosspare.jar" />
 	<path id="Crosspare.classpath">
@@ -80,7 +87,7 @@
 	<!-- Build Targets -->
 	<target depends="init.build" name="build">
 		<javac debug="false" destdir="${build.location}" source="${source}" target="${target}" includeantruntime="false" encoding="UTF-8">
-			<src path="src" />
+			<src refid="src.path" />
 			<classpath refid="Crosspare.classpath" />
 		</javac>
 	</target>
