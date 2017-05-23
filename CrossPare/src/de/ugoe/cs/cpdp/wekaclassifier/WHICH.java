@@ -221,6 +221,7 @@ public class WHICH extends AbstractClassifier {
          * </p>
          *
          * @param traindata
+         *            data used for scoring
          */
         public void scoreRule(Instances traindata) {
             int numMatches = 0;
@@ -501,7 +502,9 @@ public class WHICH extends AbstractClassifier {
          * </p>
          *
          * @param numRules
+         *            numberof rules to be generated
          * @param traindata
+         *            training data used for scoring
          */
         public void generateRules(int numRules, Instances traindata) {
             List<WhichRule> newRules = new LinkedList<>();

@@ -567,6 +567,7 @@ public class ExperimentResult {
      * </p>
      *
      * @param fn
+     *            the FNs
      */
     public void setFn(double fn) {
         this.fn = fn;

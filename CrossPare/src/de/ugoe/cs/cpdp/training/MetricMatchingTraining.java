@@ -188,6 +188,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * Sets the MetricMatch instance so that we can use matched test data later.
          * 
          * @param mm
+         *            the metric matching instance
          */
         public void setMetricMatching(MetricMatch mm) {
             this.mm = mm;
@@ -540,7 +541,10 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * train and test data attributes.
          * 
          * @param type
+         *            Type of matching. Current currently supports Spearman's rank correlation,
+         *            Kolomogorov-Smirnoff tests, and percentile based matching.
          * @param cutoff
+         *            cutoff for matching
          */
         public void matchAttributes(String type, double cutoff) {
 

@@ -668,6 +668,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
          * </p>
          *
          * @param k
+         *            number of target dimensions
          */
         public Fastmap(int k) {
             this.target_dims = k;

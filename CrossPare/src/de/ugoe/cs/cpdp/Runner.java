@@ -73,6 +73,7 @@ public class Runner {
      * Creates the config and starts the corresponding experiment
      * 
      * @param threadPool
+     *            thread pool in which the configurations are executed
      * @param configFile
      *            location of the config file
      */

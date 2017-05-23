@@ -230,6 +230,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * </p>
          *
          * @param instances
+         *            instances used for internal representation
          */
         public InstanceData(Instances instances) {
             this.instances_x = new double[instances.numInstances()][instances.numAttributes() - 1];
