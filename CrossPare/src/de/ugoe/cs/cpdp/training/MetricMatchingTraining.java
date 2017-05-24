@@ -321,12 +321,12 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * set the values for the attributes we matched but with the index of the traindata
          * attributes we matched.
          * 
-         * @param test
+         * @param testInstance
          *            instance that is matched
          * @return the match
          */
         @SuppressWarnings("boxing")
-        public Instance getMatchedTestInstance(Instance test) {
+        public Instance getMatchedTestInstance(Instance testInstance) {
             Instance ni = new DenseInstance(this.attributes.size() + 1);
 
             Instances inst = this.getMatchedTrain();
@@ -338,13 +338,13 @@ public class MetricMatchingTraining extends WekaBaseTraining
             int k = 0;
             for (Map.Entry<Integer, Integer> attmatch : this.attributes.entrySet()) {
                 // get value from matched attribute
-                val = test.value(attmatch.getValue());
+                val = testInstance.value(attmatch.getValue());
 
                 // set it to new index, the order of the attributes is the same
                 ni.setValue(k, val);
                 k++;
             }
-            ni.setClassValue(test.value(test.classAttribute()));
+            ni.setClassValue(testInstance.value(testInstance.classAttribute()));
 
             return ni;
         }
@@ -614,19 +614,19 @@ public class MetricMatchingTraining extends WekaBaseTraining
                     }
 
                     // get percentiles
-                    double train[] = this.train_values.get(i);
-                    double test[] = this.test_values.get(j);
+                    double trainvals[] = this.train_values.get(i);
+                    double testvals[] = this.test_values.get(j);
 
-                    Arrays.sort(train);
-                    Arrays.sort(test);
+                    Arrays.sort(trainvals);
+                    Arrays.sort(testvals);
 
                     // percentiles
                     double train_p;
                     double test_p;
                     double score = 0.0;
                     for (int p = 1; p <= 9; p++) {
-                        train_p = train[(int) Math.ceil(train.length * (p / 100))];
-                        test_p = test[(int) Math.ceil(test.length * (p / 100))];
+                        train_p = trainvals[(int) Math.ceil(trainvals.length * (p / 100))];
+                        test_p = testvals[(int) Math.ceil(testvals.length * (p / 100))];
 
                         if (train_p > test_p) {
                             score += test_p / train_p;

@@ -118,7 +118,7 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
 
             double classification = 0.0;
             for (int i = 0; i < this.classifiers.size(); i++) {
-                Classifier classifier = this.classifiers.get(i);
+                Classifier currentClassifier = this.classifiers.get(i);
                 Instances traindata = this.trainingData.get(i);
 
                 Set<String> attributeNames = new HashSet<>();
@@ -140,7 +140,7 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
                 Instance instCopy = new DenseInstance(instance.weight(), values);
                 instCopy.setDataset(tmp);
                 try {
-                    classification += classifier.classifyInstance(instCopy);
+                    classification += currentClassifier.classifyInstance(instCopy);
                 }
                 catch (Exception e) {
                     throw new RuntimeException("bagging classifier could not classify an instance",
@@ -166,9 +166,9 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
             this.classifiers = new LinkedList<>();
             this.trainingData = new LinkedList<>();
             for (Instances traindata : traindataSet) {
-                Classifier classifier = setupClassifier();
-                classifier.buildClassifier(traindata);
-                this.classifiers.add(classifier);
+                Classifier currentClassifier = setupClassifier();
+                currentClassifier.buildClassifier(traindata);
+                this.classifiers.add(currentClassifier);
                 this.trainingData.add(new Instances(traindata));
             }
         }
@@ -182,9 +182,9 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
         public void buildClassifier(Instances traindata) throws Exception {
             this.classifiers = new LinkedList<>();
             this.trainingData = new LinkedList<>();
-            final Classifier classifier = setupClassifier();
-            classifier.buildClassifier(traindata);
-            this.classifiers.add(classifier);
+            final Classifier currentClassifier = setupClassifier();
+            currentClassifier.buildClassifier(traindata);
+            this.classifiers.add(currentClassifier);
             this.trainingData.add(new Instances(traindata));
         }
     }

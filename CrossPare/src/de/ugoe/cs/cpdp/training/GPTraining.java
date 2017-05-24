@@ -934,14 +934,14 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 for (int k = 0; k < this.numberRuns; k++) {
                     double[] errors_eval =
                         { 0.0, 0.0 };
-                    Classifier classifier = new GPRun();
-                    ((GPRun) classifier).configure(this.populationSize, this.initMinDepth,
+                    Classifier currentTrainClassifier = new GPRun();
+                    ((GPRun) currentTrainClassifier).configure(this.populationSize, this.initMinDepth,
                                                    this.initMaxDepth, this.tournamentSize,
                                                    this.maxGenerations, this.errorType2Weight,
                                                    this.maxDepth, this.maxNodes);
 
                     // one project is training data
-                    classifier.buildClassifier(traindataSet.get(i));
+                    currentTrainClassifier.buildClassifier(traindataSet.get(i));
 
                     double[] errors;
                     // rest of the set is evaluation data, we evaluate now
@@ -949,18 +949,18 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if (j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the
                             // candidates
-                            errors = this.evaluate((GPRun) classifier, traindataSet.get(j));
+                            errors = this.evaluate((GPRun) currentTrainClassifier, traindataSet.get(j));
                             errors_eval[0] += errors[0];
                             errors_eval[1] += errors[1];
                             if ((errors[0] < 0.5) && (errors[1] < 0.5)) {
-                                candidates.add(classifier);
+                                candidates.add(currentTrainClassifier);
                             }
                         }
                     }
 
                     // if the candidate made fewer errors it is now the best
                     if (errors_eval[0] + errors_eval[1] < smallest_error_count_train) {
-                        bestTrain = classifier;
+                        bestTrain = currentTrainClassifier;
                         smallest_error_count_train = errors_eval[0] + errors_eval[1];
                     }
                 }
@@ -1013,11 +1013,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
             int vote_positive = 0;
 
-            for (int i = 0; i < this.classifiers.size(); i++) {
-                Classifier classifier = this.classifiers.get(i);
-
-                GPGenotype gp = ((GPRun) classifier).getGp();
-                Variable[] vars = ((GPRun) classifier).getVariables();
+            for (Classifier clf : this.classifiers) {
+                GPGenotype gp = ((GPRun) clf).getGp();
+                Variable[] vars = ((GPRun) clf).getVariables();
 
                 IGPProgram fitest = gp.getAllTimeBest(); // all time fitest
                 for (int j = 0; j < instance.numAttributes() - 1; j++) {
@@ -1168,13 +1166,13 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
                 // numberRuns full GPRuns, we generate numberRuns models for each traindata
                 for (int k = 0; k < this.numberRuns; k++) {
-                    Classifier classifier = new GPRun();
-                    ((GPRun) classifier).configure(this.populationSize, this.initMinDepth,
+                    Classifier currentTrainingClf = new GPRun();
+                    ((GPRun) currentTrainingClf).configure(this.populationSize, this.initMinDepth,
                                                    this.initMaxDepth, this.tournamentSize,
                                                    this.maxGenerations, this.errorType2Weight,
                                                    this.maxDepth, this.maxNodes);
 
-                    classifier.buildClassifier(traindataSet.get(i));
+                    currentTrainingClf.buildClassifier(traindataSet.get(i));
 
                     double[] errors;
 
@@ -1183,9 +1181,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                         if (j != i) {
                             // if type1 and type2 errors are < 0.5 we allow the model in the
                             // candidate list
-                            errors = this.evaluate((GPRun) classifier, traindataSet.get(j));
+                            errors = this.evaluate((GPRun) currentTrainingClf, traindataSet.get(j));
                             if ((errors[0] < 0.5) && (errors[1] < 0.5)) {
-                                candidates.add(classifier);
+                                candidates.add(currentTrainingClf);
                             }
                         }
                     }
@@ -1196,7 +1194,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 // we select the model which is best on all evaluation data
                 double smallest_error_count = Double.MAX_VALUE;
                 double[] errors;
-                Classifier best = null;
+                Classifier currentBest = null;
                 for (int ii = 0; ii < candidates.size(); ii++) {
                     double[] errors_eval =
                         { 0.0, 0.0 };
@@ -1212,13 +1210,13 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
 
                     // if the candidate made fewer errors it is now the best
                     if (errors_eval[0] + errors_eval[1] < smallest_error_count) {
-                        best = candidates.get(ii);
+                        currentBest = candidates.get(ii);
                         smallest_error_count = errors_eval[0] + errors_eval[1];
                     }
                 }
 
                 // now we have the best classifier for this training data
-                this.classifiers.add(best);
+                this.classifiers.add(currentBest);
 
             } /* endfor trainData */
 
@@ -1250,12 +1248,12 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          */
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
-            final Classifier classifier = new GPRun();
-            ((GPRun) classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth,
+            final Classifier currentTrainingClf = new GPRun();
+            ((GPRun) currentTrainingClf).configure(this.populationSize, this.initMinDepth, this.initMaxDepth,
                                            this.tournamentSize, this.maxGenerations, this.errorType2Weight,
                                            this.maxDepth, this.maxNodes);
-            classifier.buildClassifier(traindata);
-            this.classifiers.add(classifier);
+            currentTrainingClf.buildClassifier(traindata);
+            this.classifiers.add(currentTrainingClf);
         }
 
         /**
@@ -1275,9 +1273,9 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * @return the type I and type II error rates
          */
         @SuppressWarnings("boxing")
-        public double[] evaluate(GPRun classifier, Instances evalData) {
-            GPGenotype gp = classifier.getGp();
-            Variable[] vars = classifier.getVariables();
+        public double[] evaluate(GPRun currentClassifier, Instances evalData) {
+            GPGenotype gp = currentClassifier.getGp();
+            Variable[] vars = currentClassifier.getVariables();
 
             IGPProgram fitest = gp.getAllTimeBest(); // selects the fitest of all not just the last
                                                      // generation
