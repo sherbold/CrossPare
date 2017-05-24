@@ -2,8 +2,8 @@
 <project basedir="." default="dist" name="Crosspare">
 	<!-- General Properties -->
 	<property environment="env" />
-	<property name="source.location" value="src" />
-	<property name="source-generated.location" value="src-generated" />
+	<property name="source.location" value="src/main/java" />
+	<property name="source-generated.location" value="src/main/generated-java" />
 	<property name="build.location" value="bin" />
 	<property name="dist.location" value="dist" />
 	<property name="javadoc.location" value="javadoc" />
@@ -140,7 +140,7 @@
 			additionalparam="-J-Dorg.apache.commons.attributes.javadoc.CATaglet.sources=${basedir}">
 			<classpath refid="Javadoc.classpath" />
 			<link href="http://download.oracle.com/javase/7/docs/api/" />
-			<fileset dir="src" includes="**/*.java" />
+			<fileset dir="${source.location}" includes="**/*.java" />
 		</javadoc>
 	</target>
 </project>
