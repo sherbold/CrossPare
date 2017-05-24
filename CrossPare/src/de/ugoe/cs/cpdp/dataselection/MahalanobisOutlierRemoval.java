@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
+import java.util.logging.Level;
+
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
@@ -21,7 +23,6 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.correlation.Covariance;
 
-import de.lmu.ifi.dbs.elki.logging.Logging.Level;
 import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
@@ -51,7 +52,7 @@ public class MahalanobisOutlierRemoval
     @Override
     public void setParameter(String parameters) {
         if (parameters != null && !parameters.isEmpty()) {
-            epsilon = Double.parseDouble(parameters);
+            this.epsilon = Double.parseDouble(parameters);
         }
     }
 
@@ -99,7 +100,7 @@ public class MahalanobisOutlierRemoval
             inverseCovariance = new LUDecomposition(new Covariance(values).getCovarianceMatrix())
                 .getSolver().getInverse();
         }
-        catch (SingularMatrixException e) {
+        catch (@SuppressWarnings("unused") SingularMatrixException e) {
             Console
                 .traceln(Level.WARNING,
                          "could not perform Mahalanobis outlier removal due to singular covariance matrix");
@@ -119,7 +120,7 @@ public class MahalanobisOutlierRemoval
             double distance =
                 mahalanobisDistance(inverseCovariance, WekaUtils.instanceValues(data.get(i)),
                                     meanValues);
-            if (distance > epsilon) {
+            if (distance > this.epsilon) {
                 data.remove(i);
             }
         }
@@ -136,7 +137,7 @@ public class MahalanobisOutlierRemoval
      * @param vector2
      * @return
      */
-    private double mahalanobisDistance(RealMatrix inverseCovariance,
+    private static double mahalanobisDistance(RealMatrix inverseCovariance,
                                        double[] vector1,
                                        double[] vector2)
     {

@@ -103,13 +103,19 @@ public class SortUtils {
         int i = left - 1;
         int j = right;
         while (true) {
-            while (compare(main[++i], main[right], descending)) // find item on left to swap
-            ; // a[right] acts as sentinel
-            while (compare(main[right], main[--j], descending)) // find item on right to swap
-                if (j == left)
+            while (compare(main[++i], main[right], descending)) {
+                // find item on left to swap
+                // a[right] acts as sentinel
+            }
+            while (compare(main[right], main[--j], descending)) {
+                // find item on right to swap
+                if (j == left) {
                     break; // don't go out-of-bounds
-            if (i >= j)
+                }
+            }
+            if (i >= j) {
                 break; // check if pointers cross
+            }
             swap(main, index, i, j); // swap two elements into place
         }
         swap(main, index, i, right); // swap with partition element
@@ -134,9 +140,7 @@ public class SortUtils {
         if (descending) {
             return x.compareTo(y) > 0;
         }
-        else {
-            return x.compareTo(y) < 0;
-        }
+        return x.compareTo(y) < 0;
     }
 
     /**

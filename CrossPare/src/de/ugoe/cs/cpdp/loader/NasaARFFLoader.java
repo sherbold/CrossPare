@@ -49,72 +49,72 @@ public class NasaARFFLoader implements SingleVersionLoader {
      * Constructor. Creates a new NasaARFFLoader.
      */
     public NasaARFFLoader() {
-        attributeNameMap = new HashMap<>();
+        this.attributeNameMap = new HashMap<>();
 
         // Map entries for ar project
-        attributeNameMap.put("total_loc", "LOC_TOTAL");
-        attributeNameMap.put("comment_loc", "LOC_COMMENTS");
-        attributeNameMap.put("code_and_comment_loc", "LOC_CODE_AND_COMMENT");
-        attributeNameMap.put("executable_loc", "LOC_EXECUTABLE");
-        attributeNameMap.put("unique_operands", "NUM_UNIQUE_OPERANDS");
-        attributeNameMap.put("unique_operators", "NUM_UNIQUE_OPERATORS");
-        attributeNameMap.put("total_operands", "NUM_OPERANDS");
-        attributeNameMap.put("total_operators", "NUM_OPERATORS");
-        attributeNameMap.put("halstead_length", "HALSTEAD_LENGTH");
-        attributeNameMap.put("halstead_volume", "HALSTEAD_VOLUME");
-        attributeNameMap.put("halstead_difficulty", "HALSTEAD_DIFFICULTY");
-        attributeNameMap.put("halstead_effort", "HALSTEAD_EFFORT");
-        attributeNameMap.put("halstead_error", "HALSTEAD_ERROR_EST");
-        attributeNameMap.put("halstead_time", "HALSTEAD_PROG_TIME");
-        attributeNameMap.put("branch_count", "BRANCH_COUNT");
-        attributeNameMap.put("cyclomatic_complexity", "CYCLOMATIC_COMPLEXITY");
-        attributeNameMap.put("design_complexity", "DESIGN_COMPLEXITY");
+        this.attributeNameMap.put("total_loc", "LOC_TOTAL");
+        this.attributeNameMap.put("comment_loc", "LOC_COMMENTS");
+        this.attributeNameMap.put("code_and_comment_loc", "LOC_CODE_AND_COMMENT");
+        this.attributeNameMap.put("executable_loc", "LOC_EXECUTABLE");
+        this.attributeNameMap.put("unique_operands", "NUM_UNIQUE_OPERANDS");
+        this.attributeNameMap.put("unique_operators", "NUM_UNIQUE_OPERATORS");
+        this.attributeNameMap.put("total_operands", "NUM_OPERANDS");
+        this.attributeNameMap.put("total_operators", "NUM_OPERATORS");
+        this.attributeNameMap.put("halstead_length", "HALSTEAD_LENGTH");
+        this.attributeNameMap.put("halstead_volume", "HALSTEAD_VOLUME");
+        this.attributeNameMap.put("halstead_difficulty", "HALSTEAD_DIFFICULTY");
+        this.attributeNameMap.put("halstead_effort", "HALSTEAD_EFFORT");
+        this.attributeNameMap.put("halstead_error", "HALSTEAD_ERROR_EST");
+        this.attributeNameMap.put("halstead_time", "HALSTEAD_PROG_TIME");
+        this.attributeNameMap.put("branch_count", "BRANCH_COUNT");
+        this.attributeNameMap.put("cyclomatic_complexity", "CYCLOMATIC_COMPLEXITY");
+        this.attributeNameMap.put("design_complexity", "DESIGN_COMPLEXITY");
 
         // Map entries for KC2
-        attributeNameMap.put("loc", "LOC_TOTAL");
-        attributeNameMap.put("lOCode", "LOC_EXECUTABLE");
-        attributeNameMap.put("lOComment", "LOC_COMMENTS");
-        attributeNameMap.put("lOCodeAndComment", "LOC_CODE_AND_COMMENT");
-        attributeNameMap.put("uniq_Op", "NUM_UNIQUE_OPERATORS");
-        attributeNameMap.put("uniq_Opnd", "NUM_UNIQUE_OPERANDS");
-        attributeNameMap.put("total_Op", "NUM_OPERATORS");
-        attributeNameMap.put("total_Opnd", "NUM_OPERANDS");
-        attributeNameMap.put("v", "HALSTEAD_VOLUME");
-        attributeNameMap.put("l", "HALSTEAD_LENGTH");
-        attributeNameMap.put("d", "HALSTEAD_DIFFICULTY");
-        attributeNameMap.put("e", "HALSTEAD_EFFORT");
-        attributeNameMap.put("b", "HALSTEAD_ERROR_EST");
-        attributeNameMap.put("t", "HALSTEAD_PROG_TIME");
-        attributeNameMap.put("branchCount", "BRANCH_COUNT");
-        attributeNameMap.put("v(g)", "CYCLOMATIC_COMPLEXITY");
-        attributeNameMap.put("iv(g)", "DESIGN_COMPLEXITY");
+        this.attributeNameMap.put("loc", "LOC_TOTAL");
+        this.attributeNameMap.put("lOCode", "LOC_EXECUTABLE");
+        this.attributeNameMap.put("lOComment", "LOC_COMMENTS");
+        this.attributeNameMap.put("lOCodeAndComment", "LOC_CODE_AND_COMMENT");
+        this.attributeNameMap.put("uniq_Op", "NUM_UNIQUE_OPERATORS");
+        this.attributeNameMap.put("uniq_Opnd", "NUM_UNIQUE_OPERANDS");
+        this.attributeNameMap.put("total_Op", "NUM_OPERATORS");
+        this.attributeNameMap.put("total_Opnd", "NUM_OPERANDS");
+        this.attributeNameMap.put("v", "HALSTEAD_VOLUME");
+        this.attributeNameMap.put("l", "HALSTEAD_LENGTH");
+        this.attributeNameMap.put("d", "HALSTEAD_DIFFICULTY");
+        this.attributeNameMap.put("e", "HALSTEAD_EFFORT");
+        this.attributeNameMap.put("b", "HALSTEAD_ERROR_EST");
+        this.attributeNameMap.put("t", "HALSTEAD_PROG_TIME");
+        this.attributeNameMap.put("branchCount", "BRANCH_COUNT");
+        this.attributeNameMap.put("v(g)", "CYCLOMATIC_COMPLEXITY");
+        this.attributeNameMap.put("iv(g)", "DESIGN_COMPLEXITY");
 
-        attributeNameMap.put("defects", "bug");
-        attributeNameMap.put("Defective", "bug");
-        attributeNameMap.put("problems", "bug");
-        attributeNameMap.put("label", "bug");
+        this.attributeNameMap.put("defects", "bug");
+        this.attributeNameMap.put("Defective", "bug");
+        this.attributeNameMap.put("problems", "bug");
+        this.attributeNameMap.put("label", "bug");
 
         // build list with normalized attribute order
-        attributeOrder = new LinkedList<>();
+        this.attributeOrder = new LinkedList<>();
 
-        attributeOrder.add("LOC_TOTAL");
-        attributeOrder.add("LOC_EXECUTABLE");
-        attributeOrder.add("LOC_COMMENTS");
-        attributeOrder.add("LOC_CODE_AND_COMMENT");
-        attributeOrder.add("NUM_UNIQUE_OPERATORS");
-        attributeOrder.add("NUM_UNIQUE_OPERANDS");
-        attributeOrder.add("NUM_OPERATORS");
-        attributeOrder.add("NUM_OPERANDS");
-        attributeOrder.add("HALSTEAD_VOLUME");
-        attributeOrder.add("HALSTEAD_LENGTH");
-        attributeOrder.add("HALSTEAD_DIFFICULTY");
-        attributeOrder.add("HALSTEAD_EFFORT");
-        attributeOrder.add("HALSTEAD_ERROR_EST");
-        attributeOrder.add("HALSTEAD_PROG_TIME");
-        attributeOrder.add("BRANCH_COUNT");
-        attributeOrder.add("CYCLOMATIC_COMPLEXITY");
-        attributeOrder.add("DESIGN_COMPLEXITY");
-        attributeOrder.add("bug");
+        this.attributeOrder.add("LOC_TOTAL");
+        this.attributeOrder.add("LOC_EXECUTABLE");
+        this.attributeOrder.add("LOC_COMMENTS");
+        this.attributeOrder.add("LOC_CODE_AND_COMMENT");
+        this.attributeOrder.add("NUM_UNIQUE_OPERATORS");
+        this.attributeOrder.add("NUM_UNIQUE_OPERANDS");
+        this.attributeOrder.add("NUM_OPERATORS");
+        this.attributeOrder.add("NUM_OPERANDS");
+        this.attributeOrder.add("HALSTEAD_VOLUME");
+        this.attributeOrder.add("HALSTEAD_LENGTH");
+        this.attributeOrder.add("HALSTEAD_DIFFICULTY");
+        this.attributeOrder.add("HALSTEAD_EFFORT");
+        this.attributeOrder.add("HALSTEAD_ERROR_EST");
+        this.attributeOrder.add("HALSTEAD_PROG_TIME");
+        this.attributeOrder.add("BRANCH_COUNT");
+        this.attributeOrder.add("CYCLOMATIC_COMPLEXITY");
+        this.attributeOrder.add("DESIGN_COMPLEXITY");
+        this.attributeOrder.add("bug");
     }
 
     /*
@@ -124,12 +124,9 @@ public class NasaARFFLoader implements SingleVersionLoader {
      */
     @Override
     public Instances load(File file) {
-        BufferedReader reader;
         Instances data;
-        try {
-            reader = new BufferedReader(new FileReader(file));
+        try(BufferedReader reader = new BufferedReader(new FileReader(file));) {
             data = new Instances(reader);
-            reader.close();
         }
         catch (IOException e) {
             throw new RuntimeException("Error reading data", e);
@@ -140,7 +137,7 @@ public class NasaARFFLoader implements SingleVersionLoader {
 
         // normalize attribute names
         for (int i = 0; i < data.numAttributes(); i++) {
-            String mapValue = attributeNameMap.get(data.attribute(i).name());
+            String mapValue = this.attributeNameMap.get(data.attribute(i).name());
             if (mapValue != null) {
                 data.renameAttribute(i, mapValue);
             }
@@ -149,7 +146,7 @@ public class NasaARFFLoader implements SingleVersionLoader {
         // determine new attribute order (unwanted attributes are implicitly
         // removed
         String orderString = "";
-        for (String attName : attributeOrder) {
+        for (String attName : this.attributeOrder) {
             for (int i = 0; i < data.numAttributes(); i++) {
                 if (attName.equals(data.attribute(i).name())) {
                     orderString += (i + 1) + ",";
@@ -171,7 +168,7 @@ public class NasaARFFLoader implements SingleVersionLoader {
         catch (Exception e) {
             throw new RuntimeException("Error while reordering the data", e);
         }
-        if (data.numAttributes() != attributeOrder.size()) {
+        if (data.numAttributes() != this.attributeOrder.size()) {
             throw new RuntimeException("Invalid number of attributes; filename: " + file.getName());
         }
 

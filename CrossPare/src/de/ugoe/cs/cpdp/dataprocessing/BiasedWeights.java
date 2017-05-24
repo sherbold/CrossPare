@@ -43,7 +43,7 @@ public class BiasedWeights implements IProcessesingStrategy, ISetWiseProcessingS
      */
     @Override
     public void setParameter(String parameters) {
-        bias = Double.parseDouble(parameters);
+        this.bias = Double.parseDouble(parameters);
     }
 
     /**
@@ -77,8 +77,8 @@ public class BiasedWeights implements IProcessesingStrategy, ISetWiseProcessingS
 
         final int[] counts = data.attributeStats(classIndex).nominalCounts;
 
-        final double weightNegatives = ((1 - bias) * data.numInstances()) / counts[0];
-        final double weightPositives = (bias * data.numInstances()) / counts[1];
+        final double weightNegatives = ((1 - this.bias) * data.numInstances()) / counts[0];
+        final double weightPositives = (this.bias * data.numInstances()) / counts[1];
 
         for (int i = 0; i < data.numInstances(); i++) {
             Instance instance = data.instance(i);

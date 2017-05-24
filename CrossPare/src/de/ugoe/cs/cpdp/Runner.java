@@ -42,6 +42,7 @@ public class Runner {
      * @param args
      *            experiment configuration files
      */
+    @SuppressWarnings("unused")
     public static void main(String[] args) {
         new TextConsole(Level.FINE);
         final int concurrentThreads = Runtime.getRuntime().availableProcessors();

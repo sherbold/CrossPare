@@ -33,7 +33,7 @@ public class SynonymAttributePruning implements IProcessesingStrategy {
      */
     @Override
     public void setParameter(String parameters) {
-
+        // ingoring parameters
     }
 
     /**
@@ -54,7 +54,7 @@ public class SynonymAttributePruning implements IProcessesingStrategy {
      * @param traindata
      *            the training data
      */
-    private void applySynonymPruning(Instances testdata, Instances traindata) {
+    private static void applySynonymPruning(Instances testdata, Instances traindata) {
         double distance;
         for (int j = traindata.numAttributes() - 1; j >= 0; j--) {
             if (j != traindata.classIndex()) {

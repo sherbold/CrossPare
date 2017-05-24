@@ -55,7 +55,7 @@ public class SynonymOutlierRemoval implements IPointWiseDataselectionStrategy {
      * @param traindata
      *            data from which the outliers are removed.
      */
-    public void applySynonymRemoval(Instances traindata) {
+    public static void applySynonymRemoval(Instances traindata) {
         double minDistance[][] = new double[traindata.size()][traindata.numAttributes() - 1];
         double minDistanceAttribute[] = new double[traindata.numAttributes() - 1];
         double distance;

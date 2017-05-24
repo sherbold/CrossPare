@@ -38,7 +38,7 @@ public class MinClassNumberFilter extends AbstractVersionFilter {
         int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
         boolean toSmall = false;
         for (int count : counts) {
-            toSmall |= count < minInstances;
+            toSmall |= count < this.minInstances;
         }
         return toSmall;
     }
@@ -51,7 +51,7 @@ public class MinClassNumberFilter extends AbstractVersionFilter {
      */
     @Override
     public void setParameter(String parameters) {
-        minInstances = Integer.parseInt(parameters);
+        this.minInstances = Integer.parseInt(parameters);
     }
 
 }

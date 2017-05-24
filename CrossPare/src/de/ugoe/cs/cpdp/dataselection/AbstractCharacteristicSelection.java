@@ -49,7 +49,7 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
     @Override
     public void setParameter(String parameters) {
         if (!"".equals(parameters)) {
-            characteristics = parameters.split(" ");
+            this.characteristics = parameters.split(" ");
         }
     }
 
@@ -67,13 +67,13 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
                                                 SetUniqueList<Instances> traindataSet)
     {
         // setup weka Instances for clustering
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
 
         final Attribute classAtt = testdata.classAttribute();
         for (int i = 0; i < testdata.numAttributes(); i++) {
             Attribute dataAtt = testdata.attribute(i);
             if (!dataAtt.equals(classAtt)) {
-                for (String characteristic : characteristics) {
+                for (String characteristic : this.characteristics) {
                     atts.add(new Attribute(dataAtt.name() + "_" + characteristic));
                 }
             }
@@ -86,30 +86,30 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
             Attribute dataAtt = testdata.attribute(i);
             if (!dataAtt.equals(classAtt)) {
                 Stats stats = testdata.attributeStats(i).numericStats;
-                for (int j = 0; j < characteristics.length; j++) {
-                    if ("mean".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] = stats.mean;
+                for (int j = 0; j < this.characteristics.length; j++) {
+                    if ("mean".equals(this.characteristics[j])) {
+                        instanceValues[i * this.characteristics.length + j] = stats.mean;
                     }
-                    else if ("stddev".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] = stats.stdDev;
+                    else if ("stddev".equals(this.characteristics[j])) {
+                        instanceValues[i * this.characteristics.length + j] = stats.stdDev;
                     }
-                    else if ("var".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] = testdata.variance(j);
+                    else if ("var".equals(this.characteristics[j])) {
+                        instanceValues[i * this.characteristics.length + j] = testdata.variance(j);
                     }
-                    else if ("max".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] = stats.max;
+                    else if ("max".equals(this.characteristics[j])) {
+                        instanceValues[i * this.characteristics.length + j] = stats.max;
                     }
-                    else if ("min".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] = stats.min;
+                    else if ("min".equals(this.characteristics[j])) {
+                        instanceValues[i * this.characteristics.length + j] = stats.min;
                     }
-                    else if ("median".equals(characteristics[j])) {
-                        instanceValues[i * characteristics.length + j] =
+                    else if ("median".equals(this.characteristics[j])) {
+                        instanceValues[i * this.characteristics.length + j] =
                             Utils.kthSmallestValue(testdata.attributeToDoubleArray(i),
                                                    testdata.size() / 2);
                     }
                     else {
                         throw new RuntimeException("Unkown distributional characteristic: " +
-                            characteristics[j]);
+                            this.characteristics[j]);
                     }
                 }
             }
@@ -122,30 +122,30 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
                 Attribute dataAtt = traindata.attribute(i);
                 if (!dataAtt.equals(classAtt)) {
                     Stats stats = traindata.attributeStats(i).numericStats;
-                    for (int j = 0; j < characteristics.length; j++) {
-                        if ("mean".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = stats.mean;
+                    for (int j = 0; j < this.characteristics.length; j++) {
+                        if ("mean".equals(this.characteristics[j])) {
+                            instanceValues[i * this.characteristics.length + j] = stats.mean;
                         }
-                        else if ("stddev".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = stats.stdDev;
+                        else if ("stddev".equals(this.characteristics[j])) {
+                            instanceValues[i * this.characteristics.length + j] = stats.stdDev;
                         }
-                        else if ("var".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = traindata.variance(j);
+                        else if ("var".equals(this.characteristics[j])) {
+                            instanceValues[i * this.characteristics.length + j] = traindata.variance(j);
                         }
-                        else if ("max".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = stats.max;
+                        else if ("max".equals(this.characteristics[j])) {
+                            instanceValues[i * this.characteristics.length + j] = stats.max;
                         }
-                        else if ("min".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] = stats.min;
+                        else if ("min".equals(this.characteristics[j])) {
+                            instanceValues[i * this.characteristics.length + j] = stats.min;
                         }
-                        else if ("median".equals(characteristics[j])) {
-                            instanceValues[i * characteristics.length + j] =
+                        else if ("median".equals(this.characteristics[j])) {
+                            instanceValues[i * this.characteristics.length + j] =
                                 Utils.kthSmallestValue(traindata.attributeToDoubleArray(i),
                                                        traindata.size() / 2);
                         }
                         else {
                             throw new RuntimeException("Unkown distributional characteristic: " +
-                                characteristics[j]);
+                                this.characteristics[j]);
                         }
                     }
                 }

@@ -39,7 +39,7 @@ public class SetWiseEMClusterSelection extends AbstractCharacteristicSelection {
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
         final Instances data = normalizedCharacteristicInstances(testdata, traindataSet);
         final Instance targetInstance = data.instance(0);
-        final List<Instance> candidateInstances = new LinkedList<Instance>();
+        final List<Instance> candidateInstances = new LinkedList<>();
         for (int i = 1; i < data.numInstances(); i++) {
             candidateInstances.add(data.instance(i));
         }

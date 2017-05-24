@@ -50,7 +50,7 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
     @Override
     public void setParameter(String parameters) {
         if (parameters != null && !parameters.isEmpty()) {
-            percentage = Double.parseDouble(parameters);
+            this.percentage = Double.parseDouble(parameters);
         }
     }
 
@@ -69,7 +69,7 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
         Collections.shuffle(traindataCopy);
 
         CLIFF cliff = new CLIFF();
-        cliff.setParameter(Double.toString(percentage));
+        cliff.setParameter(Double.toString(this.percentage));
         MORPH morph = new MORPH();
         Median median = new Median();
         double minDist = Double.MIN_VALUE;
@@ -97,7 +97,7 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
                 }
                 double[] distances = new double[sample.size()];
                 for (int i = 0; i < sample.size(); i++) {
-                    Instance unlikeNeighbor = morph.getNearestUnlikeNeighbor(sample.get(i), sample);
+                    Instance unlikeNeighbor = MORPH.getNearestUnlikeNeighbor(sample.get(i), sample);
                     distances[i] = MathArrays.distance(WekaUtils.instanceValues(sample.get(i)),
                                                        WekaUtils.instanceValues(unlikeNeighbor));
                 }
@@ -105,7 +105,7 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
             }
             for (int i = 0; i < cliffedData.size(); i++) {
                 Instance unlikeNeighbor =
-                    morph.getNearestUnlikeNeighbor(cliffedData.get(i), selectedData);
+                    MORPH.getNearestUnlikeNeighbor(cliffedData.get(i), selectedData);
                 if (unlikeNeighbor == null) {
                     selectedData.add(cliffedData.get(i));
                 }

@@ -34,8 +34,8 @@ import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.Diagnostician;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.ocl.common.OCLConstants;
 import org.eclipse.ocl.ecore.delegate.OCLInvocationDelegateFactory;
 import org.eclipse.ocl.ecore.delegate.OCLSettingDelegateFactory;
@@ -53,10 +53,8 @@ public class ResourceTool {
 
     /**
      * Constructor
-     * 
-     * @param loggedClass class that is logged
      */
-    public ResourceTool(String loggedClass) {
+    public ResourceTool() {
         System.setProperty("org.slf4j.simpleLogger.logFile", "validation.log");
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
     }
@@ -64,6 +62,7 @@ public class ResourceTool {
     /**
      * Initializes the validator
      */
+    @SuppressWarnings("static-method")
     protected void initializeValidator() {
         // OCL.initialize(null);
         String oclDelegateURI = OCLConstants.OCL_DELEGATE_URI + "/Pivot";
@@ -92,7 +91,7 @@ public class ResourceTool {
         BasicDiagnostic diagnostics = new BasicDiagnostic();
         boolean valid = true;
         for (EObject eo : resource.getContents()) {
-            Map<Object, Object> context = new HashMap<Object, Object>();
+            Map<Object, Object> context = new HashMap<>();
             boolean validationResult = Diagnostician.INSTANCE.validate(eo, diagnostics, context);
             showDiagnostics(diagnostics, "");
             valid &= validationResult;
@@ -110,11 +109,11 @@ public class ResourceTool {
      * @param indent
      */
     protected void showDiagnostics(Diagnostic diagnostics, String indent) {
-        indent += "  ";
+        String myIndent = indent+"  ";
         for (Diagnostic d : diagnostics.getChildren()) {
-            System.out.println(indent + d.getSource());
-            System.out.println(indent + "  " + d.getMessage());
-            showDiagnostics(d, indent);
+            System.out.println(myIndent + d.getSource());
+            System.out.println(myIndent + "  " + d.getMessage());
+            showDiagnostics(d, myIndent);
         }
     }
 
@@ -135,7 +134,7 @@ public class ResourceTool {
     public Resource loadResourceFromXMI(String inputPath, String extension, EPackage p) {
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
         Map<String, Object> m = reg.getExtensionToFactoryMap();
-        m.put(extension, resourceFactory);
+        m.put(extension, this.resourceFactory);
         ResourceSet resSetIn = new ResourceSetImpl();
         // critical part
         resSetIn.getPackageRegistry().put(p.getNsURI(), p);
@@ -143,7 +142,7 @@ public class ResourceTool {
         Resource inputResource = resSetIn.createResource(URI.createURI(inputPath));
         try {
             Map options = new HashMap<>();
-            options.put(XMIResourceImpl.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
+            options.put(XMLResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
             // options.put(XMIResourceImpl.OPTION_PROCESS_DANGLING_HREF,
             // XMIResourceImpl.OPTION_PROCESS_DANGLING_HREF_DISCARD);
             inputResource.load(options);
@@ -169,12 +168,12 @@ public class ResourceTool {
     public Resource loadResourceFromXMI(String inputPath, String extension) {
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
         Map<String, Object> m = reg.getExtensionToFactoryMap();
-        m.put(extension, resourceFactory);
+        m.put(extension, this.resourceFactory);
         ResourceSet resSetIn = new ResourceSetImpl();
         Resource inputResource = resSetIn.createResource(URI.createURI(inputPath));
         try {
             Map options = new HashMap<>();
-            options.put(XMIResourceImpl.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
+            options.put(XMLResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
             // options.put(XMIResourceImpl.OPTION_PROCESS_DANGLING_HREF,
             // XMIResourceImpl.OPTION_PROCESS_DANGLING_HREF_DISCARD);
             inputResource.load(options);
@@ -196,7 +195,7 @@ public class ResourceTool {
      *            EPackage to put the loaded resource in
      * @return the resource
      */
-    public Resource getResourceFromBinary(String inputPath, String extension, EPackage p) {
+    public static Resource getResourceFromBinary(String inputPath, String extension, EPackage p) {
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
         Map<String, Object> m = reg.getExtensionToFactoryMap();
         m.put(extension, new Resource.Factory() {
@@ -230,7 +229,7 @@ public class ResourceTool {
     // TODO: workarounds copied from respective methods without EPackage parameter
     @SuppressWarnings(
         { "rawtypes" })
-    public Resource loadResourceFromBinary(String inputPath, String extension, EPackage p) {
+    public static Resource loadResourceFromBinary(String inputPath, String extension, EPackage p) {
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
         Map<String, Object> m = reg.getExtensionToFactoryMap();
         m.put(extension, new Resource.Factory() {
@@ -275,7 +274,7 @@ public class ResourceTool {
      */
     @SuppressWarnings(
         { "rawtypes" })
-    public Resource loadResourceFromBinary(String inputPath, String extension) {
+    public static Resource loadResourceFromBinary(String inputPath, String extension) {
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
         Map<String, Object> m = reg.getExtensionToFactoryMap();
         m.put(extension, new Resource.Factory() {
@@ -314,7 +313,7 @@ public class ResourceTool {
      */
     @SuppressWarnings(
         { "rawtypes" })
-    public void storeBinaryResourceContents(EList<EObject> contents,
+    public static void storeBinaryResourceContents(EList<EObject> contents,
                                             String outputPath,
                                             String extension)
     {
@@ -360,14 +359,14 @@ public class ResourceTool {
         // TODO: duplicated from loadResourceFromXMI => move to a more appropriate location
         Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
         Map<String, Object> m = reg.getExtensionToFactoryMap();
-        m.put(extension, resourceFactory);
+        m.put(extension, this.resourceFactory);
 
         ResourceSet resSet = new ResourceSetImpl();
         Resource outputResource = resSet.createResource(URI.createURI(outputPath));
         outputResource.getContents().addAll(contents);
         try {
             Map options = new HashMap<>();
-            options.put(XMIResourceImpl.OPTION_ENCODING, "UTF-8");
+            options.put(XMLResource.OPTION_ENCODING, "UTF-8");
             // options.put(XMIResourceImpl.OPTION_PROCESS_DANGLING_HREF,
             // XMIResourceImpl.OPTION_PROCESS_DANGLING_HREF_DISCARD);
             outputResource.save(options);

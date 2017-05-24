@@ -61,7 +61,7 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
      */
     @Override
     public Classifier getClassifier() {
-        return classifier;
+        return this.classifier;
     }
 
     /*
@@ -74,7 +74,7 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
     @Override
     public void apply(SetUniqueList<Instances> traindataSet) {
         try {
-            classifier.buildClassifier(traindataSet);
+            this.classifier.buildClassifier(traindataSet);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -112,14 +112,14 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
          */
         @Override
         public double classifyInstance(Instance instance) {
-            if (classifiers == null) {
+            if (this.classifiers == null) {
                 return 0.0;
             }
 
             double classification = 0.0;
-            for (int i = 0; i < classifiers.size(); i++) {
-                Classifier classifier = classifiers.get(i);
-                Instances traindata = trainingData.get(i);
+            for (int i = 0; i < this.classifiers.size(); i++) {
+                Classifier classifier = this.classifiers.get(i);
+                Instances traindata = this.trainingData.get(i);
 
                 Set<String> attributeNames = new HashSet<>();
                 for (int j = 0; j < traindata.numAttributes(); j++) {
@@ -147,7 +147,7 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
                                                e);
                 }
             }
-            classification /= classifiers.size();
+            classification /= this.classifiers.size();
             return (classification >= 0.5) ? 1.0 : 0.0;
         }
 
@@ -163,13 +163,13 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
          *             product
          */
         public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
-            classifiers = new LinkedList<>();
-            trainingData = new LinkedList<>();
+            this.classifiers = new LinkedList<>();
+            this.trainingData = new LinkedList<>();
             for (Instances traindata : traindataSet) {
                 Classifier classifier = setupClassifier();
                 classifier.buildClassifier(traindata);
-                classifiers.add(classifier);
-                trainingData.add(new Instances(traindata));
+                this.classifiers.add(classifier);
+                this.trainingData.add(new Instances(traindata));
             }
         }
 
@@ -180,12 +180,12 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
          */
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
-            classifiers = new LinkedList<>();
-            trainingData = new LinkedList<>();
+            this.classifiers = new LinkedList<>();
+            this.trainingData = new LinkedList<>();
             final Classifier classifier = setupClassifier();
             classifier.buildClassifier(traindata);
-            classifiers.add(classifier);
-            trainingData.add(new Instances(traindata));
+            this.classifiers.add(classifier);
+            this.trainingData.add(new Instances(traindata));
         }
     }
 }

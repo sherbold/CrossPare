@@ -43,9 +43,9 @@ public class DecentFolderLoader extends AbstractFolderLoader {
      */
     @Override
     public List<SoftwareVersion> load() {
-        final List<SoftwareVersion> versions = new LinkedList<SoftwareVersion>();
+        final List<SoftwareVersion> versions = new LinkedList<>();
 
-        final File dataDir = new File(path);
+        final File dataDir = new File(this.path);
         final SingleVersionLoader instancesLoader = getSingleLoader();
 
         String projectName = dataDir.getName();
@@ -93,8 +93,7 @@ public class DecentFolderLoader extends AbstractFolderLoader {
      * @param versions
      *            list, where the weka instances are added to
      */
-
-    private void loadDataFromFile(File versionFile,
+    private static void loadDataFromFile(File versionFile,
                                   SingleVersionLoader instancesLoader,
                                   String projectName,
                                   List<SoftwareVersion> versions)

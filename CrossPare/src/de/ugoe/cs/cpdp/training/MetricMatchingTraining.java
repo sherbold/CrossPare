@@ -80,6 +80,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
     /**
      * Set similarity measure method.
      */
+    @SuppressWarnings("hiding")
     @Override
     public void setMethod(String method) {
         this.method = method;
@@ -88,6 +89,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
     /**
      * Set threshold for similarity measure.
      */
+    @SuppressWarnings("hiding")
     @Override
     public void setThreshold(String threshold) {
         this.threshold = Float.parseFloat(threshold);
@@ -97,6 +99,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
      * We need the test data instances to do a metric matching, so in this special case we get this
      * data before evaluation.
      */
+    @SuppressWarnings("boxing")
     @Override
     public void apply(SetUniqueList<Instances> traindataSet, Instances testdata) {
         // reset these for each run
@@ -190,6 +193,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param mm
          *            the metric matching instance
          */
+        @SuppressWarnings("hiding")
         public void setMetricMatching(MetricMatch mm) {
             this.mm = mm;
         }
@@ -198,6 +202,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * Here we can not do the metric matching because we only get one instance. Therefore we
          * need a MetricMatch instance beforehand to use here.
          */
+        @Override
         public double classifyInstance(Instance testdata) {
             // get a copy of testdata Instance with only the matched attributes
             Instance ntest = this.mm.getMatchedTestInstance(testdata);
@@ -227,7 +232,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
         protected double p_sum = 0;
 
         // attribute matching, train -> test
-        HashMap<Integer, Integer> attributes = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> attributes = new HashMap<>();
 
         // used for similarity tests
         protected ArrayList<double[]> train_values;
@@ -243,6 +248,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param test
          *            test data
          */
+        @SuppressWarnings("hiding")
         public MetricMatch(Instances train, Instances test) {
             // this is expensive but we need to keep the original data intact
             this.train = this.deepCopy(train);
@@ -251,14 +257,14 @@ public class MetricMatchingTraining extends WekaBaseTraining
                               // only the matched attributes
 
             // convert metrics of testdata and traindata to later use in similarity tests
-            this.train_values = new ArrayList<double[]>();
+            this.train_values = new ArrayList<>();
             for (int i = 0; i < this.train.numAttributes(); i++) {
                 if (this.train.classIndex() != i) {
                     this.train_values.add(this.train.attributeToDoubleArray(i));
                 }
             }
 
-            this.test_values = new ArrayList<double[]>();
+            this.test_values = new ArrayList<>();
             for (int i = 0; i < this.test.numAttributes(); i++) {
                 if (this.test.classIndex() != i) {
                     this.test_values.add(this.test.attributeToDoubleArray(i));
@@ -319,6 +325,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          *            instance that is matched
          * @return the match
          */
+        @SuppressWarnings("boxing")
         public Instance getMatchedTestInstance(Instance test) {
             Instance ni = new DenseInstance(this.attributes.size() + 1);
 
@@ -368,7 +375,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param name
          * @param data
          */
-        @SuppressWarnings("unused")
+        @SuppressWarnings({ "unused", "boxing" })
         private void dropUnmatched(String name, Instances data) {
             for (int i = 0; i < data.numAttributes(); i++) {
                 if (data.classIndex() == i) {
@@ -417,11 +424,12 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param data
          * @return matched Instances
          */
+        @SuppressWarnings("boxing")
         private Instances getMatchedInstances(String name, Instances data) {
-            ArrayList<Attribute> attrs = new ArrayList<Attribute>();
+            ArrayList<Attribute> attrs = new ArrayList<>();
 
             // bug attr is a string, really!
-            ArrayList<String> bug = new ArrayList<String>();
+            ArrayList<String> bug = new ArrayList<>();
             bug.add("0");
             bug.add("1");
 
@@ -479,6 +487,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
             this.attributeSelectionBySignificance(this.train);
         }
 
+        @SuppressWarnings("boxing")
         private void attributeSelectionBySignificance(Instances which) throws Exception {
             // Uses:
             // http://weka.sourceforge.net/doc.packages/probabilisticSignificanceAE/weka/attributeSelection/SignificanceAttributeEval.html
@@ -486,7 +495,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
             et.buildEvaluator(which);
 
             // evaluate all training attributes
-            HashMap<String, Double> saeval = new HashMap<String, Double>();
+            HashMap<String, Double> saeval = new HashMap<>();
             for (int i = 0; i < which.numAttributes(); i++) {
                 if (which.classIndex() != i) {
                     saeval.put(which.attribute(i).name(), et.evaluateAttribute(i));
@@ -494,18 +503,18 @@ public class MetricMatchingTraining extends WekaBaseTraining
             }
 
             // sort by significance
-            HashMap<String, Double> sorted = (HashMap<String, Double>) sortByValues(saeval);
+            HashMap<String, Double> sorted = sortByValues(saeval);
 
             // Keep the best 15%
-            double last = ((double) saeval.size() / 100.0) * 15.0;
+            double last = (saeval.size() / 100.0) * 15.0;
             int drop_first = saeval.size() - (int) last;
 
             // drop attributes above last
             Iterator<Entry<String, Double>> it = sorted.entrySet().iterator();
             while (drop_first > 0) {
-                Map.Entry<String, Double> pair = (Map.Entry<String, Double>) it.next();
-                if (which.attribute((String) pair.getKey()).index() != which.classIndex()) {
-                    which.deleteAttributeAt(which.attribute((String) pair.getKey()).index());
+                Map.Entry<String, Double> pair = it.next();
+                if (which.attribute(pair.getKey()).index() != which.classIndex()) {
+                    which.deleteAttributeAt(which.attribute(pair.getKey()).index());
                 }
                 drop_first -= 1;
             }
@@ -519,15 +528,16 @@ public class MetricMatchingTraining extends WekaBaseTraining
          */
         private HashMap<String, Double> sortByValues(HashMap<String, Double> map) {
             List<Map.Entry<String, Double>> list =
-                new LinkedList<Map.Entry<String, Double>>(map.entrySet());
+                new LinkedList<>(map.entrySet());
 
             Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+                @Override
                 public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
                     return (o1.getValue()).compareTo(o2.getValue());
                 }
             });
 
-            HashMap<String, Double> sortedHashMap = new LinkedHashMap<String, Double>();
+            HashMap<String, Double> sortedHashMap = new LinkedHashMap<>();
             for (Map.Entry<String, Double> item : list) {
                 sortedHashMap.put(item.getKey(), item.getValue());
             }
@@ -546,6 +556,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param cutoff
          *            cutoff for matching
          */
+        @SuppressWarnings("boxing")
         public void matchAttributes(String type, double cutoff) {
 
             MWBMatchingAlgorithm mwbm =
@@ -687,10 +698,11 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param smaller
          * @param values
          */
+        @SuppressWarnings("boxing")
         private void sample(Instances bigger, Instances smaller, ArrayList<double[]> values) {
             // we want to at keep the indices we select the same
             int indices_to_draw = smaller.size();
-            ArrayList<Integer> indices = new ArrayList<Integer>();
+            ArrayList<Integer> indices = new ArrayList<>();
             Random rand = new Random();
             while (indices_to_draw > 0) {
 
@@ -857,12 +869,12 @@ public class MetricMatchingTraining extends WekaBaseTraining
 
         double[] pi;
 
-        List<Integer> eligibleS = new ArrayList<Integer>();
-        List<Integer> eligibleT = new ArrayList<Integer>();
+        List<Integer> eligibleS = new ArrayList<>();
+        List<Integer> eligibleT = new ArrayList<>();
 
         public MWBMatchingAlgorithm() {
-            n = -1;
-            m = -1;
+            this.n = -1;
+            this.m = -1;
         }
 
         /**
@@ -874,6 +886,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * @param m
          *            size of the graph
          */
+        @SuppressWarnings("hiding")
         public MWBMatchingAlgorithm(int n, int m) {
             reset(n, m);
         }
@@ -881,6 +894,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
         /**
          * Resets the BipartiteMatcher to run on an n x m graph. The weights are all reset to 1.
          */
+        @SuppressWarnings("hiding")
         private void reset(int n, int m) {
             if (n < 0 || m < 0) {
                 throw new IllegalArgumentException("Negative num nodes: " + n + " or " + m);
@@ -888,22 +902,22 @@ public class MetricMatchingTraining extends WekaBaseTraining
             this.n = n;
             this.m = m;
 
-            weights = new double[n][m];
+            this.weights = new double[n][m];
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
-                    weights[i][j] = 1;
+                    this.weights[i][j] = 1;
                 }
             }
-            minWeight = 1;
-            maxWeight = Double.NEGATIVE_INFINITY;
+            this.minWeight = 1;
+            this.maxWeight = Double.NEGATIVE_INFINITY;
 
-            sMatches = new int[n];
-            tMatches = new int[m];
-            sLabels = new int[n];
-            tLabels = new int[m];
-            u = new double[n];
-            v = new double[m];
-            pi = new double[m];
+            this.sMatches = new int[n];
+            this.tMatches = new int[m];
+            this.sLabels = new int[n];
+            this.tLabels = new int[m];
+            this.u = new double[n];
+            this.v = new double[m];
+            this.pi = new double[m];
 
         }
 
@@ -921,25 +935,25 @@ public class MetricMatchingTraining extends WekaBaseTraining
          *             if i or j is outside the range [0, n).
          */
         public void setWeight(int i, int j, double w) {
-            if (n == -1 || m == -1) {
+            if (this.n == -1 || this.m == -1) {
                 throw new IllegalStateException("Graph size not specified.");
             }
-            if ((i < 0) || (i >= n)) {
+            if ((i < 0) || (i >= this.n)) {
                 throw new IllegalArgumentException("i-value out of range: " + i);
             }
-            if ((j < 0) || (j >= m)) {
+            if ((j < 0) || (j >= this.m)) {
                 throw new IllegalArgumentException("j-value out of range: " + j);
             }
             if (Double.isNaN(w)) {
                 throw new IllegalArgumentException("Illegal weight: " + w);
             }
 
-            weights[i][j] = w;
-            if ((w > Double.NEGATIVE_INFINITY) && (w < minWeight)) {
-                minWeight = w;
+            this.weights[i][j] = w;
+            if ((w > Double.NEGATIVE_INFINITY) && (w < this.minWeight)) {
+                this.minWeight = w;
             }
-            if (w > maxWeight) {
-                maxWeight = w;
+            if (w > this.maxWeight) {
+                this.maxWeight = w;
             }
         }
 
@@ -950,36 +964,37 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * 
          * @return the matchings
          */
+        @SuppressWarnings("boxing")
         public int[] getMatching() {
-            if (n == -1 || m == -1) {
+            if (this.n == -1 || this.m == -1) {
                 throw new IllegalStateException("Graph size not specified.");
             }
-            if (n == 0) {
+            if (this.n == 0) {
                 return new int[0];
             }
             ensurePositiveWeights();
 
             // Step 0: Initialization
-            eligibleS.clear();
-            eligibleT.clear();
-            for (Integer i = 0; i < n; i++) {
-                sMatches[i] = -1;
+            this.eligibleS.clear();
+            this.eligibleT.clear();
+            for (Integer i = 0; i < this.n; i++) {
+                this.sMatches[i] = -1;
 
-                u[i] = maxWeight; // ambiguous on p. 205 of Lawler, but see p. 202
+                this.u[i] = this.maxWeight; // ambiguous on p. 205 of Lawler, but see p. 202
 
                 // this is really first run of Step 1.0
-                sLabels[i] = EMPTY_LABEL;
-                eligibleS.add(i);
+                this.sLabels[i] = EMPTY_LABEL;
+                this.eligibleS.add(i);
             }
 
-            for (int j = 0; j < m; j++) {
-                tMatches[j] = -1;
+            for (int j = 0; j < this.m; j++) {
+                this.tMatches[j] = -1;
 
-                v[j] = 0;
-                pi[j] = Double.POSITIVE_INFINITY;
+                this.v[j] = 0;
+                this.pi[j] = Double.POSITIVE_INFINITY;
 
                 // this is really first run of Step 1.0
-                tLabels[j] = NO_LABEL;
+                this.tLabels[j] = NO_LABEL;
             }
 
             while (true) {
@@ -994,41 +1009,41 @@ public class MetricMatchingTraining extends WekaBaseTraining
 
                     // Step 2: Augmentation
                     flipPath(lastNode);
-                    for (int i = 0; i < n; i++)
-                        sLabels[i] = NO_LABEL;
+                    for (int i = 0; i < this.n; i++)
+                        this.sLabels[i] = NO_LABEL;
 
-                    for (int j = 0; j < m; j++) {
-                        pi[j] = Double.POSITIVE_INFINITY;
-                        tLabels[j] = NO_LABEL;
+                    for (int j = 0; j < this.m; j++) {
+                        this.pi[j] = Double.POSITIVE_INFINITY;
+                        this.tLabels[j] = NO_LABEL;
                     }
 
                     // This is Step 1.0
-                    eligibleS.clear();
-                    for (int i = 0; i < n; i++) {
-                        if (sMatches[i] == -1) {
-                            sLabels[i] = EMPTY_LABEL;
-                            eligibleS.add(new Integer(i));
+                    this.eligibleS.clear();
+                    for (int i = 0; i < this.n; i++) {
+                        if (this.sMatches[i] == -1) {
+                            this.sLabels[i] = EMPTY_LABEL;
+                            this.eligibleS.add(new Integer(i));
                         }
                     }
 
-                    eligibleT.clear();
+                    this.eligibleT.clear();
                 }
 
                 // Step 3: Change the dual variables
 
                 // delta1 = min_i u[i]
                 double delta1 = Double.POSITIVE_INFINITY;
-                for (int i = 0; i < n; i++) {
-                    if (u[i] < delta1) {
-                        delta1 = u[i];
+                for (int i = 0; i < this.n; i++) {
+                    if (this.u[i] < delta1) {
+                        delta1 = this.u[i];
                     }
                 }
 
                 // delta2 = min_{j : pi[j] > 0} pi[j]
                 double delta2 = Double.POSITIVE_INFINITY;
-                for (int j = 0; j < m; j++) {
-                    if ((pi[j] >= TOL) && (pi[j] < delta2)) {
-                        delta2 = pi[j];
+                for (int j = 0; j < this.m; j++) {
+                    if ((this.pi[j] >= TOL) && (this.pi[j] < delta2)) {
+                        delta2 = this.pi[j];
                     }
                 }
 
@@ -1041,9 +1056,9 @@ public class MetricMatchingTraining extends WekaBaseTraining
                 changeDualVars(delta2);
             }
 
-            int[] matching = new int[n];
-            for (int i = 0; i < n; i++) {
-                matching[i] = sMatches[i];
+            int[] matching = new int[this.n];
+            for (int i = 0; i < this.n; i++) {
+                matching[i] = this.sMatches[i];
             }
             return matching;
         }
@@ -1054,11 +1069,11 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * returns -1. In any case, updates the labels and pi values.
          */
         int findAugmentingPath() {
-            while ((!eligibleS.isEmpty()) || (!eligibleT.isEmpty())) {
-                if (!eligibleS.isEmpty()) {
-                    int i = ((Integer) eligibleS.get(eligibleS.size() - 1)).intValue();
-                    eligibleS.remove(eligibleS.size() - 1);
-                    for (int j = 0; j < m; j++) {
+            while ((!this.eligibleS.isEmpty()) || (!this.eligibleT.isEmpty())) {
+                if (!this.eligibleS.isEmpty()) {
+                    int i = this.eligibleS.get(this.eligibleS.size() - 1).intValue();
+                    this.eligibleS.remove(this.eligibleS.size() - 1);
+                    for (int j = 0; j < this.m; j++) {
                         // If pi[j] has already been decreased essentially
                         // to zero, then j is already labeled, and we
                         // can't decrease pi[j] any more. Omitting the
@@ -1066,28 +1081,28 @@ public class MetricMatchingTraining extends WekaBaseTraining
                         // unnecessarily, since the diff we compute on the
                         // next line may end up being less than pi[j] due
                         // to floating point imprecision.
-                        if ((tMatches[j] != i) && (pi[j] >= TOL)) {
-                            double diff = u[i] + v[j] - weights[i][j];
-                            if (diff < pi[j]) {
-                                tLabels[j] = i;
-                                pi[j] = diff;
-                                if (pi[j] < TOL) {
-                                    eligibleT.add(new Integer(j));
+                        if ((this.tMatches[j] != i) && (this.pi[j] >= TOL)) {
+                            double diff = this.u[i] + this.v[j] - this.weights[i][j];
+                            if (diff < this.pi[j]) {
+                                this.tLabels[j] = i;
+                                this.pi[j] = diff;
+                                if (this.pi[j] < TOL) {
+                                    this.eligibleT.add(new Integer(j));
                                 }
                             }
                         }
                     }
                 }
                 else {
-                    int j = ((Integer) eligibleT.get(eligibleT.size() - 1)).intValue();
-                    eligibleT.remove(eligibleT.size() - 1);
-                    if (tMatches[j] == -1) {
+                    int j = this.eligibleT.get(this.eligibleT.size() - 1).intValue();
+                    this.eligibleT.remove(this.eligibleT.size() - 1);
+                    if (this.tMatches[j] == -1) {
                         return j; // we've found an augmenting path
                     }
 
-                    int i = tMatches[j];
-                    sLabels[i] = j;
-                    eligibleS.add(new Integer(i)); // ok to add twice
+                    int i = this.tMatches[j];
+                    this.sLabels[i] = j;
+                    this.eligibleS.add(new Integer(i)); // ok to add twice
                 }
             }
 
@@ -1101,8 +1116,9 @@ public class MetricMatchingTraining extends WekaBaseTraining
          * a matching.
          */
         void flipPath(int lastNode) {
-            while (lastNode != EMPTY_LABEL) {
-                int parent = tLabels[lastNode];
+            int myLastNode = lastNode;
+            while (myLastNode != EMPTY_LABEL) {
+                int parent = this.tLabels[myLastNode];
 
                 // Add (parent, lastNode) to matching. We don't need to
                 // explicitly remove any edges from the matching because:
@@ -1111,28 +1127,28 @@ public class MetricMatchingTraining extends WekaBaseTraining
                 // * Although there might be some j such that tMatches[j] =
                 // parent, that j must be sLabels[parent], and will change
                 // tMatches[j] in the next time through this loop.
-                sMatches[parent] = lastNode;
-                tMatches[lastNode] = parent;
+                this.sMatches[parent] = lastNode;
+                this.tMatches[myLastNode] = parent;
 
-                lastNode = sLabels[parent];
+                myLastNode = this.sLabels[parent];
             }
         }
 
         void changeDualVars(double delta) {
-            for (int i = 0; i < n; i++) {
-                if (sLabels[i] != NO_LABEL) {
-                    u[i] -= delta;
+            for (int i = 0; i < this.n; i++) {
+                if (this.sLabels[i] != NO_LABEL) {
+                    this.u[i] -= delta;
                 }
             }
 
-            for (int j = 0; j < m; j++) {
-                if (pi[j] < TOL) {
-                    v[j] += delta;
+            for (int j = 0; j < this.m; j++) {
+                if (this.pi[j] < TOL) {
+                    this.v[j] += delta;
                 }
-                else if (tLabels[j] != NO_LABEL) {
-                    pi[j] -= delta;
-                    if (pi[j] < TOL) {
-                        eligibleT.add(new Integer(j));
+                else if (this.tLabels[j] != NO_LABEL) {
+                    this.pi[j] -= delta;
+                    if (this.pi[j] < TOL) {
+                        this.eligibleT.add(new Integer(j));
                     }
                 }
             }
@@ -1144,23 +1160,23 @@ public class MetricMatchingTraining extends WekaBaseTraining
          */
         private void ensurePositiveWeights() {
             // minWeight is the minimum non-infinite weight
-            if (minWeight < TOL) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
-                        weights[i][j] = weights[i][j] - minWeight + 1;
+            if (this.minWeight < TOL) {
+                for (int i = 0; i < this.n; i++) {
+                    for (int j = 0; j < this.m; j++) {
+                        this.weights[i][j] = this.weights[i][j] - this.minWeight + 1;
                     }
                 }
 
-                maxWeight = maxWeight - minWeight + 1;
-                minWeight = 1;
+                this.maxWeight = this.maxWeight - this.minWeight + 1;
+                this.minWeight = 1;
             }
         }
 
         @SuppressWarnings("unused")
         private void printWeights() {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    System.out.print(weights[i][j] + " ");
+            for (int i = 0; i < this.n; i++) {
+                for (int j = 0; j < this.m; j++) {
+                    System.out.print(this.weights[i][j] + " ");
                 }
                 System.out.println("");
             }

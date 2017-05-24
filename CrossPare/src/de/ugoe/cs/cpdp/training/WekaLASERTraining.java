@@ -44,7 +44,7 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
      */
     @Override
     public Classifier getClassifier() {
-        return internalClassifier;
+        return this.internalClassifier;
     }
 
     /*
@@ -55,7 +55,7 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
     @Override
     public void apply(Instances traindata) {
         try {
-            internalClassifier.buildClassifier(traindata);
+            this.internalClassifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -91,76 +91,56 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
          * 
          * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
          */
+        @SuppressWarnings("boxing")
         @Override
         public double classifyInstance(Instance instance) throws Exception {
             List<Integer> closestInstances = new LinkedList<>();
             double minDistance = Double.MAX_VALUE;
-            for (int i = 0; i < traindata.size(); i++) {
-                double distance = WekaUtils.hammingDistance(instance, traindata.get(i));
+            for (int i = 0; i < this.traindata.size(); i++) {
+                double distance = WekaUtils.hammingDistance(instance, this.traindata.get(i));
                 if (distance < minDistance) {
                     minDistance = distance;
                 }
             }
-            for (int i = 0; i < traindata.size(); i++) {
-                double distance = WekaUtils.hammingDistance(instance, traindata.get(i));
+            for (int i = 0; i < this.traindata.size(); i++) {
+                double distance = WekaUtils.hammingDistance(instance, this.traindata.get(i));
                 if (distance <= minDistance) {
                     closestInstances.add(i);
                 }
             }
             if (closestInstances.size() == 1) {
                 int closestIndex = closestInstances.get(0);
-                Instance closestTrainingInstance = traindata.get(closestIndex);
+                Instance closestTrainingInstance = this.traindata.get(closestIndex);
                 List<Integer> closestToTrainingInstance = new LinkedList<>();
                 double minTrainingDistance = Double.MAX_VALUE;
-                for (int i = 0; i < traindata.size(); i++) {
+                for (int i = 0; i < this.traindata.size(); i++) {
                     if (closestIndex != i) {
                         double distance =
-                            WekaUtils.hammingDistance(closestTrainingInstance, traindata.get(i));
+                            WekaUtils.hammingDistance(closestTrainingInstance, this.traindata.get(i));
                         if (distance < minTrainingDistance) {
                             minTrainingDistance = distance;
                         }
                     }
                 }
-                for (int i = 0; i < traindata.size(); i++) {
+                for (int i = 0; i < this.traindata.size(); i++) {
                     if (closestIndex != i) {
                         double distance =
-                            WekaUtils.hammingDistance(closestTrainingInstance, traindata.get(i));
+                            WekaUtils.hammingDistance(closestTrainingInstance, this.traindata.get(i));
                         if (distance <= minTrainingDistance) {
                             closestToTrainingInstance.add(i);
                         }
                     }
                 }
                 if (closestToTrainingInstance.size() == 1) {
-                    return laserClassifier.classifyInstance(instance);
+                    return this.laserClassifier.classifyInstance(instance);
                 }
-                else {
-                    double label = Double.NaN;
-                    boolean allEqual = true;
-                    for (Integer index : closestToTrainingInstance) {
-                        if (Double.isNaN(label)) {
-                            label = traindata.get(index).classValue();
-                        }
-                        else if (label != traindata.get(index).classValue()) {
-                            allEqual = false;
-                            break;
-                        }
-                    }
-                    if (allEqual) {
-                        return label;
-                    }
-                    else {
-                        return laserClassifier.classifyInstance(instance);
-                    }
-                }
-            }
-            else {
                 double label = Double.NaN;
                 boolean allEqual = true;
-                for (Integer index : closestInstances) {
+                for (Integer index : closestToTrainingInstance) {
                     if (Double.isNaN(label)) {
-                        label = traindata.get(index).classValue();
+                        label = this.traindata.get(index).classValue();
                     }
-                    else if (label != traindata.get(index).classValue()) {
+                    else if (label != this.traindata.get(index).classValue()) {
                         allEqual = false;
                         break;
                     }
@@ -168,10 +148,23 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
                 if (allEqual) {
                     return label;
                 }
-                else {
-                    return laserClassifier.classifyInstance(instance);
+                return this.laserClassifier.classifyInstance(instance);
+            }
+            double label = Double.NaN;
+            boolean allEqual = true;
+            for (Integer index : closestInstances) {
+                if (Double.isNaN(label)) {
+                    label = this.traindata.get(index).classValue();
+                }
+                else if (label != this.traindata.get(index).classValue()) {
+                    allEqual = false;
+                    break;
                 }
             }
+            if (allEqual) {
+                return label;
+            }
+            return this.laserClassifier.classifyInstance(instance);
         }
 
         /*
@@ -179,11 +172,12 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
          * 
          * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
          */
+        @SuppressWarnings("hiding")
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
             this.traindata = new Instances(traindata);
-            laserClassifier = setupClassifier();
-            laserClassifier.buildClassifier(traindata);
+            this.laserClassifier = setupClassifier();
+            this.laserClassifier.buildClassifier(traindata);
         }
     }
 }

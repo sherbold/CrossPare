@@ -44,11 +44,11 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
         final Instances data = characteristicInstances(testdata, traindataSet);
 
-        final ArrayList<String> attVals = new ArrayList<String>();
+        final ArrayList<String> attVals = new ArrayList<>();
         attVals.add("same");
         attVals.add("more");
         attVals.add("less");
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
         for (int j = 0; j < data.numAttributes(); j++) {
             atts.add(new Attribute(data.attribute(j).name(), attVals));
         }

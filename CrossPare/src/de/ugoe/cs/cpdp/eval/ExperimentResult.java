@@ -129,6 +129,7 @@ public class ExperimentResult {
      * @param classifier
      *            the classifier name
      */
+    @SuppressWarnings("hiding")
     public ExperimentResult(String configurationName, String productName, String classifier) {
         this.configurationName = configurationName;
         this.productName = productName;
@@ -150,6 +151,7 @@ public class ExperimentResult {
      * @param trainProductName
      *            the name of the training product
      */
+    @SuppressWarnings("hiding")
     public ExperimentResult(String configurationName,
                             String productName,
                             String classifier,
@@ -169,7 +171,7 @@ public class ExperimentResult {
      * @return the configuration name
      */
     public String getConfigurationName() {
-        return configurationName;
+        return this.configurationName;
     }
 
     /**
@@ -180,7 +182,7 @@ public class ExperimentResult {
      * @return the product name
      */
     public String getProductName() {
-        return productName;
+        return this.productName;
     }
 
     /**
@@ -191,7 +193,7 @@ public class ExperimentResult {
      * @return the name of the training product
      */
     public String getTrainProductName() {
-        return trainProductName;
+        return this.trainProductName;
     }
 
     /**
@@ -202,7 +204,7 @@ public class ExperimentResult {
      * @return the classifier name
      */
     public String getClassifier() {
-        return classifier;
+        return this.classifier;
     }
 
     /**
@@ -213,7 +215,7 @@ public class ExperimentResult {
      * @return number of instances
      */
     public int getSizeTestData() {
-        return sizeTestData;
+        return this.sizeTestData;
     }
 
     /**
@@ -224,6 +226,7 @@ public class ExperimentResult {
      * @param sizeTestData
      *            number of instances
      */
+    @SuppressWarnings("hiding")
     public void setSizeTestData(int sizeTestData) {
         this.sizeTestData = sizeTestData;
     }
@@ -236,7 +239,7 @@ public class ExperimentResult {
      * @return number of instances
      */
     public int getSizeTrainingData() {
-        return sizeTrainingData;
+        return this.sizeTrainingData;
     }
 
     /**
@@ -247,6 +250,7 @@ public class ExperimentResult {
      * @param sizeTrainingData
      *            number of instances
      */
+    @SuppressWarnings("hiding")
     public void setSizeTrainingData(int sizeTrainingData) {
         this.sizeTrainingData = sizeTrainingData;
     }
@@ -259,7 +263,7 @@ public class ExperimentResult {
      * @return the error
      */
     public double getError() {
-        return error;
+        return this.error;
     }
 
     /**
@@ -270,6 +274,7 @@ public class ExperimentResult {
      * @param error
      *            the error
      */
+    @SuppressWarnings("hiding")
     public void setError(double error) {
         this.error = error;
     }
@@ -282,7 +287,7 @@ public class ExperimentResult {
      * @return the recall
      */
     public double getRecall() {
-        return recall;
+        return this.recall;
     }
 
     /**
@@ -293,6 +298,7 @@ public class ExperimentResult {
      * @param recall
      *            the recall
      */
+    @SuppressWarnings("hiding")
     public void setRecall(double recall) {
         this.recall = recall;
     }
@@ -305,7 +311,7 @@ public class ExperimentResult {
      * @return the precision
      */
     public double getPrecision() {
-        return precision;
+        return this.precision;
     }
 
     /**
@@ -316,6 +322,7 @@ public class ExperimentResult {
      * @param precision
      *            the precision
      */
+    @SuppressWarnings("hiding")
     public void setPrecision(double precision) {
         this.precision = precision;
     }
@@ -328,7 +335,7 @@ public class ExperimentResult {
      * @return the F1 score
      */
     public double getFscore() {
-        return fscore;
+        return this.fscore;
     }
 
     /**
@@ -339,6 +346,7 @@ public class ExperimentResult {
      * @param fscore
      *            the F1 score
      */
+    @SuppressWarnings("hiding")
     public void setFscore(double fscore) {
         this.fscore = fscore;
     }
@@ -351,7 +359,7 @@ public class ExperimentResult {
      * @return the G score
      */
     public double getGscore() {
-        return gscore;
+        return this.gscore;
     }
 
     /**
@@ -362,6 +370,7 @@ public class ExperimentResult {
      * @param gscore
      *            the G score
      */
+    @SuppressWarnings("hiding")
     public void setGscore(double gscore) {
         this.gscore = gscore;
     }
@@ -374,7 +383,7 @@ public class ExperimentResult {
      * @return the MCC
      */
     public double getMcc() {
-        return mcc;
+        return this.mcc;
     }
 
     /**
@@ -385,6 +394,7 @@ public class ExperimentResult {
      * @param mcc
      *            the MCC
      */
+    @SuppressWarnings("hiding")
     public void setMcc(double mcc) {
         this.mcc = mcc;
     }
@@ -397,7 +407,7 @@ public class ExperimentResult {
      * @return the AUC
      */
     public double getAuc() {
-        return auc;
+        return this.auc;
     }
 
     /**
@@ -408,6 +418,7 @@ public class ExperimentResult {
      * @param auc
      *            the AUC
      */
+    @SuppressWarnings("hiding")
     public void setAuc(double auc) {
         this.auc = auc;
     }
@@ -420,7 +431,7 @@ public class ExperimentResult {
      * @return the effort
      */
     public double getAucec() {
-        return aucec;
+        return this.aucec;
     }
 
     /**
@@ -431,6 +442,7 @@ public class ExperimentResult {
      * @param aucec
      *            the effort
      */
+    @SuppressWarnings("hiding")
     public void setAucec(double aucec) {
         this.aucec = aucec;
     }
@@ -443,7 +455,7 @@ public class ExperimentResult {
      * @return the TPR
      */
     public double getTpr() {
-        return tpr;
+        return this.tpr;
     }
 
     /**
@@ -454,6 +466,7 @@ public class ExperimentResult {
      * @param tpr
      *            the TPR
      */
+    @SuppressWarnings("hiding")
     public void setTpr(double tpr) {
         this.tpr = tpr;
     }
@@ -466,7 +479,7 @@ public class ExperimentResult {
      * @return the TNR
      */
     public double getTnr() {
-        return tnr;
+        return this.tnr;
     }
 
     /**
@@ -477,6 +490,7 @@ public class ExperimentResult {
      * @param tnr
      *            the TNR
      */
+    @SuppressWarnings("hiding")
     public void setTnr(double tnr) {
         this.tnr = tnr;
     }
@@ -489,7 +503,7 @@ public class ExperimentResult {
      * @return the FPR
      */
     public double getFpr() {
-        return fpr;
+        return this.fpr;
     }
 
     /**
@@ -500,6 +514,7 @@ public class ExperimentResult {
      * @param fpr
      *            the FPR
      */
+    @SuppressWarnings("hiding")
     public void setFpr(double fpr) {
         this.fpr = fpr;
     }
@@ -512,7 +527,7 @@ public class ExperimentResult {
      * @return the FNR
      */
     public double getFnr() {
-        return fnr;
+        return this.fnr;
     }
 
     /**
@@ -523,6 +538,7 @@ public class ExperimentResult {
      * @param fnr
      *            the FNR
      */
+    @SuppressWarnings("hiding")
     public void setFnr(double fnr) {
         this.fnr = fnr;
     }
@@ -535,7 +551,7 @@ public class ExperimentResult {
      * @return the TPs
      */
     public double getTp() {
-        return tp;
+        return this.tp;
     }
 
     /**
@@ -546,6 +562,7 @@ public class ExperimentResult {
      * @param tp
      *            the TPs
      */
+    @SuppressWarnings("hiding")
     public void setTp(double tp) {
         this.tp = tp;
     }
@@ -558,7 +575,7 @@ public class ExperimentResult {
      * @return the FNs
      */
     public double getFn() {
-        return fn;
+        return this.fn;
     }
 
     /**
@@ -569,6 +586,7 @@ public class ExperimentResult {
      * @param fn
      *            the FNs
      */
+    @SuppressWarnings("hiding")
     public void setFn(double fn) {
         this.fn = fn;
     }
@@ -581,7 +599,7 @@ public class ExperimentResult {
      * @return the TNs
      */
     public double getTn() {
-        return tn;
+        return this.tn;
     }
 
     /**
@@ -592,6 +610,7 @@ public class ExperimentResult {
      * @param tn
      *            the TNs
      */
+    @SuppressWarnings("hiding")
     public void setTn(double tn) {
         this.tn = tn;
     }
@@ -604,7 +623,7 @@ public class ExperimentResult {
      * @return the FPs
      */
     public double getFp() {
-        return fp;
+        return this.fp;
     }
 
     /**
@@ -615,6 +634,7 @@ public class ExperimentResult {
      * @param fp
      *            the FPs
      */
+    @SuppressWarnings("hiding")
     public void setFp(double fp) {
         this.fp = fp;
     }

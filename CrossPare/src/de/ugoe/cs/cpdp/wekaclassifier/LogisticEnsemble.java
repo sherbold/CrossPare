@@ -59,6 +59,7 @@ public class LogisticEnsemble extends AbstractClassifier {
      * 
      * @see weka.classifiers.AbstractClassifier#setOptions(java.lang.String[])
      */
+    @SuppressWarnings("hiding")
     @Override
     public void setOptions(String[] options) throws Exception {
         this.options = options;
@@ -69,10 +70,11 @@ public class LogisticEnsemble extends AbstractClassifier {
      * 
      * @see weka.classifiers.AbstractClassifier#distributionForInstance(weka.core.Instance)
      */
+    @SuppressWarnings("boxing")
     @Override
     public double[] distributionForInstance(Instance instance) throws Exception {
-        Iterator<Classifier> classifierIter = classifiers.iterator();
-        Iterator<Double> weightIter = weights.iterator();
+        Iterator<Classifier> classifierIter = this.classifiers.iterator();
+        Iterator<Double> weightIter = this.weights.iterator();
         double[] result = new double[2];
         while (classifierIter.hasNext()) {
             for (int j = 0; j < instance.numAttributes(); j++) {
@@ -99,16 +101,17 @@ public class LogisticEnsemble extends AbstractClassifier {
      * 
      * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
-        classifiers = new LinkedList<>();
-        weights = new LinkedList<>();
+        this.classifiers = new LinkedList<>();
+        this.weights = new LinkedList<>();
         List<Double> weightsTmp = new LinkedList<>();
         double sumWeights = 0.0;
         for (int j = 0; j < traindata.numAttributes(); j++) {
             if (j != traindata.classIndex()) {
                 final Logistic classifier = new Logistic();
-                classifier.setOptions(options);
+                classifier.setOptions(this.options);
                 final Instances copy = new Instances(traindata);
                 for (int k = traindata.numAttributes() - 1; k >= 0; k--) {
                     if (j != k && k != traindata.classIndex()) {
@@ -116,7 +119,7 @@ public class LogisticEnsemble extends AbstractClassifier {
                     }
                 }
                 classifier.buildClassifier(copy);
-                classifiers.add(classifier);
+                this.classifiers.add(classifier);
                 Evaluation eval = new Evaluation(copy);
                 eval.evaluateModel(classifier, copy);
                 weightsTmp.add(eval.matthewsCorrelationCoefficient(1));
@@ -124,7 +127,7 @@ public class LogisticEnsemble extends AbstractClassifier {
             }
         }
         for (double tmp : weightsTmp) {
-            weights.add(tmp / sumWeights);
+            this.weights.add(tmp / sumWeights);
         }
     }
 }

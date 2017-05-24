@@ -199,22 +199,22 @@ public class ExperimentConfiguration extends DefaultHandler {
      *             thrown if there is an error creating the configuration
      */
     public ExperimentConfiguration(File file) throws ExperimentConfigurationException {
-        loaders = new LinkedList<>();
-        versionFilters = new LinkedList<>();
-        testVersionFilters = new LinkedList<>();
-        trainingVersionFilters = new LinkedList<>();
-        setwisepreprocessors = new LinkedList<>();
-        setwiseselectors = new LinkedList<>();
-        setwisepostprocessors = new LinkedList<>();
-        setwiseTrainers = new LinkedList<>();
-        setwiseTestdataAwareTrainers = new LinkedList<>();
-        preprocessors = new LinkedList<>();
-        pointwiseselectors = new LinkedList<>();
-        postprocessors = new LinkedList<>();
-        trainers = new LinkedList<>();
-        testAwareTrainers = new LinkedList<>();
-        evaluators = new LinkedList<>();
-        resultStorages = new LinkedList<>();
+        this.loaders = new LinkedList<>();
+        this.versionFilters = new LinkedList<>();
+        this.testVersionFilters = new LinkedList<>();
+        this.trainingVersionFilters = new LinkedList<>();
+        this.setwisepreprocessors = new LinkedList<>();
+        this.setwiseselectors = new LinkedList<>();
+        this.setwisepostprocessors = new LinkedList<>();
+        this.setwiseTrainers = new LinkedList<>();
+        this.setwiseTestdataAwareTrainers = new LinkedList<>();
+        this.preprocessors = new LinkedList<>();
+        this.pointwiseselectors = new LinkedList<>();
+        this.postprocessors = new LinkedList<>();
+        this.trainers = new LinkedList<>();
+        this.testAwareTrainers = new LinkedList<>();
+        this.evaluators = new LinkedList<>();
+        this.resultStorages = new LinkedList<>();
 
         if (file == null) {
             throw new IllegalArgumentException("file must not be null");
@@ -222,9 +222,9 @@ public class ExperimentConfiguration extends DefaultHandler {
         if (file.isDirectory()) {
             throw new IllegalArgumentException("file must not be a directory");
         }
-        configFile = file;
+        this.configFile = file;
 
-        experimentName = file.getName().split("\\.")[0];
+        this.experimentName = file.getName().split("\\.")[0];
 
         final SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setValidating(true);
@@ -238,31 +238,16 @@ public class ExperimentConfiguration extends DefaultHandler {
             throw new ExperimentConfigurationException(e);
         }
 
-        InputStreamReader reader = null;
-        try {
-            reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+        try( InputStreamReader reader = new InputStreamReader(new FileInputStream(file), "UTF-8"); ) {
             inputSource = new InputSource(reader);
+            inputSource.setSystemId("file://" + file.getAbsolutePath());
+            saxParser.parse(inputSource, this);
         }
         catch (UnsupportedEncodingException | FileNotFoundException e) {
             throw new ExperimentConfigurationException("Could not open configuration file.", e);
         }
-
-        if (inputSource != null) {
-            inputSource.setSystemId("file://" + file.getAbsolutePath());
-            try {
-                saxParser.parse(inputSource, this);
-            }
-            catch (SAXException | IOException e) {
-                throw new ExperimentConfigurationException("Error parsing configuration.", e);
-            }
-        }
-        if (reader != null) {
-            try {
-                reader.close();
-            }
-            catch (IOException e) {
-                throw new ExperimentConfigurationException("Error closing reader.", e);
-            }
+        catch (SAXException | IOException e) {
+            throw new ExperimentConfigurationException("Error parsing configuration.", e);
         }
     }
 
@@ -272,7 +257,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return name of the experiment
      */
     public String getExperimentName() {
-        return experimentName;
+        return this.experimentName;
     }
 
     /**
@@ -281,7 +266,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return data loaders
      */
     public List<IVersionLoader> getLoaders() {
-        return loaders;
+        return this.loaders;
     }
 
     /**
@@ -290,7 +275,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return results path
      */
     public String getResultsPath() {
-        return resultsPath;
+        return this.resultsPath;
     }
 
     /**
@@ -299,7 +284,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return data set filters of the experiment
      */
     public List<IVersionFilter> getVersionFilters() {
-        return versionFilters;
+        return this.versionFilters;
     }
 
     /**
@@ -308,7 +293,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return test set filters of the experiment
      */
     public List<IVersionFilter> getTestVersionFilters() {
-        return testVersionFilters;
+        return this.testVersionFilters;
     }
 
     /**
@@ -317,7 +302,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return candidate training version filters of the experiment
      */
     public List<IVersionFilter> getTrainingVersionFilters() {
-        return trainingVersionFilters;
+        return this.trainingVersionFilters;
     }
 
     /**
@@ -326,7 +311,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return setwise processors applied before the setwise data selection
      */
     public List<ISetWiseProcessingStrategy> getSetWisePreprocessors() {
-        return setwisepreprocessors;
+        return this.setwisepreprocessors;
     }
 
     /**
@@ -335,7 +320,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return setwise data selection strategies
      */
     public List<ISetWiseDataselectionStrategy> getSetWiseSelectors() {
-        return setwiseselectors;
+        return this.setwiseselectors;
     }
 
     /**
@@ -344,7 +329,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return setwise processors applied after the setwise data selection
      */
     public List<ISetWiseProcessingStrategy> getSetWisePostprocessors() {
-        return setwisepostprocessors;
+        return this.setwisepostprocessors;
     }
 
     /**
@@ -353,7 +338,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return setwise training algorithms
      */
     public List<ISetWiseTrainingStrategy> getSetWiseTrainers() {
-        return setwiseTrainers;
+        return this.setwiseTrainers;
     }
 
     /**
@@ -362,7 +347,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return setwise training algorithms
      */
     public List<ISetWiseTestdataAwareTrainingStrategy> getSetWiseTestdataAwareTrainers() {
-        return setwiseTestdataAwareTrainers;
+        return this.setwiseTestdataAwareTrainers;
     }
 
     /**
@@ -371,7 +356,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return processors applied before the pointwise data selection
      */
     public List<IProcessesingStrategy> getPreProcessors() {
-        return preprocessors;
+        return this.preprocessors;
     }
 
     /**
@@ -380,7 +365,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return pointwise data selection strategies
      */
     public List<IPointWiseDataselectionStrategy> getPointWiseSelectors() {
-        return pointwiseselectors;
+        return this.pointwiseselectors;
     }
 
     /**
@@ -389,7 +374,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return processors applied after the pointwise data selection
      */
     public List<IProcessesingStrategy> getPostProcessors() {
-        return postprocessors;
+        return this.postprocessors;
     }
 
     /**
@@ -398,7 +383,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return normal training algorithms
      */
     public List<ITrainingStrategy> getTrainers() {
-        return trainers;
+        return this.trainers;
     }
 
     /**
@@ -407,7 +392,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return normal training algorithms
      */
     public List<ITestAwareTrainingStrategy> getTestAwareTrainers() {
-        return testAwareTrainers;
+        return this.testAwareTrainers;
     }
 
     /**
@@ -416,7 +401,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return evaluation strategies
      */
     public List<IEvaluationStrategy> getEvaluators() {
-        return evaluators;
+        return this.evaluators;
     }
 
     /**
@@ -427,7 +412,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return result storages
      */
     public List<IResultStorage> getResultStorages() {
-        return resultStorages;
+        return this.resultStorages;
     }
 
     /**
@@ -436,7 +421,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return boolean
      */
     public boolean getSaveClassifier() {
-        return saveClassifier;
+        return this.saveClassifier.booleanValue();
     }
 
     /**
@@ -445,7 +430,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return number of repetitions
      */
     public int getRepetitions() {
-        return repetitions;
+        return this.repetitions;
     }
 
     /**
@@ -454,7 +439,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return String execution strategy
      */
     public String getExecutionStrategy() {
-        return executionStrategy;
+        return this.executionStrategy;
     }
 
     /**
@@ -463,7 +448,7 @@ public class ExperimentConfiguration extends DefaultHandler {
      * @return execution strategy paramters
      */
     public String getExecutionStrategyParameters() {
-        return executionStrategyParameters;
+        return this.executionStrategyParameters;
     }
 
     /*
@@ -484,40 +469,40 @@ public class ExperimentConfiguration extends DefaultHandler {
                 final IVersionLoader loader = (IVersionLoader) Class
                     .forName("de.ugoe.cs.cpdp.loader." + attributes.getValue("name")).newInstance();
                 loader.setLocation(attributes.getValue("datalocation"));
-                loaders.add(loader);
+                this.loaders.add(loader);
 
                 // TODO location as relative
             }
             else if (qName.equals("resultspath")) {
-                resultsPath = attributes.getValue("path");
+                this.resultsPath = attributes.getValue("path");
             }
             else if (qName.equals("versionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
                     .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name"))
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
-                versionFilters.add(filter);
+                this.versionFilters.add(filter);
             }
             else if (qName.equals("testVersionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
                     .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name"))
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
-                testVersionFilters.add(filter);
+                this.testVersionFilters.add(filter);
             }
             else if (qName.equals("trainVersionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
                     .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name"))
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
-                trainingVersionFilters.add(filter);
+                this.trainingVersionFilters.add(filter);
             }
             else if (qName.equals("setwisepreprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
-                setwisepreprocessors.add(processor);
+                this.setwisepreprocessors.add(processor);
             }
             else if (qName.equals("setwiseselector")) {
                 final ISetWiseDataselectionStrategy selection =
@@ -525,21 +510,21 @@ public class ExperimentConfiguration extends DefaultHandler {
                         .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name"))
                         .newInstance();
                 selection.setParameter(attributes.getValue("param"));
-                setwiseselectors.add(selection);
+                this.setwiseselectors.add(selection);
             }
             else if (qName.equals("setwisepostprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
-                setwisepostprocessors.add(processor);
+                this.setwisepostprocessors.add(processor);
             }
             else if (qName.equals("setwisetrainer")) {
                 final ISetWiseTrainingStrategy trainer = (ISetWiseTrainingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
-                setwiseTrainers.add(trainer);
+                this.setwiseTrainers.add(trainer);
             }
             else if (qName.equals("setwisetestdataawaretrainer")) {
                 final ISetWiseTestdataAwareTrainingStrategy trainer =
@@ -549,14 +534,14 @@ public class ExperimentConfiguration extends DefaultHandler {
                 trainer.setParameter(attributes.getValue("param"));
                 trainer.setMethod(attributes.getValue("method"));
                 trainer.setThreshold(attributes.getValue("threshold"));
-                setwiseTestdataAwareTrainers.add(trainer);
+                this.setwiseTestdataAwareTrainers.add(trainer);
             }
             else if (qName.equals("preprocessor")) {
                 final IProcessesingStrategy processor = (IProcessesingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
-                preprocessors.add(processor);
+                this.preprocessors.add(processor);
             }
             else if (qName.equals("pointwiseselector")) {
                 final IPointWiseDataselectionStrategy selection =
@@ -564,33 +549,33 @@ public class ExperimentConfiguration extends DefaultHandler {
                         .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name"))
                         .newInstance();
                 selection.setParameter(attributes.getValue("param"));
-                pointwiseselectors.add(selection);
+                this.pointwiseselectors.add(selection);
             }
             else if (qName.equals("postprocessor")) {
                 final IProcessesingStrategy processor = (IProcessesingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
-                postprocessors.add(processor);
+                this.postprocessors.add(processor);
             }
             else if (qName.equals("trainer")) {
                 final ITrainingStrategy trainer = (ITrainingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
-                trainers.add(trainer);
+                this.trainers.add(trainer);
             }
             else if (qName.equals("testawaretrainer")) {
                 final ITestAwareTrainingStrategy trainer = (ITestAwareTrainingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
-                testAwareTrainers.add(trainer);
+                this.testAwareTrainers.add(trainer);
             }
             else if (qName.equals("eval")) {
                 final IEvaluationStrategy evaluator = (IEvaluationStrategy) Class
                     .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).newInstance();
-                evaluators.add(evaluator);
+                this.evaluators.add(evaluator);
             }
             else if (qName.equals("storage")) {
                 IResultStorage resultStorage;
@@ -607,19 +592,19 @@ public class ExperimentConfiguration extends DefaultHandler {
                         .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name"))
                         .newInstance();
                 }
-                resultStorages.add(resultStorage);
+                this.resultStorages.add(resultStorage);
 
                 // <storage name="MySQLResultStorage" param="" />
             }
             else if (qName.equals("saveClassifier")) {
-                saveClassifier = true;
+                this.saveClassifier = Boolean.TRUE;
             }
             else if (qName.equals("repetitions")) {
-                repetitions = Integer.parseInt(attributes.getValue("number"));
+                this.repetitions = Integer.parseInt(attributes.getValue("number"));
             }
             else if (qName.equals("executionStrategy")) {
-                executionStrategy = attributes.getValue("name");
-                executionStrategyParameters = attributes.getValue("param");
+                this.executionStrategy = attributes.getValue("name");
+                this.executionStrategyParameters = attributes.getValue("param");
             }
             else if (qName.equals("partialconfig")) {
                 String path = attributes.getValue("path");
@@ -630,7 +615,7 @@ public class ExperimentConfiguration extends DefaultHandler {
                     }
 
                     if (relative) {
-                        path = configFile.getParentFile().getPath() + "/" + path;
+                        path = this.configFile.getParentFile().getPath() + "/" + path;
                     }
                     addConfigurations(new ExperimentConfiguration(path));
                 }
@@ -639,7 +624,7 @@ public class ExperimentConfiguration extends DefaultHandler {
                 }
             }
             else {
-                Console.traceln(Level.WARNING, "element in config-file " + configFile.getName() +
+                Console.traceln(Level.WARNING, "element in config-file " + this.configFile.getName() +
                     " ignored: " + qName);
             }
         }
@@ -666,25 +651,25 @@ public class ExperimentConfiguration extends DefaultHandler {
     private void addConfigurations(ExperimentConfiguration other)
         throws ExperimentConfigurationException
     {
-        if ("results".equals(resultsPath)) {
-            resultsPath = other.resultsPath;
+        if ("results".equals(this.resultsPath)) {
+            this.resultsPath = other.resultsPath;
         }
-        loaders.addAll(other.loaders);
-        versionFilters.addAll(other.versionFilters);
-        testVersionFilters.addAll(other.testVersionFilters);
-        trainingVersionFilters.addAll(other.trainingVersionFilters);
-        setwisepreprocessors.addAll(other.setwisepreprocessors);
-        setwiseselectors.addAll(other.setwiseselectors);
-        setwisepostprocessors.addAll(other.setwisepostprocessors);
-        setwiseTrainers.addAll(other.setwiseTrainers);
-        setwiseTestdataAwareTrainers.addAll(other.setwiseTestdataAwareTrainers);
-        preprocessors.addAll(other.preprocessors);
-        pointwiseselectors.addAll(other.pointwiseselectors);
-        postprocessors.addAll(other.postprocessors);
-        trainers.addAll(other.trainers);
-        evaluators.addAll(other.evaluators);
+        this.loaders.addAll(other.loaders);
+        this.versionFilters.addAll(other.versionFilters);
+        this.testVersionFilters.addAll(other.testVersionFilters);
+        this.trainingVersionFilters.addAll(other.trainingVersionFilters);
+        this.setwisepreprocessors.addAll(other.setwisepreprocessors);
+        this.setwiseselectors.addAll(other.setwiseselectors);
+        this.setwisepostprocessors.addAll(other.setwisepostprocessors);
+        this.setwiseTrainers.addAll(other.setwiseTrainers);
+        this.setwiseTestdataAwareTrainers.addAll(other.setwiseTestdataAwareTrainers);
+        this.preprocessors.addAll(other.preprocessors);
+        this.pointwiseselectors.addAll(other.pointwiseselectors);
+        this.postprocessors.addAll(other.postprocessors);
+        this.trainers.addAll(other.trainers);
+        this.evaluators.addAll(other.evaluators);
 
-        if (!executionStrategy.equals(other.executionStrategy)) {
+        if (!this.executionStrategy.equals(other.executionStrategy)) {
             throw new ExperimentConfigurationException("Executionstrategies must be the same, if config files should be added.");
         }
 
@@ -692,8 +677,8 @@ public class ExperimentConfiguration extends DefaultHandler {
          * Only if saveClassifier is not set in the main config and the other configs saveClassifier
          * is true, it must be set.
          */
-        if (saveClassifier == null && other.saveClassifier == true) {
-            saveClassifier = other.saveClassifier;
+        if (this.saveClassifier == null && other.saveClassifier == Boolean.TRUE) {
+            this.saveClassifier = other.saveClassifier;
         }
 
     }
@@ -706,32 +691,32 @@ public class ExperimentConfiguration extends DefaultHandler {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("Experiment name: " + experimentName + StringTools.ENDLINE);
-        builder.append("Loaders: " + loaders + StringTools.ENDLINE);
-        builder.append("Results path: " + resultsPath + StringTools.ENDLINE);
-        builder.append("Version filters: " + versionFilters.toString() + StringTools.ENDLINE);
+        builder.append("Experiment name: " + this.experimentName + StringTools.ENDLINE);
+        builder.append("Loaders: " + this.loaders + StringTools.ENDLINE);
+        builder.append("Results path: " + this.resultsPath + StringTools.ENDLINE);
+        builder.append("Version filters: " + this.versionFilters.toString() + StringTools.ENDLINE);
         builder
-            .append("Test version filters: " + testVersionFilters.toString() + StringTools.ENDLINE);
-        builder.append("Training version filters: " + trainingVersionFilters.toString() +
+            .append("Test version filters: " + this.testVersionFilters.toString() + StringTools.ENDLINE);
+        builder.append("Training version filters: " + this.trainingVersionFilters.toString() +
             StringTools.ENDLINE);
-        builder.append("Setwise preprocessors: " + setwisepreprocessors.toString() +
+        builder.append("Setwise preprocessors: " + this.setwisepreprocessors.toString() +
             StringTools.ENDLINE);
-        builder.append("Setwise selectors: " + setwiseselectors.toString() + StringTools.ENDLINE);
-        builder.append("Setwise postprocessors: " + setwisepostprocessors.toString() +
+        builder.append("Setwise selectors: " + this.setwiseselectors.toString() + StringTools.ENDLINE);
+        builder.append("Setwise postprocessors: " + this.setwisepostprocessors.toString() +
             StringTools.ENDLINE);
-        builder.append("Setwise trainers: " + setwiseTrainers.toString() + StringTools.ENDLINE);
+        builder.append("Setwise trainers: " + this.setwiseTrainers.toString() + StringTools.ENDLINE);
         builder.append("Setwise Testdata Aware trainers: " +
-            setwiseTestdataAwareTrainers.toString() + StringTools.ENDLINE);
+            this.setwiseTestdataAwareTrainers.toString() + StringTools.ENDLINE);
         builder
-            .append("Pointwise preprocessors: " + preprocessors.toString() + StringTools.ENDLINE);
+            .append("Pointwise preprocessors: " + this.preprocessors.toString() + StringTools.ENDLINE);
         builder
-            .append("Pointwise selectors: " + pointwiseselectors.toString() + StringTools.ENDLINE);
+            .append("Pointwise selectors: " + this.pointwiseselectors.toString() + StringTools.ENDLINE);
         builder
-            .append("Pointwise postprocessors: " + postprocessors.toString() + StringTools.ENDLINE);
-        builder.append("Pointwise trainers: " + trainers.toString() + StringTools.ENDLINE);
-        builder.append("Evaluators: " + evaluators.toString() + StringTools.ENDLINE);
-        builder.append("Save Classifier?: " + saveClassifier + StringTools.ENDLINE);
-        builder.append("Execution Strategy: " + executionStrategy + StringTools.ENDLINE);
+            .append("Pointwise postprocessors: " + this.postprocessors.toString() + StringTools.ENDLINE);
+        builder.append("Pointwise trainers: " + this.trainers.toString() + StringTools.ENDLINE);
+        builder.append("Evaluators: " + this.evaluators.toString() + StringTools.ENDLINE);
+        builder.append("Save Classifier?: " + this.saveClassifier + StringTools.ENDLINE);
+        builder.append("Execution Strategy: " + this.executionStrategy + StringTools.ENDLINE);
 
         return builder.toString();
     }

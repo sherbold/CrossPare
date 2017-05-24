@@ -79,7 +79,7 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
         Database db = new StaticArrayDatabase(dbc, null);
         db.initialize();
         DBSCAN<DoubleVector> dbscan =
-            new DBSCAN<DoubleVector>(EuclideanDistanceFunction.STATIC, 1.0, 10);
+            new DBSCAN<>(EuclideanDistanceFunction.STATIC, 1.0, 10);
         Clustering<Model> clusterer = dbscan.run(db);
         Relation<DoubleVector> rel = db.getRelation(TypeUtil.DOUBLE_VECTOR_FIELD);
         int firstInternalIndex = rel.iterDBIDs().internalGetIndex();

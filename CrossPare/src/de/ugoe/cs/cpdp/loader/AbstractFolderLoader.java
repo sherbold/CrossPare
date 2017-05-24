@@ -42,7 +42,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      */
     @Override
     public void setLocation(String location) {
-        path = location;
+        this.path = location;
     }
 
     /*
@@ -50,9 +50,9 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      */
     @Override
     public List<SoftwareVersion> load() {
-        final List<SoftwareVersion> versions = new LinkedList<SoftwareVersion>();
+        final List<SoftwareVersion> versions = new LinkedList<>();
 
-        final File dataDir = new File(path);
+        final File dataDir = new File(this.path);
         final SingleVersionLoader instancesLoader = getSingleLoader();
         if (dataDir.listFiles() == null) {
             return versions;
@@ -89,7 +89,8 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      *            the data
      * @return
      */
-    private List<Double> getEfforts(Instances data) {
+    @SuppressWarnings("boxing")
+    private static List<Double> getEfforts(Instances data) {
         // attribute in the JURECZKO data and default
         Attribute effortAtt = data.attribute("loc");
         if (effortAtt == null) {

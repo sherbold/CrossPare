@@ -60,7 +60,8 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
      *            training data
      * @return filtered trainind data
      */
-    private Instances applyNeighborhoodFilter(Instances testdata, Instances traindata) {
+    @SuppressWarnings("boxing")
+    private static Instances applyNeighborhoodFilter(Instances testdata, Instances traindata) {
         TreeSet<Integer> selectedInstances = new TreeSet<>();
         for (int i = 0; i < testdata.size(); i++) {
             double minHam = Double.MAX_VALUE;

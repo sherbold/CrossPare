@@ -62,6 +62,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @param efforts
      *            review efforts for the version
      */
+    @SuppressWarnings("hiding")
     public SoftwareVersion(String dataset,
                            String project,
                            String version,
@@ -83,7 +84,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return data set name
      */
     public String getDataset() {
-        return dataset;
+        return this.dataset;
     }
 
     /**
@@ -92,7 +93,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return project name
      */
     public String getProject() {
-        return project;
+        return this.project;
     }
 
     /**
@@ -101,7 +102,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return name of the version
      */
     public String getVersion() {
-        return version;
+        return this.version;
     }
 
     /**
@@ -110,7 +111,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return data
      */
     public Instances getInstances() {
-        return new Instances(instances);
+        return new Instances(this.instances);
     }
 
     /**
@@ -121,7 +122,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return the review efforts
      */
     public List<Double> getEfforts() {
-        return efforts;
+        return this.efforts;
     }
 
     /**
@@ -133,14 +134,12 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
     @Override
     public int compareTo(SoftwareVersion o) {
         int projectStrCmp = 0;
-        if (project != null) {
-            projectStrCmp = project.compareTo(o.project);
+        if (this.project != null) {
+            projectStrCmp = this.project.compareTo(o.project);
         }
-        if (projectStrCmp == 0 && version != null) {
-            return version.compareTo(o.version);
+        if (projectStrCmp == 0 && this.version != null) {
+            return this.version.compareTo(o.version);
         }
-        else {
-            return projectStrCmp;
-        }
+        return projectStrCmp;
     }
 }

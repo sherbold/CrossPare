@@ -22,10 +22,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
-import de.lmu.ifi.dbs.elki.logging.Logging.Level;
 import de.ugoe.cs.util.console.Console;
 
 /**
@@ -79,8 +79,8 @@ public class MySQLResultStorage implements IResultStorage {
      */
     public MySQLResultStorage(String parameterFile) {
         Properties dbProperties = new Properties();
-        try {
-            dbProperties.load(new FileInputStream(parameterFile));
+        try(FileInputStream is = new FileInputStream(parameterFile);) {
+            dbProperties.load(is);
         }
         catch (IOException e) {
             Console.printerr("Could not load mysql.cred file: " + e.getMessage());
@@ -94,7 +94,7 @@ public class MySQLResultStorage implements IResultStorage {
         String dbName = dbProperties.getProperty("db.name", "crosspare");
         String dbUser = dbProperties.getProperty("db.user", "crosspare");
         String dbPass = dbProperties.getProperty("db.pass", "crosspare");
-        resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
+        this.resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
         boolean createTableIfNotExists =
             Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
@@ -127,10 +127,10 @@ public class MySQLResultStorage implements IResultStorage {
                              String dbUser,
                              String dbPass)
     {
-        connectionPool = new MysqlDataSource();
-        connectionPool.setUser(dbUser);
-        connectionPool.setPassword(dbPass);
-        connectionPool.setUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName);
+        this.connectionPool = new MysqlDataSource();
+        this.connectionPool.setUser(dbUser);
+        this.connectionPool.setPassword(dbPass);
+        this.connectionPool.setUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName);
     }
 
     /*
@@ -141,7 +141,7 @@ public class MySQLResultStorage implements IResultStorage {
     @Override
     public void addResult(ExperimentResult result) {
         StringBuilder preparedSql = new StringBuilder();
-        preparedSql.append("INSERT INTO " + resultsTableName + " (");
+        preparedSql.append("INSERT INTO " + this.resultsTableName + " (");
         preparedSql.append("`configurationName`,");
         preparedSql.append("`productName`,");
         preparedSql.append("`classifier`,");
@@ -165,9 +165,7 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`fp`) VALUES ");
         preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-        PreparedStatement stmt;
-        try {
-            stmt = connectionPool.getConnection().prepareStatement(preparedSql.toString());
+        try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql.toString());) {
             stmt.setString(1, result.getConfigurationName());
             stmt.setString(2, result.getProductName());
             stmt.setString(3, result.getClassifier());
@@ -211,17 +209,16 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public int containsResult(String experimentName, String productName, String classifierName) {
-        String preparedSql = "SELECT COUNT(*) as cnt FROM " + resultsTableName +
+        String preparedSql = "SELECT COUNT(*) as cnt FROM " + this.resultsTableName +
             " WHERE configurationName=? AND productName=? AND classifier=?";
-        PreparedStatement stmt;
-        try {
-            stmt = connectionPool.getConnection().prepareStatement(preparedSql);
+        try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql);) {
             stmt.setString(1, experimentName);
             stmt.setString(2, productName);
             stmt.setString(3, classifierName);
-            ResultSet results = stmt.executeQuery();
-            results.next();
-            return results.getInt("cnt");
+            try(ResultSet results = stmt.executeQuery();) {
+                results.next();
+                return results.getInt("cnt");
+            }
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: \n");
@@ -242,9 +239,10 @@ public class MySQLResultStorage implements IResultStorage {
     public boolean doesResultsTableExist() {
         boolean exists = false;
         try {
-            DatabaseMetaData meta = connectionPool.getConnection().getMetaData();
-            ResultSet res = meta.getTables(null, null, resultsTableName, null);
-            exists = res.next();
+            DatabaseMetaData meta = this.connectionPool.getConnection().getMetaData();
+            try(ResultSet res = meta.getTables(null, null, this.resultsTableName, null);) {
+                exists = res.next();
+            }
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: \n");
@@ -261,7 +259,7 @@ public class MySQLResultStorage implements IResultStorage {
      * </p>
      */
     public void createResultsTable() {
-        String sql = "CREATE TABLE `" + resultsTableName + "` (" +
+        String sql = "CREATE TABLE `" + this.resultsTableName + "` (" +
             "`idresults` int(11) NOT NULL AUTO_INCREMENT," +
             "`configurationName` varchar(45) NOT NULL," + "`productName` varchar(45) NOT NULL," +
             "`classifier` varchar(45) NOT NULL," + "`testsize` int(11) DEFAULT NULL," +
@@ -275,11 +273,9 @@ public class MySQLResultStorage implements IResultStorage {
             "`fn` double DEFAULT NULL," + "`tn` double DEFAULT NULL," +
             "`fp` double DEFAULT NULL," + "PRIMARY KEY (`idresults`)" +
             ") ENGINE=InnoDB AUTO_INCREMENT=77777 DEFAULT CHARSET=utf8;";
-        Statement stmt;
-        try {
-            stmt = connectionPool.getConnection().createStatement();
+        try(Statement stmt = this.connectionPool.getConnection().createStatement();) { 
             stmt.execute(sql);
-            Console.traceln(Level.FINE, "Created new table " + resultsTableName);
+            Console.traceln(Level.FINE, "Created new table " + this.resultsTableName);
         }
         catch (SQLException e) {
             Console.printerr("Problem with MySQL connection: \n");
@@ -289,11 +285,13 @@ public class MySQLResultStorage implements IResultStorage {
         }
     }
 
+    @Override
     public int containsHeterogeneousResult(String experimentName,
                                            String productName,
                                            String classifierName,
                                            String trainProductName)
     {
+        // TODO dummy implementation
         return 0;
     }
 

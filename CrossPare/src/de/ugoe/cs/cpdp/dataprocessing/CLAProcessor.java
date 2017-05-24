@@ -63,7 +63,7 @@ public class CLAProcessor implements IProcessesingStrategy {
      * @param data
      *            data to which the processor is applied
      */
-    public void applyCLA(Instances data) {
+    private static void applyCLA(Instances data) {
         // first determine medians
         double[] medians = new double[data.numAttributes()];
         // get medians

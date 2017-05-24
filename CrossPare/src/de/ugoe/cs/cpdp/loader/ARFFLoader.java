@@ -35,10 +35,8 @@ public class ARFFLoader implements SingleVersionLoader {
      */
     @Override
     public Instances load(File file) {
-        BufferedReader reader;
         Instances data;
-        try {
-            reader = new BufferedReader(new FileReader(file));
+        try(BufferedReader reader = new BufferedReader(new FileReader(file));) {
             data = new Instances(reader);
             reader.close();
         }

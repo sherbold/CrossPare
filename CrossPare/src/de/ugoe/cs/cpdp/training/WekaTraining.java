@@ -41,16 +41,16 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
 
     @Override
     public void apply(Instances traindata) {
-        classifier = setupClassifier();
-        if (classifier == null) {
+        this.classifier = setupClassifier();
+        if (this.classifier == null) {
             Console.printerr("classifier of WekaTraining is null");
             throw new RuntimeException("classifier of WekaTraining is null");
         }
         try {
-            if (classifier == null) {
+            if (this.classifier == null) {
                 Console.traceln(Level.WARNING, String.format("classifier null!"));
             }
-            classifier.buildClassifier(traindata);
+            this.classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             if (e.getMessage() != null &&
@@ -59,9 +59,9 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
                 Console.traceln(Level.SEVERE,
                                 "failure due to lack of instances: " + e.getMessage());
                 Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
-                classifier = new ZeroR();
+                this.classifier = new ZeroR();
                 try {
-                    classifier.buildClassifier(traindata);
+                    this.classifier.buildClassifier(traindata);
                 }
                 catch (Exception e2) {
                     throw new RuntimeException(e2);

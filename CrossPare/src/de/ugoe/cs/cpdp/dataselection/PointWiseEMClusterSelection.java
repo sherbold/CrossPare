@@ -53,7 +53,7 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
      */
     @Override
     public void setParameter(String parameters) {
-        params = parameters.split(" ");
+        this.params = parameters.split(" ");
     }
 
     /**
@@ -62,6 +62,7 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
      * 
      * @returns the selected training data
      */
+    @SuppressWarnings("boxing")
     @Override
     public Instances apply(Instances testdata, Instances traindata) {
         // final Attribute classAttribute = testdata.classAttribute();
@@ -86,7 +87,7 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
 
             // 3. cluster data
             EM clusterer = new EM();
-            clusterer.setOptions(params);
+            clusterer.setOptions(this.params);
             clusterer.buildClusterer(train);
             int numClusters = clusterer.getNumClusters();
             if (numClusters == -1) {
@@ -106,7 +107,7 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
 
             int cnum;
             for (int i = 0; i < test.numInstances(); i++) {
-                cnum = ((EM) clusterer).clusterInstance(test.get(i));
+                cnum = clusterer.clusterInstance(test.get(i));
 
                 // we dont want doubles (maybe use a hashset instead of list?)
                 if (!selectedCluster.contains(cnum)) {

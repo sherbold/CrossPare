@@ -49,7 +49,7 @@ public class TCAPlusNormalization implements IProcessesingStrategy {
         applyTCAPlus(testdata, traindata);
     }
 
-    private void applyTCAPlus(Instances testdata, Instances traindata) {
+    private static void applyTCAPlus(Instances testdata, Instances traindata) {
         DistChar dcTest = WekaUtils.datasetDistance(testdata);
         DistChar dcTrain = WekaUtils.datasetDistance(traindata);
 

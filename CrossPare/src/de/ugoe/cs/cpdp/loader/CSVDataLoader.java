@@ -47,13 +47,13 @@ class CSVDataLoader implements SingleVersionLoader {
         }
 
         // configure Instances
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
 
         String[] lineSplit = lines[0].split(",");
         for (int j = 0; j < lineSplit.length - 4; j++) {
             atts.add(new Attribute(lineSplit[j + 3]));
         }
-        final ArrayList<String> classAttVals = new ArrayList<String>();
+        final ArrayList<String> classAttVals = new ArrayList<>();
         classAttVals.add("0");
         classAttVals.add("1");
         final Attribute classAtt = new Attribute("bug", classAttVals);

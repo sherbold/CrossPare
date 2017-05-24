@@ -48,8 +48,8 @@ public class NominalAttributeFilter implements IProcessesingStrategy {
     public void setParameter(String parameters) {
         if (parameters != null) {
             String[] parameter = parameters.split(" ");
-            nominalAttributeName = parameter[0];
-            nominalAttributeValues = Arrays.copyOfRange(parameter, 1, parameter.length);
+            this.nominalAttributeName = parameter[0];
+            this.nominalAttributeValues = Arrays.copyOfRange(parameter, 1, parameter.length);
         }
     }
 
@@ -59,13 +59,14 @@ public class NominalAttributeFilter implements IProcessesingStrategy {
      * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
      * weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void apply(Instances testdata, Instances traindata) {
         int indexOfConfidenceAttribute = -1;
 
         // Find index of the named confidence attribute to filter for
         for (int i = 0; i < traindata.numAttributes(); i++) {
-            if (traindata.attribute(i).name().equals(nominalAttributeName)) {
+            if (traindata.attribute(i).name().equals(this.nominalAttributeName)) {
                 indexOfConfidenceAttribute = i;
             }
         }
@@ -79,10 +80,10 @@ public class NominalAttributeFilter implements IProcessesingStrategy {
         Attribute confidenceAttribute = traindata.attribute(indexOfConfidenceAttribute);
         ArrayList<Object> nominalValuesOfConfidenceAttribute =
             Collections.list(confidenceAttribute.enumerateValues());
-        ArrayList<Double> indexOfnominalAttributeValues = new ArrayList<Double>();
+        ArrayList<Double> indexOfnominalAttributeValues = new ArrayList<>();
 
         for (int k = 0; k < nominalValuesOfConfidenceAttribute.size(); k++) {
-            for (String attributeValue : nominalAttributeValues) {
+            for (String attributeValue : this.nominalAttributeValues) {
                 if (((String) nominalValuesOfConfidenceAttribute.get(k)).equals(attributeValue)) {
                     indexOfnominalAttributeValues.add((double) k);
                 }

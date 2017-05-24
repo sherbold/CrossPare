@@ -42,7 +42,7 @@ public class AttributeRemoval implements ISetWiseProcessingStrategy, IProcessesi
     @Override
     public void setParameter(String parameters) {
         if (parameters != null) {
-            attributeNames = parameters.split(" ");
+            this.attributeNames = parameters.split(" ");
         }
     }
 
@@ -52,7 +52,7 @@ public class AttributeRemoval implements ISetWiseProcessingStrategy, IProcessesi
      */
     @Override
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (String attributeName : attributeNames) {
+        for (String attributeName : this.attributeNames) {
             for (int i = 0; i < testdata.numAttributes(); i++) {
                 if (attributeName.equals(testdata.attribute(i).name())) {
                     testdata.deleteAttributeAt(i);
@@ -69,7 +69,7 @@ public class AttributeRemoval implements ISetWiseProcessingStrategy, IProcessesi
      */
     @Override
     public void apply(Instances testdata, Instances traindata) {
-        for (String attributeName : attributeNames) {
+        for (String attributeName : this.attributeNames) {
             for (int i = 0; i < testdata.numAttributes(); i++) {
                 if (attributeName.equals(testdata.attribute(i).name())) {
                     testdata.deleteAttributeAt(i);

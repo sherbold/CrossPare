@@ -32,7 +32,7 @@ public class MinInstanceNumberFilter extends AbstractVersionFilter {
      */
     @Override
     public boolean apply(SoftwareVersion version) {
-        return version.getInstances().numInstances() < minInstances;
+        return version.getInstances().numInstances() < this.minInstances;
     }
 
     /**
@@ -43,7 +43,7 @@ public class MinInstanceNumberFilter extends AbstractVersionFilter {
      */
     @Override
     public void setParameter(String parameters) {
-        minInstances = Integer.parseInt(parameters);
+        this.minInstances = Integer.parseInt(parameters);
     }
 
 }

@@ -81,7 +81,7 @@ public class MODEPClassifier extends AbstractClassifier {
     public void setOptions(String[] options) throws Exception {
         String desiredRecallString = Utils.getOption('R', options);
         if (!desiredRecallString.isEmpty()) {
-            desiredRecall = Double.parseDouble(desiredRecallString);
+            this.desiredRecall = Double.parseDouble(desiredRecallString);
         }
     }
 
@@ -92,7 +92,7 @@ public class MODEPClassifier extends AbstractClassifier {
      */
     @Override
     public double[] distributionForInstance(Instance instance) throws Exception {
-        return distributionForInstance(solutionCoefficients, instance);
+        return distributionForInstance(this.solutionCoefficients, instance);
     }
 
     /*
@@ -103,7 +103,7 @@ public class MODEPClassifier extends AbstractClassifier {
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         double desiredInstances =
-            desiredRecall * traindata.attributeStats(traindata.classIndex()).nominalCounts[1];
+            this.desiredRecall * traindata.attributeStats(traindata.classIndex()).nominalCounts[1];
         MyNSGAIIRunner nsgaIIrunner = new MyNSGAIIRunner(traindata, desiredInstances);
         List<DoubleSolution> solutions = nsgaIIrunner.run();
         DoubleSolution bestSolution = null;
@@ -133,7 +133,7 @@ public class MODEPClassifier extends AbstractClassifier {
             }
         }
 
-        solutionCoefficients = solutionToCoefficients(bestSolution);
+        this.solutionCoefficients = solutionToCoefficients(bestSolution);
     }
 
     /**
@@ -177,7 +177,7 @@ public class MODEPClassifier extends AbstractClassifier {
      *            the instance
      * @return the binary classification
      */
-    private static double logisticRegression(double[][] coefficients, Instance instance) {
+    static double logisticRegression(double[][] coefficients, Instance instance) {
         double[] results = distributionForInstance(coefficients, instance);
         double maxResult = Double.MIN_VALUE;
         int maxIndex = 0;
@@ -212,6 +212,7 @@ public class MODEPClassifier extends AbstractClassifier {
      *            solution the is converted
      * @return coefficient matrix
      */
+    @SuppressWarnings("boxing")
     public static double[][] solutionToCoefficients(DoubleSolution solution) {
         int numberOfVariables = solution.getNumberOfVariables();
         int numberOfCoefficients = numberOfVariables / 2;
@@ -253,7 +254,7 @@ public class MODEPClassifier extends AbstractClassifier {
          * @param minEffectiveness
          *            minimal desired effectiveness
          */
-        private MyNSGAIIRunner(Instances data, double minEffectiveness) {
+        MyNSGAIIRunner(Instances data, double minEffectiveness) {
             final Problem<DoubleSolution> problem = new MODEPProblem(data, minEffectiveness);
             double crossoverProbability = 0.6;
             double crossoverDistributionIndex = 20.0;
@@ -265,9 +266,9 @@ public class MODEPClassifier extends AbstractClassifier {
             final MutationOperator<DoubleSolution> mutation =
                 new UniformMutation(mutationProbability, mutationPerturbation);
             final SelectionOperator<List<DoubleSolution>, DoubleSolution> selection =
-                new BinaryTournamentSelection<DoubleSolution>(new RankingAndCrowdingDistanceComparator<DoubleSolution>());
+                new BinaryTournamentSelection<>(new RankingAndCrowdingDistanceComparator<DoubleSolution>());
 
-            algorithm = new NSGAIIBuilder<DoubleSolution>(problem, crossover, mutation)
+            this.algorithm = new NSGAIIBuilder<>(problem, crossover, mutation)
                 .setSelectionOperator(selection).setMaxIterations(400).setPopulationSize(100)
                 .build();
         }
@@ -280,8 +281,8 @@ public class MODEPClassifier extends AbstractClassifier {
          * @return solutions of the problem; should be a Pareto front
          */
         public List<DoubleSolution> run() {
-            AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor(algorithm).execute();
-            List<DoubleSolution> population = algorithm.getResult();
+            AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor(this.algorithm).execute();
+            List<DoubleSolution> population = this.algorithm.getResult();
             Console.traceln(Level.FINEST,
                             "genetic algorithm run time: " + algorithmRunner.getComputingTime());
             return population;
@@ -331,6 +332,7 @@ public class MODEPClassifier extends AbstractClassifier {
          * @param minEffectiveness
          *            minimal desired effectiveness
          */
+        @SuppressWarnings({ "hiding", "boxing" })
         public MODEPProblem(Instances data, double minEffectiveness) {
             this.data = data;
             this.minEffectiveness = minEffectiveness;
@@ -350,8 +352,8 @@ public class MODEPClassifier extends AbstractClassifier {
             setLowerLimit(lowerLimit);
             setUpperLimit(upperLimit);
 
-            overallConstraintViolationDegree = new OverallConstraintViolation<>();
-            numberOfViolatedConstraints = new NumberOfViolatedConstraints<>();
+            this.overallConstraintViolationDegree = new OverallConstraintViolation<>();
+            this.numberOfViolatedConstraints = new NumberOfViolatedConstraints<>();
         }
 
         /*
@@ -363,16 +365,16 @@ public class MODEPClassifier extends AbstractClassifier {
         public void evaluate(DoubleSolution solution) {
             double[][] coefficients = solutionToCoefficients(solution);
 
-            final Attribute loc = data.attribute("loc");
+            final Attribute loc = this.data.attribute("loc");
             double effectiveness = 0.0;
             double cost = 0.0;
-            for (int i = 0; i < data.size(); i++) {
-                double currentClass = logisticRegression(coefficients, data.get(i));
+            for (int i = 0; i < this.data.size(); i++) {
+                double currentClass = logisticRegression(coefficients, this.data.get(i));
                 if (currentClass == 1.0) {
-                    if (data.get(i).classValue() == 1.0) {
+                    if (this.data.get(i).classValue() == 1.0) {
                         effectiveness++;
                     }
-                    cost -= data.get(i).value(loc);
+                    cost -= this.data.get(i).value(loc);
                 }
             }
 
@@ -387,16 +389,17 @@ public class MODEPClassifier extends AbstractClassifier {
          * org.uma.jmetal.problem.ConstrainedProblem#evaluateConstraints(org.uma.jmetal.solution.
          * Solution)
          */
+        @SuppressWarnings("boxing")
         @Override
         public void evaluateConstraints(DoubleSolution solution) {
-            double constraintViolation = minEffectiveness - solution.getObjective(0);
+            double constraintViolation = this.minEffectiveness - solution.getObjective(0);
             if (constraintViolation > 0) {
-                overallConstraintViolationDegree.setAttribute(solution, constraintViolation);
-                numberOfViolatedConstraints.setAttribute(solution, 1);
+                this.overallConstraintViolationDegree.setAttribute(solution, constraintViolation);
+                this.numberOfViolatedConstraints.setAttribute(solution, 1);
             }
             else {
-                overallConstraintViolationDegree.setAttribute(solution, 0.0);
-                numberOfViolatedConstraints.setAttribute(solution, 0);
+                this.overallConstraintViolationDegree.setAttribute(solution, 0.0);
+                this.numberOfViolatedConstraints.setAttribute(solution, 0);
             }
         }
     }

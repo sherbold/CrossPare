@@ -75,7 +75,8 @@ public class CLAMIProcessor implements IProcessesingStrategy {
      * @param data
      *            data to which the CLAMI processor is applied
      */
-    public void applyCLAMI(Instances testdata, Instances data) {
+    @SuppressWarnings("boxing")
+    private static void applyCLAMI(Instances testdata, Instances data) {
 
         // first determine medians
         double[] medians = new double[data.numAttributes()];

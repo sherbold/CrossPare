@@ -48,6 +48,7 @@ public class PetersFilter implements IPointWiseDataselectionStrategy {
      * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(weka.core.Instances,
      * weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public Instances apply(Instances testdata, Instances traindata) {
         final Attribute classAttribute = testdata.classAttribute();
@@ -76,7 +77,7 @@ public class PetersFilter implements IPointWiseDataselectionStrategy {
             }
         }
 
-        final List<List<Integer>> fanList = new ArrayList<List<Integer>>(testdata.numInstances());
+        final List<List<Integer>> fanList = new ArrayList<>(testdata.numInstances());
         for (int i = 0; i < testdata.numInstances(); i++) {
             fanList.add(new LinkedList<Integer>());
         }

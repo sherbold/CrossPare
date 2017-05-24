@@ -34,7 +34,7 @@ public class DECENTResourceTool extends ResourceTool {
      * validator.
      */
     public DECENTResourceTool() {
-        super(DECENTResourceTool.class.getName());
+        super();
         DECENTPackageImpl.init();
         this.resourceFactory = new DECENTResourceFactoryImpl();
         initializeValidator();

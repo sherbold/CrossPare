@@ -17,9 +17,9 @@ public class BiasedWeightsTest {
 
 	@Test
 	public void testApply_1() {
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		ArrayList<Attribute> attributes = new ArrayList<>();
 		attributes.add(new Attribute("attr1"));
-		List<String> classAttVals = new ArrayList<String>();
+		List<String> classAttVals = new ArrayList<>();
 		classAttVals.add("0");
 		classAttVals.add("1");
 		attributes.add(new Attribute("bug", classAttVals));
@@ -62,9 +62,9 @@ public class BiasedWeightsTest {
 	
 	@Test
 	public void testApply_2() {
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		ArrayList<Attribute> attributes = new ArrayList<>();
 		attributes.add(new Attribute("attr1"));
-		List<String> classAttVals = new ArrayList<String>();
+		List<String> classAttVals = new ArrayList<>();
 		classAttVals.add("0");
 		classAttVals.add("1");
 		attributes.add(new Attribute("bug", classAttVals));

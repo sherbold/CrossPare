@@ -67,15 +67,15 @@ public class DecentDataLoader implements SingleVersionLoader {
     String logToFile = "false";
 
     // This list contains attributes, that should be removed before building the arff file
-    private static List<String> attributeFilter = new LinkedList<String>();
+    private static List<String> attributeFilter = new LinkedList<>();
 
     // This list contains all names of the different artifacts
-    private static Set<String> artifactNames = new LinkedHashSet<String>();
+    private static Set<String> artifactNames = new LinkedHashSet<>();
 
     // Name of the class attribute.
     private static final String classAttributeName = "LABEL.Artifact.Target.BugFix.AverageWeight";
 
-    private int getIndexOfArtifactName(String artifactName) {
+    private static int getIndexOfArtifactName(String artifactName) {
         int index = -1;
         if (artifactNames.contains(artifactName)) {
             int i = 0;
@@ -95,7 +95,7 @@ public class DecentDataLoader implements SingleVersionLoader {
     /**
      * Defines attributes, that should be removed before building the ARFF File from.
      */
-    private void setAttributeFilter() {
+    private static void setAttributeFilter() {
         attributeFilter.add("Agent.Name");
 
     }
@@ -108,7 +108,7 @@ public class DecentDataLoader implements SingleVersionLoader {
      * @param arffLocation
      *            location where it should be saved to
      */
-    public void save(Instances dataSet, String arffLocation) {
+    public static void save(Instances dataSet, String arffLocation) {
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataSet);
@@ -153,12 +153,9 @@ public class DecentDataLoader implements SingleVersionLoader {
         // If arff File exists, load from it!
         if (new File(arffLocation).exists()) {
             System.out.println("Loading arff File...");
-            BufferedReader reader;
             Instances data = null;
-            try {
-                reader = new BufferedReader(new FileReader(arffLocation));
+            try(BufferedReader reader = new BufferedReader(new FileReader(arffLocation));) {
                 data = new Instances(reader);
-                reader.close();
             }
             catch (FileNotFoundException e) {
                 Console.printerrln("File with path: " + arffLocation + " was not found.");
@@ -183,8 +180,8 @@ public class DecentDataLoader implements SingleVersionLoader {
         String arffxToArffSource = "./decent/epsilon/query/addLabels.eol";
 
         // Set Log Properties
-        System.setProperty("epsilon.logLevel", logLevel);
-        System.setProperty("epsilon.logToFile", logToFile);
+        System.setProperty("epsilon.logLevel", this.logLevel);
+        System.setProperty("epsilon.logToFile", this.logToFile);
         System.setProperty("epsilon.logFileAvailable", "false");
 
         // Set decent2arffx Properties
@@ -195,9 +192,9 @@ public class DecentDataLoader implements SingleVersionLoader {
         try {
             IEolExecutableModule preProcessModule = loadModule(preprocess);
             IModel preProcessDecentModel =
-                modelHandler.getDECENTModel(decentModelLocation, true, true);
+                this.modelHandler.getDECENTModel(decentModelLocation, true, true);
             IModel preProcessArffxarffxModel =
-                modelHandler.getARFFxModel(arffxModelLocation, false, true);
+                this.modelHandler.getARFFxModel(arffxModelLocation, false, true);
             preProcessModule.getContext().getModelRepository().addModel(preProcessDecentModel);
             preProcessModule.getContext().getModelRepository().addModel(preProcessArffxarffxModel);
             execute(preProcessModule, logModelLocation);
@@ -217,7 +214,7 @@ public class DecentDataLoader implements SingleVersionLoader {
         try {
             IEolExecutableModule arffxToArffModule = loadModule(arffxToArffSource);
             IModel arffxToArffArffxModel =
-                modelHandler.getARFFxModel(arffxModelLocation, true, true);
+                this.modelHandler.getARFFxModel(arffxModelLocation, true, true);
             arffxToArffModule.getContext().getModelRepository().addModel(arffxToArffArffxModel);
             execute(arffxToArffModule, logModelLocation);
             arffxToArffArffxModel.dispose();
@@ -236,11 +233,11 @@ public class DecentDataLoader implements SingleVersionLoader {
         HashMap<String, Object> metaModelCache = new HashMap<>();
         for (String key : EPackage.Registry.INSTANCE.keySet()) {
             metaModelCache.put(key, EPackage.Registry.INSTANCE.get(key));
-        } ;
+        }
 
         for (String key : metaModelCache.keySet()) {
             EPackage.Registry.INSTANCE.remove(key);
-        } ;
+        }
 
         // Workaround to gernerate a usable URI. Absolute path is not
         // possible, therefore we need to construct a relative path
@@ -266,6 +263,9 @@ public class DecentDataLoader implements SingleVersionLoader {
                 createWekaInstance(dataSet, i);
             }
         }
+        if( dataSet == null ) {
+            throw new RuntimeException("Could not load EMF model");
+        }
 
         // Set class attribute
         Attribute classAttribute = dataSet.attribute(classAttributeName);
@@ -286,7 +286,7 @@ public class DecentDataLoader implements SingleVersionLoader {
      * @param i
      *            arffx model instance
      */
-    private void createWekaInstance(Instances dataSet, Instance i) {
+    private static void createWekaInstance(Instances dataSet, Instance i) {
         double[] values = new double[dataSet.numAttributes()];
         int j = 0;
 
@@ -330,10 +330,10 @@ public class DecentDataLoader implements SingleVersionLoader {
      *            arffx model
      * @return
      */
-    private Instances createWekaDataFormat(Model m) {
+    private static Instances createWekaDataFormat(Model m) {
 
         // Bad solution, can be enhanced (continue in for loop)
-        ArrayList<Attribute> datasetAttributes = new ArrayList<Attribute>();
+        ArrayList<Attribute> datasetAttributes = new ArrayList<>();
         for (de.ugoe.cs.cpdp.decentApp.models.arffx.Attribute attribute : m.getAttributes()) {
             String attributeName = attribute.getName();
 
@@ -346,14 +346,14 @@ public class DecentDataLoader implements SingleVersionLoader {
             // Is attribute a LABEL.* attribute?
             if (isLabel(attributeName)) {
                 // Classattribute
-                final ArrayList<String> classAttVals = new ArrayList<String>();
+                final ArrayList<String> classAttVals = new ArrayList<>();
                 classAttVals.add("false");
                 classAttVals.add("true");
                 wekaAttr = new Attribute(attributeName, classAttVals);
             }
             else if (isConfidenceLabel(attributeName)) {
                 // Is attribute a CONFIDENCE.* attribute?
-                ArrayList<String> labels = new ArrayList<String>();
+                ArrayList<String> labels = new ArrayList<>();
                 labels.add("high");
                 labels.add("low");
                 wekaAttr = new Attribute(attributeName, labels);
@@ -376,7 +376,7 @@ public class DecentDataLoader implements SingleVersionLoader {
      *            to test
      * @return
      */
-    private boolean isLabel(String value) {
+    private static boolean isLabel(String value) {
         if (value.length() >= 5 && value.substring(0, 5).equals("LABEL")) {
             return true;
         }
@@ -391,7 +391,7 @@ public class DecentDataLoader implements SingleVersionLoader {
      *            to test
      * @return
      */
-    private boolean isConfidenceLabel(String value) {
+    private static boolean isConfidenceLabel(String value) {
         if (value.length() >= 10 && value.substring(0, 10).equals("CONFIDENCE")) {
             return true;
         }
@@ -418,8 +418,8 @@ public class DecentDataLoader implements SingleVersionLoader {
      *            location of the log model
      * @throws Exception
      */
-    private void execute(IEolExecutableModule module, String logModelLocation) throws Exception {
-        IModel logModel = modelHandler.getLOGModel(logModelLocation, true, true);
+    private static void execute(IEolExecutableModule module, String logModelLocation) throws Exception {
+        IModel logModel = DECENTEpsilonModelHandler.getLOGModel(logModelLocation, true, true);
         module.getContext().getModelRepository().addModel(logModel);
         module.execute();
         logModel.dispose();
@@ -434,7 +434,7 @@ public class DecentDataLoader implements SingleVersionLoader {
      * @throws Exception
      * @throws URISyntaxException
      */
-    private IEolExecutableModule loadModule(String source) throws Exception, URISyntaxException {
+    private static IEolExecutableModule loadModule(String source) throws Exception, URISyntaxException {
 
         IEolExecutableModule module = null;
         if (source.endsWith("etl")) {
@@ -449,7 +449,7 @@ public class DecentDataLoader implements SingleVersionLoader {
             return null;
         }
 
-        module.parse(modelHandler.getFile(source));
+        module.parse(new File(source));
 
         if (module.getParseProblems().size() > 0) {
             Console.printerrln("Parse error occured...");
@@ -467,7 +467,7 @@ public class DecentDataLoader implements SingleVersionLoader {
      * 
      * @throws Exception
      */
-    private void registerMetaModels() throws Exception {
+    private static void registerMetaModels() throws Exception {
         String metaModelsPath = DECENTEpsilonModelHandler.metaPath;
         File metaModelsLocation = new File(metaModelsPath);
         for (File file : metaModelsLocation.listFiles()) {

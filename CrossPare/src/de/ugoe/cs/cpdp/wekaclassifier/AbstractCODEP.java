@@ -78,13 +78,13 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      */
     @Override
     public double classifyInstance(Instance instance) throws Exception {
-        if (codepClassifier == null) {
+        if (this.codepClassifier == null) {
             throw new RuntimeException("classifier must be trained first, call to buildClassifier missing");
         }
-        Instances tmp = new Instances("tmp", internalAttributes, 1);
-        tmp.setClass(internalAttributes.get(internalAttributes.size() - 1));
+        Instances tmp = new Instances("tmp", this.internalAttributes, 1);
+        tmp.setClass(this.internalAttributes.get(this.internalAttributes.size() - 1));
         tmp.add(createInternalInstance(instance));
-        return codepClassifier.classifyInstance(tmp.firstInstance());
+        return this.codepClassifier.classifyInstance(tmp.firstInstance());
     }
 
     /*
@@ -92,16 +92,17 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      * 
      * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         setupInternalClassifiers();
         setupInternalAttributes();
-        upscaleIndex = new HashMap<>();
+        this.upscaleIndex = new HashMap<>();
 
         int classifierIndex = 0;
         boolean secondAttempt = false;
         Instances traindataCopy = null;
-        for (Classifier classifier : internalClassifiers) {
+        for (Classifier classifier : this.internalClassifiers) {
             boolean trainingSuccessfull = false;
             do {
                 Console.traceln(Level.FINE,
@@ -130,11 +131,9 @@ public abstract class AbstractCODEP extends AbstractClassifier {
                         throw new RuntimeException("cannot be handled correctly yet, because upscaleIndex is a Map");
                         // traindataCopy = upscaleAttribute(traindataCopy, attrIndex);
                     }
-                    else {
-                        traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
-                    }
+                    traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
 
-                    upscaleIndex.put(classifierIndex, attrIndex);
+                    this.upscaleIndex.put(classifierIndex, attrIndex);
                     Console
                         .traceln(Level.FINE,
                                  "upscaled attribute " + attributeName + "; restarting training");
@@ -148,15 +147,15 @@ public abstract class AbstractCODEP extends AbstractClassifier {
         }
 
         Instances internalTraindata =
-            new Instances("internal instances", internalAttributes, traindata.size());
-        internalTraindata.setClass(internalAttributes.get(internalAttributes.size() - 1));
+            new Instances("internal instances", this.internalAttributes, traindata.size());
+        internalTraindata.setClass(this.internalAttributes.get(this.internalAttributes.size() - 1));
 
         for (Instance instance : traindata) {
             internalTraindata.add(createInternalInstance(instance));
         }
 
-        codepClassifier = getCodepClassifier();
-        codepClassifier.buildClassifier(internalTraindata);
+        this.codepClassifier = getCodepClassifier();
+        this.codepClassifier.buildClassifier(internalTraindata);
     }
 
     /**
@@ -170,13 +169,14 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      * @throws Exception
      *             thrown if an exception occurs during classification with an internal classifier
      */
+    @SuppressWarnings("boxing")
     private Instance createInternalInstance(Instance instance) throws Exception {
-        double[] values = new double[internalAttributes.size()];
+        double[] values = new double[this.internalAttributes.size()];
         Instances traindataCopy;
-        for (int j = 0; j < internalClassifiers.size(); j++) {
-            if (upscaleIndex.containsKey(j)) {
+        for (int j = 0; j < this.internalClassifiers.size(); j++) {
+            if (this.upscaleIndex.containsKey(j)) {
                 // instance value must be upscaled
-                int attrIndex = upscaleIndex.get(j);
+                int attrIndex = this.upscaleIndex.get(j);
                 double upscaledVal = instance.value(attrIndex) * WekaUtils.SCALER;
                 traindataCopy = new Instances(instance.dataset());
                 instance = new DenseInstance(instance.weight(), instance.toDoubleArray());
@@ -184,9 +184,9 @@ public abstract class AbstractCODEP extends AbstractClassifier {
                 traindataCopy.add(instance);
                 instance.setDataset(traindataCopy);
             }
-            values[j] = internalClassifiers.get(j).classifyInstance(instance);
+            values[j] = this.internalClassifiers.get(j).classifyInstance(instance);
         }
-        values[internalAttributes.size() - 1] = instance.classValue();
+        values[this.internalAttributes.size() - 1] = instance.classValue();
         return new DenseInstance(1.0, values);
     }
 
@@ -196,15 +196,15 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      * </p>
      */
     private void setupInternalAttributes() {
-        internalAttributes = new ArrayList<>();
-        for (Classifier classifier : internalClassifiers) {
-            internalAttributes.add(new Attribute(classifier.getClass().getName()));
+        this.internalAttributes = new ArrayList<>();
+        for (Classifier classifier : this.internalClassifiers) {
+            this.internalAttributes.add(new Attribute(classifier.getClass().getName()));
         }
-        final ArrayList<String> classAttVals = new ArrayList<String>();
+        final ArrayList<String> classAttVals = new ArrayList<>();
         classAttVals.add("0");
         classAttVals.add("1");
         final Attribute classAtt = new Attribute("bug", classAttVals);
-        internalAttributes.add(classAtt);
+        this.internalAttributes.add(classAtt);
     }
 
     /**
@@ -213,15 +213,15 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      * </p>
      */
     private void setupInternalClassifiers() {
-        internalClassifiers = new ArrayList<>(6);
+        this.internalClassifiers = new ArrayList<>(6);
         // create training data with prediction labels
 
-        internalClassifiers.add(new ADTree());
-        internalClassifiers.add(new BayesNet());
-        internalClassifiers.add(new DecisionTable());
-        internalClassifiers.add(new Logistic());
-        internalClassifiers.add(new MultilayerPerceptron());
-        internalClassifiers.add(new RBFNetwork());
+        this.internalClassifiers.add(new ADTree());
+        this.internalClassifiers.add(new BayesNet());
+        this.internalClassifiers.add(new DecisionTable());
+        this.internalClassifiers.add(new Logistic());
+        this.internalClassifiers.add(new MultilayerPerceptron());
+        this.internalClassifiers.add(new RBFNetwork());
     }
 
     /**

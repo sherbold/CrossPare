@@ -15,7 +15,6 @@
 package de.ugoe.cs.cpdp.decentApp;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import org.eclipse.emf.ecore.EPackage;
@@ -24,7 +23,9 @@ import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
+import org.eclipse.epsilon.eol.models.CachedModel;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.models.Model;
 
 import de.ugoe.cs.cpdp.decentApp.models.arffx.ARFFxPackage;
 import de.ugoe.cs.cpdp.decentApp.models.decent.DECENTPackage;
@@ -76,12 +77,12 @@ public class DECENTEpsilonModelHandler {
             {
                 Resource resource =
                     tool.loadResourceFromXMI(decentModelLocation, "decent", DECENTPackage.eINSTANCE);
-                tool.storeBinaryResourceContents(resource.getContents(), decentModelLocation +
+                ResourceTool.storeBinaryResourceContents(resource.getContents(), decentModelLocation +
                     "bin", "decentbin");
             }
 
             Resource resourceBin =
-                tool.loadResourceFromBinary(decentModelLocation + "bin", "decentbin",
+                ResourceTool.loadResourceFromBinary(decentModelLocation + "bin", "decentbin",
                                             DECENTPackage.eINSTANCE);
             // alternative pattern
             // model = createInMemoryEmfModel("DECENT", resourceLocation,
@@ -116,7 +117,7 @@ public class DECENTEpsilonModelHandler {
         DECENTResourceTool tool = new DECENTResourceTool();
         Resource resource =
             tool.loadResourceFromXMI(location + "/model.decent", "decent", DECENTPackage.eINSTANCE);
-        tool.storeBinaryResourceContents(resource.getContents(),
+        ResourceTool.storeBinaryResourceContents(resource.getContents(),
                                          location + "/model.decent" + "bin", "decentbin");
         restoreMetaModels();
     }
@@ -132,7 +133,7 @@ public class DECENTEpsilonModelHandler {
         unregisterMetaModels("");
         DECENTResourceTool tool = new DECENTResourceTool();
         Resource resource =
-            tool.loadResourceFromBinary(location + "/model.decentbin", "decentbin",
+            ResourceTool.loadResourceFromBinary(location + "/model.decentbin", "decentbin",
                                         DECENTPackage.eINSTANCE);
         restoreMetaModels();
         tool.storeResourceContents(resource.getContents(), location + "/model.decent", "decent");
@@ -169,12 +170,12 @@ public class DECENTEpsilonModelHandler {
             {
                 Resource resource =
                     tool.loadResourceFromXMI(arffxModelLocation, "arffx", ARFFxPackage.eINSTANCE);
-                tool.storeBinaryResourceContents(resource.getContents(),
+                ResourceTool.storeBinaryResourceContents(resource.getContents(),
                                                  arffxModelLocation + "bin", "arffxbin");
             }
 
             Resource resourceBin =
-                tool.loadResourceFromBinary(arffxModelLocation + "bin", "arffxbin",
+                ResourceTool.loadResourceFromBinary(arffxModelLocation + "bin", "arffxbin",
                                             ARFFxPackage.eINSTANCE);
             // alternative pattern
             // model = createInMemoryEmfModel("DECENT", resourceLocation,
@@ -209,7 +210,7 @@ public class DECENTEpsilonModelHandler {
         ARFFxResourceTool tool = new ARFFxResourceTool();
         Resource resource =
             tool.loadResourceFromXMI(location + "/model.arffx", "arffx", ARFFxPackage.eINSTANCE);
-        tool.storeBinaryResourceContents(resource.getContents(), location + "/model.arffx" + "bin",
+        ResourceTool.storeBinaryResourceContents(resource.getContents(), location + "/model.arffx" + "bin",
                                          "arffxbin");
         restoreMetaModels();
     }
@@ -225,7 +226,7 @@ public class DECENTEpsilonModelHandler {
         unregisterMetaModels("");
         ARFFxResourceTool tool = new ARFFxResourceTool();
         Resource resource =
-            tool.loadResourceFromBinary(location + "/model.arffxbin", "arffxbin",
+            ResourceTool.loadResourceFromBinary(location + "/model.arffxbin", "arffxbin",
                                         DECENTPackage.eINSTANCE);
         restoreMetaModels();
         tool.storeResourceContents(resource.getContents(), location + "/model.arffx", "arffx");
@@ -237,20 +238,21 @@ public class DECENTEpsilonModelHandler {
      * @param logModelLocation
      *            location of the log model file
      * @param read
-     *            indicates if the model should be read from
+     *            indicates if the model should be read on load
      * @param write
      *            indicates if data should be written in the model
      * @return EmFModel (IModel) instance from the log model, which was loaded
      * @throws Exception quick and dirty exception forwarding
      */
 
-    public IModel getLOGModel(String logModelLocation, boolean read, boolean write)
+    public static IModel getLOGModel(String logModelLocation, boolean read, boolean write)
         throws Exception
     {
+        boolean readOnLoad = read;
         if (!new File(logModelLocation).exists()) {
-            read = false;
+            readOnLoad = false;
         }
-        IModel model = createEmfModel("LOG", logModelLocation, metaPath + "LOG.ecore", read, write);
+        IModel model = createEmfModel("LOG", logModelLocation, metaPath + "LOG.ecore", readOnLoad, write);
         System.setProperty("epsilon.logFileAvailable", "true");
         return model;
     }
@@ -274,49 +276,35 @@ public class DECENTEpsilonModelHandler {
      */
 
     @SuppressWarnings("deprecation")
-    protected EmfModel createEmfModel(String name,
+    protected static EmfModel createEmfModel(String name,
                                       String model,
                                       String metamodel,
                                       boolean readOnLoad,
-                                      boolean storeOnDisposal) throws EolModelLoadingException,
-        URISyntaxException
+                                      boolean storeOnDisposal) throws EolModelLoadingException
     {
         EmfModel emfModel = new EmfModel();
         StringProperties properties = new StringProperties();
-        properties.put(EmfModel.PROPERTY_NAME, name);
-        properties.put(EmfModel.PROPERTY_ALIASES, name);
+        properties.put(Model.PROPERTY_NAME, name);
+        properties.put(Model.PROPERTY_ALIASES, name);
         properties.put(EmfModel.PROPERTY_FILE_BASED_METAMODEL_URI, "file:/" +
-            getFile(metamodel).getAbsolutePath());
-        properties.put(EmfModel.PROPERTY_MODEL_URI, "file:/" + getFile(model).getAbsolutePath());
+            new File(metamodel).getAbsolutePath());
+        properties.put(EmfModel.PROPERTY_MODEL_URI, "file:/" + new File(model).getAbsolutePath());
         properties.put(EmfModel.PROPERTY_IS_METAMODEL_FILE_BASED, "true");
-        properties.put(EmfModel.PROPERTY_READONLOAD, readOnLoad + "");
-        properties.put(EmfModel.PROPERTY_CACHED, "true");
-        properties.put(EmfModel.PROPERTY_STOREONDISPOSAL, storeOnDisposal + "");
+        properties.put(Model.PROPERTY_READONLOAD, readOnLoad + "");
+        properties.put(CachedModel.PROPERTY_CACHED, "true");
+        properties.put(Model.PROPERTY_STOREONDISPOSAL, storeOnDisposal + "");
         emfModel.load(properties, "");
         // System.out.println(emfModel.allContents());
         return emfModel;
     }
 
     /**
-     * Returns a new File instance from the given filename
-     * 
-     * @param fileName
-     *            of the file
-     * @return file name
-     * @throws URISyntaxException quick and dirty exception forwarding
-     */
-    public File getFile(String fileName) throws URISyntaxException {
-        ;
-        return new File(fileName);
-    }
-
-    /**
      * Restores the metamodels, so that they are registered in the EPackage registry
      */
     private void restoreMetaModels() {
-        for (String key : metaModelCache.keySet()) {
-            EPackage.Registry.INSTANCE.put(key, metaModelCache.get(key));
-        };
+        for (String key : this.metaModelCache.keySet()) {
+            EPackage.Registry.INSTANCE.put(key, this.metaModelCache.get(key));
+        }
     }
 
     /**
@@ -328,12 +316,12 @@ public class DECENTEpsilonModelHandler {
     private void unregisterMetaModels(String filter) {
         for (String key : EPackage.Registry.INSTANCE.keySet()) {
             if (key.contains(filter)) {
-                metaModelCache.put(key, EPackage.Registry.INSTANCE.get(key));
+                this.metaModelCache.put(key, EPackage.Registry.INSTANCE.get(key));
             }
-        };
-        for (String key : metaModelCache.keySet()) {
+        }
+        for (String key : this.metaModelCache.keySet()) {
             EPackage.Registry.INSTANCE.remove(key);
-        };
+        }
     }
 
     /**
@@ -343,7 +331,7 @@ public class DECENTEpsilonModelHandler {
      */
 
     public boolean isUseDECENTBinary() {
-        return useDECENTBinary;
+        return this.useDECENTBinary;
     }
 
     /**
@@ -351,7 +339,7 @@ public class DECENTEpsilonModelHandler {
      * 
      * @param useDECENTBinary if true, binary format is used
      */
-    public void setUseDECENTBinary(boolean useDECENTBinary) {
+    public void setUseDECENTBinary(@SuppressWarnings("hiding") boolean useDECENTBinary) {
         this.useDECENTBinary = useDECENTBinary;
     }
 
@@ -361,7 +349,7 @@ public class DECENTEpsilonModelHandler {
      * @return true if ARFFx
      */
     public boolean isUseARFFxBinary() {
-        return useARFFxBinary;
+        return this.useARFFxBinary;
     }
 
     /**
@@ -370,7 +358,7 @@ public class DECENTEpsilonModelHandler {
      * @param useARFFxBinary if true, binary format is used
      */
 
-    public void setUseARFFxBinary(boolean useARFFxBinary) {
+    public void setUseARFFxBinary(@SuppressWarnings("hiding") boolean useARFFxBinary) {
         this.useARFFxBinary = useARFFxBinary;
     }
 

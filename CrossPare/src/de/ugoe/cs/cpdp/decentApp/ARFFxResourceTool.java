@@ -33,7 +33,7 @@ public class ARFFxResourceTool extends ResourceTool {
      * validator.
      */
     public ARFFxResourceTool() {
-        super(ARFFxResourceTool.class.getName());
+        super();
         ARFFxPackageImpl.init();
 
         // Commented, because simulation has problems with this

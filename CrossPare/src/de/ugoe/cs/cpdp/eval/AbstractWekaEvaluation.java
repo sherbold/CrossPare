@@ -109,7 +109,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             if (trainer instanceof IWekaCompatibleTrainer) {
                 classifiers.add(((IWekaCompatibleTrainer) trainer).getClassifier());
                 experimentResults
-                    .add(new ExperimentResult(configurationName, productName,
+                    .add(new ExperimentResult(this.configurationName, productName,
                                               ((IWekaCompatibleTrainer) trainer).getName()));
             }
             else {
@@ -118,35 +118,35 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         }
 
         if (writeHeader) {
-            output.append("version,size_test,size_training");
+            this.output.append("version,size_test,size_training");
             for (ITrainer trainer : trainers) {
-                output.append(",succHe_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",succZi_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",succG75_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",succG60_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",error_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",recall_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",precision_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",fscore_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",gscore_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",mcc_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",auc_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",aucec_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",tpr_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",tnr_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",fpr_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",fnr_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",tp_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",fn_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",tn_" + ((IWekaCompatibleTrainer) trainer).getName());
-                output.append(",fp_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",succHe_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",succZi_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",succG75_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",succG60_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",error_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",recall_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",precision_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",fscore_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",gscore_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",mcc_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",auc_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",aucec_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",tpr_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",tnr_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",fpr_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",fnr_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",tp_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",fn_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",tn_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",fp_" + ((IWekaCompatibleTrainer) trainer).getName());
             }
-            output.append(StringTools.ENDLINE);
+            this.output.append(StringTools.ENDLINE);
         }
 
-        output.append(productName);
-        output.append("," + testdata.numInstances());
-        output.append("," + traindata.numInstances());
+        this.output.append(productName);
+        this.output.append("," + testdata.numInstances());
+        this.output.append("," + traindata.numInstances());
 
         Evaluation eval = null;
         Iterator<Classifier> classifierIter = classifiers.iterator();
@@ -166,26 +166,26 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
             double succG60 = gmeasure > 0.6 ? 1.0 : 0.0;
 
-            output.append("," + succHe);
-            output.append("," + succZi);
-            output.append("," + succG75);
-            output.append("," + succG60);
-            output.append("," + eval.errorRate());
-            output.append("," + eval.recall(1));
-            output.append("," + eval.precision(1));
-            output.append("," + eval.fMeasure(1));
-            output.append("," + gmeasure);
-            output.append("," + eval.matthewsCorrelationCoefficient(1));
-            output.append("," + eval.areaUnderROC(1));
-            output.append("," + aucec);
-            output.append("," + eval.truePositiveRate(1));
-            output.append("," + eval.trueNegativeRate(1));
-            output.append("," + eval.falsePositiveRate(1));
-            output.append("," + eval.falseNegativeRate(1));
-            output.append("," + eval.numTruePositives(1));
-            output.append("," + eval.numFalseNegatives(1));
-            output.append("," + eval.numTrueNegatives(1));
-            output.append("," + eval.numFalsePositives(1));
+            this.output.append("," + succHe);
+            this.output.append("," + succZi);
+            this.output.append("," + succG75);
+            this.output.append("," + succG60);
+            this.output.append("," + eval.errorRate());
+            this.output.append("," + eval.recall(1));
+            this.output.append("," + eval.precision(1));
+            this.output.append("," + eval.fMeasure(1));
+            this.output.append("," + gmeasure);
+            this.output.append("," + eval.matthewsCorrelationCoefficient(1));
+            this.output.append("," + eval.areaUnderROC(1));
+            this.output.append("," + aucec);
+            this.output.append("," + eval.truePositiveRate(1));
+            this.output.append("," + eval.trueNegativeRate(1));
+            this.output.append("," + eval.falsePositiveRate(1));
+            this.output.append("," + eval.falseNegativeRate(1));
+            this.output.append("," + eval.numTruePositives(1));
+            this.output.append("," + eval.numFalseNegatives(1));
+            this.output.append("," + eval.numTrueNegatives(1));
+            this.output.append("," + eval.numFalsePositives(1));
 
             ExperimentResult result = resultIter.next();
             result.setSizeTestData(testdata.numInstances());
@@ -211,8 +211,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
         }
 
-        output.append(StringTools.ENDLINE);
-        output.flush();
+        this.output.append(StringTools.ENDLINE);
+        this.output.flush();
     }
 
     /**
@@ -228,7 +228,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      *            the effort information for each instance in the test data
      * @return
      */
-    private double calculateReviewEffort(Instances testdata,
+    @SuppressWarnings("boxing")
+    private static double calculateReviewEffort(Instances testdata,
                                          Classifier classifier,
                                          List<Double> efforts)
     {
@@ -328,9 +329,9 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      *            the classifier
      * @return
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings({ "unused", "boxing" })
     @Deprecated
-    private double calculateReviewEffort(Instances testdata, Classifier classifier) {
+    private static double calculateReviewEffort(Instances testdata, Classifier classifier) {
 
         // attribute in the JURECZKO data and default
         Attribute loc = testdata.attribute("loc");
@@ -438,20 +439,20 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      */
     @Override
     public void setParameter(String parameters) {
-        if (output != null && !outputIsSystemOut) {
-            output.close();
+        if (this.output != null && !this.outputIsSystemOut) {
+            this.output.close();
         }
         if ("system.out".equals(parameters) || "".equals(parameters)) {
-            output = new PrintWriter(System.out);
-            outputIsSystemOut = true;
+            this.output = new PrintWriter(System.out);
+            this.outputIsSystemOut = true;
         }
         else {
             try {
-                output = new PrintWriter(new FileOutputStream(parameters));
-                outputIsSystemOut = false;
+                this.output = new PrintWriter(new FileOutputStream(parameters));
+                this.outputIsSystemOut = false;
                 int filenameStart = parameters.lastIndexOf('/') + 1;
                 int filenameEnd = parameters.lastIndexOf('.');
-                configurationName = parameters.substring(filenameStart, filenameEnd);
+                this.configurationName = parameters.substring(filenameStart, filenameEnd);
             }
             catch (FileNotFoundException e) {
                 throw new RuntimeException(e);

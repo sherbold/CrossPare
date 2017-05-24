@@ -60,11 +60,11 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
                 throw new InvalidParameterException("MORPH requires two doubles as parameter or no parameters to use default values");
             }
             try {
-                alpha = Double.parseDouble(values[0]);
-                beta = Double.parseDouble(values[1]);
+                this.alpha = Double.parseDouble(values[0]);
+                this.beta = Double.parseDouble(values[1]);
             }
             catch (NumberFormatException e) {
-                throw new InvalidParameterException("MORPH requires two doubles as parameter or no parameters to use default values");
+                throw new InvalidParameterException("MORPH requires two doubles as parameter or no parameters to use default values: " + e.getMessage());
             }
         }
     }
@@ -121,7 +121,7 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
         }
         for (int j = 0; j < data.numAttributes(); j++) {
             if (data.attribute(j) != data.classAttribute() && data.attribute(j).isNumeric()) {
-                double randVal = rand.nextDouble() * (beta - alpha) + alpha;
+                double randVal = this.rand.nextDouble() * (this.beta - this.alpha) + this.alpha;
                 instance.setValue(j, instance.value(j) +
                     randVal * (instance.value(j) - nearestUnlikeNeighbor.value(j)));
             }
@@ -139,7 +139,7 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
      *            data where the nearest unlike neighbor is determined from
      * @return nearest unlike instance
      */
-    public Instance getNearestUnlikeNeighbor(Instance instance, Instances data) {
+    public static Instance getNearestUnlikeNeighbor(Instance instance, Instances data) {
         Instance nearestUnlikeNeighbor = null;
 
         double[] instanceVector = new double[data.numAttributes() - 1];

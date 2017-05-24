@@ -158,13 +158,15 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 case "maxNodes":
                     this.maxNodes = Integer.parseInt(keyvalue[1]);
                     break;
+                default:
+                    throw new RuntimeException("Unknown Parameter for GPTraining: " + keyvalue[0]);
             }
         }
 
         this.classifier = new GPVVClassifier();
         ((GPVClassifier) this.classifier)
-            .configure(populationSize, initMinDepth, initMaxDepth, tournamentSize, maxGenerations,
-                       errorType2Weight, numberRuns, maxDepth, maxNodes);
+            .configure(this.populationSize, this.initMinDepth, this.initMaxDepth, this.tournamentSize, this.maxGenerations,
+                       this.errorType2Weight, this.numberRuns, this.maxDepth, this.maxNodes);
     }
 
     /*
@@ -177,7 +179,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
     @Override
     public void apply(SetUniqueList<Instances> traindataSet) {
         try {
-            classifier.buildClassifier(traindataSet);
+            this.classifier.buildClassifier(traindataSet);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -252,7 +254,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * @return the instance values
          */
         public double[][] getX() {
-            return instances_x;
+            return this.instances_x;
         }
 
         /**
@@ -263,7 +265,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * @return the instance labels
          */
         public boolean[] getY() {
-            return instances_y;
+            return this.instances_y;
         }
     }
 
@@ -349,6 +351,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * @param maxNodes
          *            maximal number of nodes of the S-expression tree
          */
+        @SuppressWarnings("hiding")
         public void configure(int populationSize,
                               int initMinDepth,
                               int initMaxDepth,
@@ -402,7 +405,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 new CrossPareGP(train.getX(), train.getY(), this.populationSize, this.initMinDepth,
                                 this.initMaxDepth, this.tournamentSize, this.errorType2Weight,
                                 this.maxDepth, this.maxNodes);
-            this.gp = problem.create();
+            this.gp = this.problem.create();
             this.gp.evolve(this.maxGenerations);
         }
 
@@ -465,6 +468,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
              * @throws InvalidConfigurationException
              *             thrown in case the problem cannot be created
              */
+            @SuppressWarnings("hiding")
             public CrossPareGP(double[][] instances,
                                boolean[] output,
                                int populationSize,
@@ -529,6 +533,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             /**
              * creates the genetic program
              */
+            @Override
             @SuppressWarnings("rawtypes")
             public GPGenotype create() throws InvalidConfigurationException {
                 GPConfiguration config = this.getGPConfiguration();
@@ -563,7 +568,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                                                                                             // numbers
                     };
 
-                CommandGene[] comb = (CommandGene[]) ArrayUtils.addAll(vars, funcs);
+                CommandGene[] comb = ArrayUtils.addAll(vars, funcs);
                 CommandGene[][] nodeSets =
                     { comb, };
 
@@ -648,6 +653,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
              * @param errorType2Weight
              *            weight of the error costs
              */
+            @SuppressWarnings("hiding")
             public CrossPareFitness(Variable[] x,
                                     double[][] instances,
                                     boolean[] output,
@@ -714,6 +720,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
              * 
              * @see org.jgap.gp.GPFitnessFunction#evaluate(org.jgap.gp.IGPProgram)
              */
+            @SuppressWarnings("boxing")
             @Override
             protected double evaluate(final IGPProgram program) {
                 double pfitness = 0.0f;
@@ -910,11 +917,12 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * @throws Exception
          *             thrown in case of a problem with the training
          */
+        @Override
         public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
 
             // each classifier is trained with one project from the set
             // then is evaluated on the rest
-            classifiers = new LinkedList<>();
+            this.classifiers = new LinkedList<>();
             for (int i = 0; i < traindataSet.size(); i++) {
 
                 // candidates we get out of evaluation
@@ -987,7 +995,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                     best = bestTrain;
                 }
                 // now we have the best classifier for this training data
-                classifiers.add(best);
+                this.classifiers.add(best);
             }
         }
 
@@ -999,13 +1007,14 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * 
          * @see de.ugoe.cs.cpdp.training.GPTraining.GPVClassifier#classifyInstance(weka.core.Instance)
          */
+        @SuppressWarnings("boxing")
         @Override
         public double classifyInstance(Instance instance) {
 
             int vote_positive = 0;
 
-            for (int i = 0; i < classifiers.size(); i++) {
-                Classifier classifier = classifiers.get(i);
+            for (int i = 0; i < this.classifiers.size(); i++) {
+                Classifier classifier = this.classifiers.get(i);
 
                 GPGenotype gp = ((GPRun) classifier).getGp();
                 Variable[] vars = ((GPRun) classifier).getVariables();
@@ -1020,12 +1029,10 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 }
             }
 
-            if (vote_positive >= (classifiers.size() / 2)) {
+            if (vote_positive >= (this.classifiers.size() / 2)) {
                 return 1.0;
             }
-            else {
-                return 0.0;
-            }
+            return 0.0;
         }
     }
 
@@ -1117,6 +1124,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * @param maxNodes
          *            maximal number of nodes of the S-expression tree
          */
+        @SuppressWarnings("hiding")
         public void configure(int populationSize,
                               int initMinDepth,
                               int initMaxDepth,
@@ -1210,7 +1218,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
                 }
 
                 // now we have the best classifier for this training data
-                classifiers.add(best);
+                this.classifiers.add(best);
 
             } /* endfor trainData */
 
@@ -1221,16 +1229,16 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             double smallest_error_count = Double.MAX_VALUE;
             double error_count;
             double errors[];
-            for (int j = 0; j < classifiers.size(); j++) {
+            for (int j = 0; j < this.classifiers.size(); j++) {
                 error_count = 0;
-                Classifier current = classifiers.get(j);
+                Classifier current = this.classifiers.get(j);
                 for (int i = 0; i < traindataSet.size(); i++) {
                     errors = this.evaluate((GPRun) current, traindataSet.get(i));
                     error_count = errors[0] + errors[1];
                 }
 
                 if (error_count < smallest_error_count) {
-                    best = current;
+                    this.best = current;
                 }
             }
         }
@@ -1243,11 +1251,11 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
             final Classifier classifier = new GPRun();
-            ((GPRun) classifier).configure(populationSize, initMinDepth, initMaxDepth,
-                                           tournamentSize, maxGenerations, errorType2Weight,
+            ((GPRun) classifier).configure(this.populationSize, this.initMinDepth, this.initMaxDepth,
+                                           this.tournamentSize, this.maxGenerations, this.errorType2Weight,
                                            this.maxDepth, this.maxNodes);
             classifier.buildClassifier(traindata);
-            classifiers.add(classifier);
+            this.classifiers.add(classifier);
         }
 
         /**
@@ -1266,6 +1274,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          *            the validation data
          * @return the type I and type II error rates
          */
+        @SuppressWarnings("boxing")
         public double[] evaluate(GPRun classifier, Instances evalData) {
             GPGenotype gp = classifier.getGp();
             Variable[] vars = classifier.getVariables();
@@ -1325,10 +1334,11 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
          * 
          * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
          */
+        @SuppressWarnings("boxing")
         @Override
         public double classifyInstance(Instance instance) {
-            GPGenotype gp = ((GPRun) best).getGp();
-            Variable[] vars = ((GPRun) best).getVariables();
+            GPGenotype gp = ((GPRun) this.best).getGp();
+            Variable[] vars = ((GPRun) this.best).getVariables();
 
             IGPProgram fitest = gp.getAllTimeBest(); // all time fitest
             for (int i = 0; i < instance.numAttributes() - 1; i++) {
@@ -1340,9 +1350,7 @@ public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrai
             if (classification < 0.5) {
                 return 1.0;
             }
-            else {
-                return 0.0;
-            }
+            return 0.0;
         }
     }
 }

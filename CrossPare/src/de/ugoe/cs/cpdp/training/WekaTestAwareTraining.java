@@ -39,25 +39,25 @@ public class WekaTestAwareTraining extends WekaBaseTraining implements ITestAwar
      */
     @Override
     public void apply(Instances testdata, Instances traindata) {
-        classifier = setupClassifier();
-        if (!(classifier instanceof ITestAwareClassifier)) {
+        this.classifier = setupClassifier();
+        if (!(this.classifier instanceof ITestAwareClassifier)) {
             throw new RuntimeException("classifier must implement the ITestAwareClassifier interface in order to be used as TestAwareTrainingStrategy");
         }
-        ((ITestAwareClassifier) classifier).setTestdata(testdata);
+        ((ITestAwareClassifier) this.classifier).setTestdata(testdata);
         try {
-            if (classifier == null) {
+            if (this.classifier == null) {
                 Console.traceln(Level.WARNING, String.format("classifier null!"));
             }
-            classifier.buildClassifier(traindata);
+            this.classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             if (e.getMessage().contains("Not enough training instances with class labels")) {
                 Console.traceln(Level.SEVERE,
                                 "failure due to lack of instances: " + e.getMessage());
                 Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
-                classifier = new ZeroR();
+                this.classifier = new ZeroR();
                 try {
-                    classifier.buildClassifier(traindata);
+                    this.classifier.buildClassifier(traindata);
                 }
                 catch (Exception e2) {
                     throw new RuntimeException(e2);

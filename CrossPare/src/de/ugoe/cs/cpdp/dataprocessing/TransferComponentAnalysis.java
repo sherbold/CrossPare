@@ -77,7 +77,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
      *            second instance
      * @return kernel value
      */
-    private double linearKernel(Instance x1, Instance x2) {
+    private static double linearKernel(Instance x1, Instance x2) {
         double value = 0.0d;
         for (int j = 0; j < x1.numAttributes(); j++) {
             if (j != x1.classIndex()) {
@@ -97,6 +97,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
      * @param traindata
      *            the training data
      */
+    @SuppressWarnings("boxing")
     private void applyTCA(Instances testdata, Instances traindata) {
         final int sizeTest = testdata.numInstances();
         final int sizeTrain = traindata.numInstances();
@@ -133,7 +134,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         SortUtils.quicksort(eigenvalues, index);
 
         final PrimitiveMatrix transformedKernel = kernelMatrix.multiplyRight(eigenvalueDecomposition
-            .getV().selectColumns(Arrays.copyOfRange(index, 0, reducedDimension)));
+            .getV().selectColumns(Arrays.copyOfRange(index, 0, this.reducedDimension)));
 
         // update testdata and traindata
         for (int j = testdata.numAttributes() - 1; j >= 0; j--) {
@@ -142,17 +143,17 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
                 traindata.deleteAttributeAt(j);
             }
         }
-        for (int j = 0; j < reducedDimension; j++) {
+        for (int j = 0; j < this.reducedDimension; j++) {
             testdata.insertAttributeAt(new Attribute("kerneldim" + j), 1);
             traindata.insertAttributeAt(new Attribute("kerneldim" + j), 1);
         }
         for (int i = 0; i < sizeTrain; i++) {
-            for (int j = 0; j < reducedDimension; j++) {
+            for (int j = 0; j < this.reducedDimension; j++) {
                 traindata.instance(i).setValue(j + 1, transformedKernel.get(i, j));
             }
         }
         for (int i = 0; i < sizeTest; i++) {
-            for (int j = 0; j < reducedDimension; j++) {
+            for (int j = 0; j < this.reducedDimension; j++) {
                 testdata.instance(i).setValue(j + 1, transformedKernel.get(i + sizeTrain, j));
             }
         }
@@ -169,7 +170,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
      *            the training data
      * @return kernel matrix
      */
-    private PrimitiveMatrix buildKernel(Instances testdata, Instances traindata) {
+    private static PrimitiveMatrix buildKernel(Instances testdata, Instances traindata) {
         final int kernelDim = traindata.numInstances() + testdata.numInstances();
 
         Builder<PrimitiveMatrix> kernelBuilder = PrimitiveMatrix.getBuilder(kernelDim, kernelDim);
@@ -218,7 +219,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
      *            number of instances of the training data
      * @return kernel norm matrix
      */
-    private PrimitiveMatrix buildKernelNormMatrix(final int dimTest, final int sizeTrain) {
+    private static PrimitiveMatrix buildKernelNormMatrix(final int dimTest, final int sizeTrain) {
         final double trainSquared = 1.0 / (sizeTrain * (double) sizeTrain);
         final double testSquared = 1.0 / (dimTest * (double) dimTest);
         final double trainTest = -1.0 / (sizeTrain * (double) dimTest);
@@ -266,7 +267,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
      *            number of instances of the training data
      * @return center matrix
      */
-    private PrimitiveMatrix buildCenterMatrix(final int sizeTest, final int sizeTrain) {
+    private static PrimitiveMatrix buildCenterMatrix(final int sizeTest, final int sizeTrain) {
         Builder<PrimitiveMatrix> centerMatrix =
             PrimitiveMatrix.getBuilder(sizeTest + sizeTrain, sizeTest + sizeTrain);
         for (int i = 0; i < centerMatrix.countRows(); i++) {
@@ -288,7 +289,7 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
      *            mu parameter
      * @return mu-Matrix
      */
-    private PrimitiveMatrix buildMuMatrix(final int sizeTest,
+    private static PrimitiveMatrix buildMuMatrix(final int sizeTest,
                                           final int sizeTrain,
                                           final double mu)
     {

@@ -49,7 +49,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
         /**
          * string that defines an entity
          */
-        private final String entity;
+        final String entity;
 
         /**
          * revision number of the entity
@@ -66,6 +66,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
          * @param revision
          *            the revision
          */
+        @SuppressWarnings("hiding")
         public EntityRevisionPair(String entity, int revision) {
             this.entity = entity;
             this.revision = revision;
@@ -81,9 +82,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
             if (!(other instanceof EntityRevisionPair)) {
                 return false;
             }
-            else {
-                return compareTo((EntityRevisionPair) other) == 0;
-            }
+            return compareTo((EntityRevisionPair) other) == 0;
         }
 
         /*
@@ -93,7 +92,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
          */
         @Override
         public int hashCode() {
-            return entity.hashCode() + revision;
+            return this.entity.hashCode() + this.revision;
         }
 
         /*
@@ -107,7 +106,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
             if (strCmp != 0) {
                 return strCmp;
             }
-            return Integer.compare(revision, other.revision);
+            return Integer.compare(this.revision, other.revision);
         }
 
         /*
@@ -117,7 +116,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
          */
         @Override
         public String toString() {
-            return entity + "@" + revision;
+            return this.entity + "@" + this.revision;
         }
     }
 
@@ -126,6 +125,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
      * 
      * @see de.ugoe.cs.cpdp.loader.SingleVersionLoader#load(java.io.File)
      */
+    @SuppressWarnings("boxing")
     @Override
     public Instances load(File file) {
         final String[] lines;
@@ -199,7 +199,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
         }
 
         // prepare weka instances
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
         lineSplit = lines[0].split(";");
         for (int j = metricsStartIndex; j <= metricsEndIndex; j++) {
             atts.add(new Attribute(lineSplit[j] + "_delta"));
@@ -207,7 +207,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
         for (int j = metricsStartIndex; j <= metricsEndIndex; j++) {
             atts.add(new Attribute(lineSplit[j] + "_abs"));
         }
-        final ArrayList<String> classAttVals = new ArrayList<String>();
+        final ArrayList<String> classAttVals = new ArrayList<>();
         classAttVals.add("0");
         classAttVals.add("1");
         final Attribute classAtt = new Attribute("bug", classAttVals);
@@ -218,7 +218,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
 
         // create data
         String lastFile = null;
-        double[] lastValues = null;
+        double[] lastValues = new double[numMetrics];
         int lastNumBugs = 0;
         for (Entry<EntityRevisionPair, Integer> entry : entityRevisionPairs.entrySet()) {
             try {
@@ -269,12 +269,13 @@ class AUDIChangeLoader implements SingleVersionLoader {
     }
 
     /*
+     * This is a dummy method for testing purposes
      * (non-Javadoc)
      * 
      * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load( java.io.File)
      */
-
-    public Instances load(File file, String dummy) {
+    @SuppressWarnings("static-method")
+    public Instances load(File file, @SuppressWarnings("unused") String dummy) {
         final String[] lines;
         try {
             lines = FileTools.getLinesFromFile(file.getAbsolutePath());
@@ -295,7 +296,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
         }
 
         // configure Instances
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
 
         String[] lineSplit = lines[0].split(";");
         // ignore first three/four and last two columns
@@ -309,7 +310,7 @@ class AUDIChangeLoader implements SingleVersionLoader {
         for (int j = 0; j < lineSplit.length - (offset + 2); j++) {
             atts.add(new Attribute(lineSplit[j + offset]));
         }
-        final ArrayList<String> classAttVals = new ArrayList<String>();
+        final ArrayList<String> classAttVals = new ArrayList<>();
         classAttVals.add("0");
         classAttVals.add("1");
         final Attribute classAtt = new Attribute("bug", classAttVals);

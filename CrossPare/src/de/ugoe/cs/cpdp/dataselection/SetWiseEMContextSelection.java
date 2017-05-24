@@ -53,7 +53,7 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
     @Override
     public void setParameter(String parameters) {
         if (parameters != null) {
-            project_context_factors = parameters.split(" ");
+            this.project_context_factors = parameters.split(" ");
         }
     }
 
@@ -70,7 +70,7 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
         final Instances data = this.normalizedCharacteristicInstances(testdata, traindataSet);
 
         final Instance targetInstance = data.instance(0);
-        final List<Instance> candidateInstances = new LinkedList<Instance>();
+        final List<Instance> candidateInstances = new LinkedList<>();
         for (int i = 1; i < data.numInstances(); i++) {
             candidateInstances.add(data.instance(i));
         }
@@ -147,7 +147,7 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
                                           SetUniqueList<Instances> traindataSet)
     {
         // setup weka Instances for clustering
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
 
         // we only want the project context factors
         for (String pcf : this.project_context_factors) {
@@ -192,11 +192,11 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
      * @param traindataSet
      * @param attribute
      */
-    protected void removeWrongContext(Instances testdata,
+    protected static void removeWrongContext(Instances testdata,
                                       SetUniqueList<Instances> traindataSet,
                                       String attribute)
     {
-        Set<Instances> remove = new HashSet<Instances>();
+        Set<Instances> remove = new HashSet<>();
         for (Instances traindata : traindataSet) {
             if (traindata.firstInstance().value(traindata.attribute(attribute)) != testdata
                 .firstInstance().value(testdata.attribute(attribute)))

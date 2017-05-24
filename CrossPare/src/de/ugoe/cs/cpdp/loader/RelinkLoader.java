@@ -21,12 +21,9 @@ public class RelinkLoader implements SingleVersionLoader {
 
     @Override
     public Instances load(File file) {
-        BufferedReader reader;
         Instances tmpData;
-        try {
-            reader = new BufferedReader(new FileReader(file));
+        try(BufferedReader reader = new BufferedReader(new FileReader(file));) {
             tmpData = new Instances(reader);
-            reader.close();
         }
         catch (IOException e) {
             throw new RuntimeException("error reading file: " + file.getName(), e);

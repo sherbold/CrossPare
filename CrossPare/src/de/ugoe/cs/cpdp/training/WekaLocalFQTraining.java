@@ -73,7 +73,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
      */
     @Override
     public Classifier getClassifier() {
-        return classifier;
+        return this.classifier;
     }
 
     /*
@@ -84,7 +84,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
     @Override
     public void apply(Instances traindata) {
         try {
-            classifier.buildClassifier(traindata);
+            this.classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -201,17 +201,18 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
          *            instance that is classified
          * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
          */
+        @SuppressWarnings("boxing")
         @Override
         public double classifyInstance(Instance instance) {
 
             double ret = 0;
             try {
                 // classinstance gets passed to classifier
-                Instances traindata = ctraindata.get(0);
+                Instances traindata = this.ctraindata.get(0);
                 Instance classInstance = createInstance(traindata, instance);
 
                 // this one keeps the class attribute
-                Instances traindata2 = ctraindata.get(1);
+                Instances traindata2 = this.ctraindata.get(1);
 
                 // remove class attribute before clustering
                 Remove filter = new Remove();
@@ -236,52 +237,52 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 double[][] distmat = new double[2 * FMAP.target_dims + 1][2 * FMAP.target_dims + 1];
                 distmat[0][0] = 0;
                 distmat[0][1] = dist.distance(clusterInstance,
-                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
+                                              this.cpivots.get(this.cpivotindices[0][0]));
                 distmat[0][2] = dist.distance(clusterInstance,
-                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
+                                              this.cpivots.get(this.cpivotindices[1][0]));
                 distmat[0][3] = dist.distance(clusterInstance,
-                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
+                                              this.cpivots.get(this.cpivotindices[0][1]));
                 distmat[0][4] = dist.distance(clusterInstance,
-                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                                              this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[1][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
+                distmat[1][0] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
                                               clusterInstance);
                 distmat[1][1] = 0;
-                distmat[1][2] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
-                distmat[1][3] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
-                distmat[1][4] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][0]),
-                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[1][2] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
+                                              this.cpivots.get(this.cpivotindices[1][0]));
+                distmat[1][3] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
+                                              this.cpivots.get(this.cpivotindices[0][1]));
+                distmat[1][4] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
+                                              this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[2][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
+                distmat[2][0] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
                                               clusterInstance);
-                distmat[2][1] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
+                distmat[2][1] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
+                                              this.cpivots.get(this.cpivotindices[0][0]));
                 distmat[2][2] = 0;
-                distmat[2][3] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
-                distmat[2][4] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][0]),
-                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[2][3] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
+                                              this.cpivots.get(this.cpivotindices[0][1]));
+                distmat[2][4] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
+                                              this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[3][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
+                distmat[3][0] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
                                               clusterInstance);
-                distmat[3][1] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
-                distmat[3][2] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
+                distmat[3][1] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
+                                              this.cpivots.get(this.cpivotindices[0][0]));
+                distmat[3][2] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
+                                              this.cpivots.get(this.cpivotindices[1][0]));
                 distmat[3][3] = 0;
-                distmat[3][4] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[0][1]),
-                                              this.cpivots.get((Integer) this.cpivotindices[1][1]));
+                distmat[3][4] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
+                                              this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[4][0] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
+                distmat[4][0] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
                                               clusterInstance);
-                distmat[4][1] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                              this.cpivots.get((Integer) this.cpivotindices[0][0]));
-                distmat[4][2] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                              this.cpivots.get((Integer) this.cpivotindices[1][0]));
-                distmat[4][3] = dist.distance(this.cpivots.get((Integer) this.cpivotindices[1][1]),
-                                              this.cpivots.get((Integer) this.cpivotindices[0][1]));
+                distmat[4][1] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
+                                              this.cpivots.get(this.cpivotindices[0][0]));
+                distmat[4][2] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
+                                              this.cpivots.get(this.cpivotindices[1][0]));
+                distmat[4][3] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
+                                              this.cpivots.get(this.cpivotindices[0][1]));
                 distmat[4][4] = 0;
 
                 /*
@@ -358,16 +359,16 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 dist = new EuclideanDistance(traindata2);
                 if (!this.ctraindata.containsKey(found_cnumber)) {
                     double min_distance = Double.MAX_VALUE;
-                    clusternumber = ctraindata.keySet().iterator();
+                    clusternumber = this.ctraindata.keySet().iterator();
                     while (clusternumber.hasNext()) {
                         cnumber = clusternumber.next();
-                        for (int i = 0; i < ctraindata.get(cnumber).size(); i++) {
+                        for (int i = 0; i < this.ctraindata.get(cnumber).size(); i++) {
                             if (dist.distance(instance,
-                                              ctraindata.get(cnumber).get(i)) <= min_distance)
+                                              this.ctraindata.get(cnumber).get(i)) <= min_distance)
                             {
                                 found_cnumber = cnumber;
                                 min_distance =
-                                    dist.distance(instance, ctraindata.get(cnumber).get(i));
+                                    dist.distance(instance, this.ctraindata.get(cnumber).get(i));
                             }
                         }
                     }
@@ -384,7 +385,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 }
 
                 // classify the passed instance with the cluster we found and its training data
-                ret = cclassifier.get(found_cnumber).classifyInstance(classInstance);
+                ret = this.cclassifier.get(found_cnumber).classifyInstance(classInstance);
 
             }
             catch (Exception e) {
@@ -399,6 +400,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
          * 
          * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
          */
+        @SuppressWarnings("boxing")
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
 
@@ -406,10 +408,10 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             // CNOTFOUND));
             this.show_biggest = true;
 
-            cclassifier = new HashMap<Integer, Classifier>();
-            ctraindata = new HashMap<Integer, Instances>();
-            cpivots = new HashMap<Integer, Instance>();
-            cpivotindices = new int[2][2];
+            this.cclassifier = new HashMap<>();
+            this.ctraindata = new HashMap<>();
+            this.cpivots = new HashMap<>();
+            this.cpivotindices = new int[2][2];
 
             // 1. copy traindata
             Instances train = new Instances(traindata);
@@ -440,12 +442,12 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             FMAP.setDistmat(distmat);
             FMAP.calculate();
 
-            cpivotindices = FMAP.getPivots();
+            this.cpivotindices = FMAP.getPivots();
 
             double[][] X = FMAP.getX();
 
             // quadtree payload generation
-            ArrayList<QuadTreePayload<Instance>> qtp = new ArrayList<QuadTreePayload<Instance>>();
+            ArrayList<QuadTreePayload<Instance>> qtp = new ArrayList<>();
 
             // we need these for the sizes of the quadrants
             double[] big =
@@ -468,7 +470,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                     small[1] = X[i][1];
                 }
                 QuadTreePayload<Instance> tmp =
-                    new QuadTreePayload<Instance>(X[i][0], X[i][1], train2.get(i));
+                    new QuadTreePayload<>(X[i][0], X[i][1], train2.get(i));
                 qtp.add(tmp);
             }
 
@@ -480,8 +482,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             QuadTree TREE = new QuadTree(null, qtp);
             QuadTree.size = train.size();
             QuadTree.alpha = Math.sqrt(train.size());
-            QuadTree.ccluster = new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
-            QuadTree.csize = new HashMap<Integer, ArrayList<Double[][]>>();
+            QuadTree.ccluster = new ArrayList<>();
+            QuadTree.csize = new HashMap<>();
 
             // Console.traceln(Level.INFO, String.format("Generate QuadTree with "+ QuadTree.size +
             // " size, Alpha: "+ QuadTree.alpha+ ""));
@@ -495,7 +497,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             QuadTree.recursiveSplit(TREE);
 
             // generate list of nodes sorted by density (childs only)
-            ArrayList<QuadTree> l = new ArrayList<QuadTree>(TREE.getList(TREE));
+            ArrayList<QuadTree> l = new ArrayList<>(TREE.getList(TREE));
 
             // recursive grid clustering (tree pruning), the values are stored in ccluster
             TREE.gridClustering(l);
@@ -510,11 +512,11 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 // if(current.size() > QuadTree.alpha) {
                 if (current.size() > 4) {
                     for (int j = 0; j < current.size(); j++) {
-                        if (!ctraindata.containsKey(i)) {
-                            ctraindata.put(i, new Instances(train2));
-                            ctraindata.get(i).delete();
+                        if (!this.ctraindata.containsKey(i)) {
+                            this.ctraindata.put(i, new Instances(train2));
+                            this.ctraindata.get(i).delete();
                         }
-                        ctraindata.get(i).add(current.get(j).getInst());
+                        this.ctraindata.get(i).add(current.get(j).getInst());
                     }
                 }
                 else {
@@ -525,7 +527,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
 
             // here we keep things we need later on
             // QuadTree sizes for later use (matching new instances)
-            this.csize = new HashMap<Integer, ArrayList<Double[][]>>(QuadTree.csize);
+            this.csize = new HashMap<>(QuadTree.csize);
 
             // pivot elements
             // this.cpivots.clear();
@@ -545,15 +547,15 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
 
             // train one classifier per cluster, we get the cluster number from the traindata
             int cnumber;
-            Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
+            Iterator<Integer> clusternumber = this.ctraindata.keySet().iterator();
             // cclassifier.clear();
 
             // int traindata_count = 0;
             while (clusternumber.hasNext()) {
                 cnumber = clusternumber.next();
-                cclassifier.put(cnumber, setupClassifier()); // this is the classifier used for the
+                this.cclassifier.put(cnumber, setupClassifier()); // this is the classifier used for the
                                                              // cluster
-                cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
+                this.cclassifier.get(cnumber).buildClassifier(this.ctraindata.get(cnumber));
                 // Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
                 // traindata_count += ctraindata.get(cnumber).size();
                 // Console.traceln(Level.INFO,
@@ -605,6 +607,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
          * @param value
          *            associated instace
          */
+        @SuppressWarnings("hiding")
         public QuadTreePayload(double x, double y, T value) {
             this.x = x;
             this.y = y;
@@ -630,7 +633,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
      * visualization of traditional and multimedia datasets (Vol. 24, No. 2, pp. 163-174). ACM.
      * </p>
      */
-    public class Fastmap {
+    private class Fastmap {
 
         /**
          * N x k Array, at the end, the i-th row will be the image of the i-th object
@@ -682,6 +685,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
          * @param O
          *            distance matrix
          */
+        @SuppressWarnings("hiding")
         public void setDistmat(double[][] O) {
             this.O = O;
             int N = O.length;
@@ -756,7 +760,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             double furthest = Double.MIN_VALUE;
             int ret = 0;
 
-            for (int i = 0; i < O.length; i++) {
+            for (int i = 0; i < this.O.length; i++) {
                 double dist = this.dist(i, index, this.col);
                 if (i != index && dist > furthest) {
                     furthest = dist;

@@ -63,7 +63,7 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
      */
     @Override
     public Classifier getClassifier() {
-        return classifier;
+        return this.classifier;
     }
 
     /*
@@ -74,7 +74,7 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
     @Override
     public void apply(Instances traindata) {
         try {
-            classifier.buildClassifier(traindata);
+            this.classifier.buildClassifier(traindata);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -149,12 +149,13 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
          * 
          * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
          */
+        @SuppressWarnings("boxing")
         @Override
         public double classifyInstance(Instance instance) {
             double ret = 0;
             try {
                 // 1. copy the instance (keep the class attribute)
-                Instances traindata = ctraindata.get(0);
+                Instances traindata = this.ctraindata.get(0);
                 Instance classInstance = createInstance(traindata, instance);
 
                 // 2. remove class attribute before clustering
@@ -167,11 +168,11 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
                 Instance clusterInstance = createInstance(traindata, instance);
 
                 // 4. match instance without class attribute to a cluster number
-                int cnum = clusterer.clusterInstance(clusterInstance);
+                int cnum = this.clusterer.clusterInstance(clusterInstance);
 
                 // 5. classify instance with class attribute to the classifier of that cluster
                 // number
-                ret = cclassifier.get(cnum).classifyInstance(classInstance);
+                ret = this.cclassifier.get(cnum).classifyInstance(classInstance);
 
             }
             catch (Exception e) {
@@ -186,6 +187,7 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
          * 
          * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
          */
+        @SuppressWarnings("boxing")
         @Override
         public void buildClassifier(Instances traindata) throws Exception {
 
@@ -199,17 +201,17 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
             train = Filter.useFilter(train, filter);
 
             // new objects
-            cclassifier = new HashMap<Integer, Classifier>();
-            ctraindata = new HashMap<Integer, Instances>();
+            this.cclassifier = new HashMap<>();
+            this.ctraindata = new HashMap<>();
 
             Instances ctrain;
             int maxNumClusters = train.size();
             boolean sufficientInstancesInEachCluster;
             do { // while(onlyTarget)
                 sufficientInstancesInEachCluster = true;
-                clusterer = new EM();
-                clusterer.setMaximumNumberOfClusters(maxNumClusters);
-                clusterer.buildClusterer(train);
+                this.clusterer = new EM();
+                this.clusterer.setMaximumNumberOfClusters(maxNumClusters);
+                this.clusterer.buildClusterer(train);
 
                 // 4. get cluster membership of our traindata
                 // AddCluster cfilter = new AddCluster();
@@ -218,7 +220,7 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
                 // Instances ctrain = Filter.useFilter(train, cfilter);
 
                 ctrain = new Instances(train);
-                ctraindata = new HashMap<>();
+                this.ctraindata = new HashMap<>();
 
                 // get traindata per cluster
                 for (int j = 0; j < ctrain.numInstances(); j++) {
@@ -228,16 +230,16 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
                     // Integer.parseInt(ctrain.get(j).stringValue(ctrain.get(j).numAttributes()-1).replace("cluster",
                     // "")) - 1;
 
-                    int cnumber = clusterer.clusterInstance(ctrain.get(j));
+                    int cnumber = this.clusterer.clusterInstance(ctrain.get(j));
                     // add training data to list of instances for this cluster number
-                    if (!ctraindata.containsKey(cnumber)) {
-                        ctraindata.put(cnumber, new Instances(traindata));
-                        ctraindata.get(cnumber).delete();
+                    if (!this.ctraindata.containsKey(cnumber)) {
+                        this.ctraindata.put(cnumber, new Instances(traindata));
+                        this.ctraindata.get(cnumber).delete();
                     }
-                    ctraindata.get(cnumber).add(traindata.get(j));
+                    this.ctraindata.get(cnumber).add(traindata.get(j));
                 }
 
-                for (Entry<Integer, Instances> entry : ctraindata.entrySet()) {
+                for (Entry<Integer, Instances> entry : this.ctraindata.entrySet()) {
                     Instances instances = entry.getValue();
                     int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
                     for (int count : counts) {
@@ -245,16 +247,16 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
                     }
                     sufficientInstancesInEachCluster &= instances.numInstances() >= 5;
                 }
-                maxNumClusters = clusterer.numberOfClusters() - 1;
+                maxNumClusters = this.clusterer.numberOfClusters() - 1;
             }
             while (!sufficientInstancesInEachCluster);
 
             // train one classifier per cluster, we get the cluster number from the training data
-            Iterator<Integer> clusternumber = ctraindata.keySet().iterator();
+            Iterator<Integer> clusternumber = this.ctraindata.keySet().iterator();
             while (clusternumber.hasNext()) {
                 int cnumber = clusternumber.next();
-                cclassifier.put(cnumber, setupClassifier());
-                cclassifier.get(cnumber).buildClassifier(ctraindata.get(cnumber));
+                this.cclassifier.put(cnumber, setupClassifier());
+                this.cclassifier.get(cnumber).buildClassifier(this.ctraindata.get(cnumber));
 
                 // Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
             }

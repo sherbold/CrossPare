@@ -20,7 +20,7 @@ public class ExperimentConfigurationTest {
 		validateConfigurations("testdata/configurations");
 	}
 	
-	public void validateConfigurations(String folder) {
+	public static void validateConfigurations(String folder) {
 		File configFolder = new File(folder);
 		boolean error = false;
 		for( File configFile : configFolder.listFiles() ) {

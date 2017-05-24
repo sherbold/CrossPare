@@ -58,7 +58,7 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
     @Override
     public void setParameter(String parameters) {
         if (!"".equals(parameters)) {
-            neighbors = Integer.parseInt(parameters);
+            this.neighbors = Integer.parseInt(parameters);
         }
     }
 
@@ -76,10 +76,10 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
         int i = 0;
         for (Instances traindata : traindataSet) {
             double distance = 0.0;
-            for (int rep = 0; rep < maxRep; rep++) {
+            for (int rep = 0; rep < this.maxRep; rep++) {
                 // sample instances
                 Instances sample = new Instances(testdata);
-                for (int j = 0; j < sampleSize; j++) {
+                for (int j = 0; j < this.sampleSize; j++) {
                     Instance inst =
                         new DenseInstance(testdata.instance(rand.nextInt(testdata.numInstances())));
                     inst.setDataset(sample);
@@ -104,13 +104,13 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
                 }
                 distance += eval.pctCorrect() / 100.0;
             }
-            distances[i++] = 2 * ((distance / maxRep) - 0.5);
+            distances[i++] = 2 * ((distance / this.maxRep) - 0.5);
         }
 
         // select closest neighbors
         final double[] distancesCopy = Arrays.copyOf(distances, distances.length);
         Arrays.sort(distancesCopy);
-        final double cutoffDistance = distancesCopy[neighbors];
+        final double cutoffDistance = distancesCopy[this.neighbors];
 
         for (i = traindataSet.size() - 1; i >= 0; i--) {
             if (distances[i] > cutoffDistance) {

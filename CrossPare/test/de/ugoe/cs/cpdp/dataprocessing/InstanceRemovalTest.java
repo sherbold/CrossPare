@@ -20,7 +20,7 @@ public class InstanceRemovalTest {
     
     @Test
     public void testApply() {
-        ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+        ArrayList<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("test"));
         attributes.add(new Attribute("another"));
         attributes.add(new Attribute("class"));

@@ -51,6 +51,7 @@ public class BayesNetWrapper extends BayesNet {
      * 
      * @see weka.classifiers.bayes.BayesNet#buildClassifier(weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         boolean trainingSuccessfull = false;
@@ -81,11 +82,9 @@ public class BayesNetWrapper extends BayesNet {
                     throw new RuntimeException("cannot be handled correctly yet, because upscaleIndex is a Map");
                     // traindataCopy = upscaleAttribute(traindataCopy, attrIndex);
                 }
-                else {
-                    traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
-                }
+                traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
 
-                upscaleIndex.add(attrIndex);
+                this.upscaleIndex.add(attrIndex);
                 Console.traceln(Level.FINE, "upscaled attribute " + attributeName +
                     "; restarting training of BayesNet");
                 secondAttempt = true;
@@ -103,7 +102,7 @@ public class BayesNetWrapper extends BayesNet {
     @Override
     public double[] distributionForInstance(Instance instance) throws Exception {
         Instances traindataCopy;
-        for (int attrIndex : upscaleIndex) {
+        for (int attrIndex : this.upscaleIndex) {
             // instance value must be upscaled
             double upscaledVal = instance.value(attrIndex) * WekaUtils.SCALER;
             traindataCopy = new Instances(instance.dataset());

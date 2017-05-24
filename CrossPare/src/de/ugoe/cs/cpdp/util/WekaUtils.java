@@ -79,7 +79,7 @@ public class WekaUtils {
          * @param num
          *            number of instance
          */
-        private DistChar(double mean, double std, double min, double max, int num) {
+        @SuppressWarnings("hiding") DistChar(double mean, double std, double min, double max, int num) {
             this.mean = mean;
             this.std = std;
             this.min = min;

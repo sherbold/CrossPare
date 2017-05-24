@@ -57,7 +57,7 @@ public class InformationGainFilter implements ISetWiseProcessingStrategy, IProce
     @Override
     public void setParameter(String parameters) {
         if (!"".equals(parameters)) {
-            featureRatio = Double.parseDouble(parameters);
+            this.featureRatio = Double.parseDouble(parameters);
         }
     }
 
@@ -94,13 +94,13 @@ public class InformationGainFilter implements ISetWiseProcessingStrategy, IProce
      */
     private void apply(Instances testdata, Instances traindata, boolean removeFromTest) {
         final Random rand = new Random(1);
-        final int removalNumber = (int) (featureRatio * (testdata.numAttributes() - 1));
+        final int removalNumber = (int) (this.featureRatio * (testdata.numAttributes() - 1));
 
         final int classIndex = testdata.classIndex();
 
         // sample instances
         final Instances sample = new Instances(testdata);
-        for (int j = 0; j < sampleSize; j++) {
+        for (int j = 0; j < this.sampleSize; j++) {
             Instance inst =
                 new DenseInstance(testdata.instance(rand.nextInt(testdata.numInstances())));
             inst.setDataset(sample);
@@ -126,7 +126,7 @@ public class InformationGainFilter implements ISetWiseProcessingStrategy, IProce
                 }
             }
         }
-        catch (Exception e) {
+        catch (@SuppressWarnings("unused") Exception e) {
             // throw new RuntimeException("could not determine information gain for all attributes",
             // e);
             // ignore exception; it is caused by attributes that are extremely

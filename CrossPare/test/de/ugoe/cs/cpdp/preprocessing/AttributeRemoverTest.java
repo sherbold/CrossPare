@@ -18,7 +18,7 @@ public class AttributeRemoverTest {
 
 	@Test
 	public void testApply_1() {
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		ArrayList<Attribute> attributes = new ArrayList<>();
 		attributes.add(new Attribute("attr1"));
 		attributes.add(new Attribute("class"));
 		attributes.add(new Attribute("attr2"));
@@ -49,7 +49,7 @@ public class AttributeRemoverTest {
 	
 	@Test
 	public void testApply_2() {
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		ArrayList<Attribute> attributes = new ArrayList<>();
 		attributes.add(new Attribute("attr1"));
 		attributes.add(new Attribute("class"));
 		attributes.add(new Attribute("attr2"));

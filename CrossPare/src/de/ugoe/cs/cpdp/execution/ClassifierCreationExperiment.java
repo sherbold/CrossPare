@@ -70,6 +70,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
      * @param config
      *            configuration of the experiment
      */
+    @SuppressWarnings("hiding")
     public ClassifierCreationExperiment(ExperimentConfiguration config) {
         this.config = config;
     }
@@ -79,17 +80,18 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
      * 
      * @see Runnable#run()
      */
+    @SuppressWarnings("boxing")
     @Override
     public void run() {
         final List<SoftwareVersion> versions = new LinkedList<>();
 
         boolean writeHeader = true;
 
-        for (IVersionLoader loader : config.getLoaders()) {
+        for (IVersionLoader loader : this.config.getLoaders()) {
             versions.addAll(loader.load());
         }
 
-        File resultsDir = new File(config.getResultsPath());
+        File resultsDir = new File(this.config.getResultsPath());
         if (!resultsDir.exists()) {
             resultsDir.mkdir();
         }
@@ -105,30 +107,30 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             // Give the dataset a new name
             testdata.setRelationName(testVersion.getProject());
 
-            for (IProcessesingStrategy processor : config.getPreProcessors()) {
+            for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 Console.traceln(Level.FINE,
                                 String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
-                                              config.getExperimentName(), versionCount,
+                                              this.config.getExperimentName(), versionCount,
                                               versions.size(), testVersion.getProject(),
                                               processor.getClass().getName()));
                 processor.apply(testdata, traindata);
             }
 
-            for (IPointWiseDataselectionStrategy dataselector : config.getPointWiseSelectors()) {
+            for (IPointWiseDataselectionStrategy dataselector : this.config.getPointWiseSelectors()) {
                 Console
                     .traceln(Level.FINE,
                              String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
-                                           config.getExperimentName(), versionCount,
+                                           this.config.getExperimentName(), versionCount,
                                            versions.size(), testVersion.getProject(),
                                            dataselector.getClass().getName()));
                 traindata = dataselector.apply(testdata, traindata);
             }
 
-            for (IProcessesingStrategy processor : config.getPostProcessors()) {
+            for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                 Console
                     .traceln(Level.FINE,
                              String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                           config.getExperimentName(), versionCount,
+                                           this.config.getExperimentName(), versionCount,
                                            versions.size(), testVersion.getProject(),
                                            processor.getClass().getName()));
                 processor.apply(testdata, traindata);
@@ -137,7 +139,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             // Trainerlist for evaluation later on
             List<ITrainer> allTrainers = new LinkedList<>();
 
-            for (ITrainingStrategy trainer : config.getTrainers()) {
+            for (ITrainingStrategy trainer : this.config.getTrainers()) {
 
                 // Add trainer to list for evaluation
                 allTrainers.add(trainer);
@@ -145,7 +147,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                 // Train classifier
                 trainer.apply(traindata);
 
-                if (config.getSaveClassifier()) {
+                if (this.config.getSaveClassifier()) {
                     // If classifier should be saved, train him and save him
                     // be careful with typecasting here!
                     IWekaCompatibleTrainer trainerToSave = (IWekaCompatibleTrainer) trainer;
@@ -162,19 +164,19 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                 }
             }
 
-            for (IEvaluationStrategy evaluator : config.getEvaluators()) {
+            for (IEvaluationStrategy evaluator : this.config.getEvaluators()) {
                 Console.traceln(Level.FINE,
                                 String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
-                                              config.getExperimentName(), versionCount,
+                                              this.config.getExperimentName(), versionCount,
                                               versions.size(), testVersion.getProject(),
                                               evaluator.getClass().getName()));
 
                 if (writeHeader) {
-                    evaluator.setParameter(config.getResultsPath() + "/" +
-                        config.getExperimentName() + ".csv");
+                    evaluator.setParameter(this.config.getResultsPath() + "/" +
+                        this.config.getExperimentName() + ".csv");
                 }
                 evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
-                                config.getResultStorages());
+                                this.config.getResultStorages());
                 writeHeader = false;
             }
 
@@ -182,7 +184,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
 
             Console.traceln(Level.INFO,
                             String.format("[%s] [%02d/%02d] %s: finished",
-                                          config.getExperimentName(), versionCount, versions.size(),
+                                          this.config.getExperimentName(), versionCount, versions.size(),
                                           testVersion.getProject()));
 
         }

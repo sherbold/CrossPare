@@ -74,16 +74,16 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         String[] params = parameters.split(" ");
 
         // first part of the params is the classifierName (e.g. SMORBF)
-        classifierName = params[0];
+        this.classifierName = params[0];
 
         // the following parameters can be copied from weka!
 
         // second param is classifierClassName (e.g. weka.classifiers.functions.SMO)
-        classifierClassName = params[1];
+        this.classifierClassName = params[1];
 
         // rest are params to the specified classifier (e.g. -K
         // weka.classifiers.functions.supportVector.RBFKernel)
-        classifierParams = Arrays.copyOfRange(params, 2, params.length);
+        this.classifierParams = Arrays.copyOfRange(params, 2, params.length);
 
         // classifier = setupClassifier();
     }
@@ -95,7 +95,7 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
      */
     @Override
     public Classifier getClassifier() {
-        return classifier;
+        return this.classifier;
     }
 
     /**
@@ -109,21 +109,21 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         Classifier cl = null;
         try {
             @SuppressWarnings("rawtypes")
-            Class c = Class.forName(classifierClassName);
+            Class c = Class.forName(this.classifierClassName);
             Classifier obj = (Classifier) c.newInstance();
 
             // Filter out -CVPARAM, these are special because they do not belong to the Weka
             // classifier class as parameters
-            String[] param = Arrays.copyOf(classifierParams, classifierParams.length);
+            String[] param = Arrays.copyOf(this.classifierParams, this.classifierParams.length);
             String[] cvparam = { };
             boolean cv = false;
-            for (int i = 0; i < classifierParams.length; i++) {
-                if (classifierParams[i].equals("-CVPARAM")) {
+            for (int i = 0; i < this.classifierParams.length; i++) {
+                if (this.classifierParams[i].equals("-CVPARAM")) {
                     // rest of array are cvparam
-                    cvparam = Arrays.copyOfRange(classifierParams, i + 1, classifierParams.length);
+                    cvparam = Arrays.copyOfRange(this.classifierParams, i + 1, this.classifierParams.length);
 
                     // before this we have normal params
-                    param = Arrays.copyOfRange(classifierParams, 0, i);
+                    param = Arrays.copyOfRange(this.classifierParams, 0, i);
 
                     cv = true;
                     break;
@@ -136,9 +136,9 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
 
             if (cl instanceof Vote) {
                 Vote votingClassifier = (Vote) cl;
-                for (Classifier classifier : votingClassifier.getClassifiers()) {
-                    if (classifier instanceof BayesNet) {
-                        ((BayesNet) classifier).setUseADTree(false);
+                for (Classifier clf : votingClassifier.getClassifiers()) {
+                    if (clf instanceof BayesNet) {
+                        ((BayesNet) clf).setUseADTree(false);
                     }
                 }
             }
@@ -187,7 +187,7 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
      */
     @Override
     public String getName() {
-        return classifierName;
+        return this.classifierName;
     }
 
 }

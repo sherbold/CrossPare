@@ -57,15 +57,16 @@ public class SimulationFilter implements IProcessesingStrategy {
      * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
      * weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void apply(Instances testdata, Instances traindata) {
         Instances newDataSet = new Instances(traindata);
         traindata.delete();
 
-        HashMap<Double, Instance> artifactNames = new HashMap<Double, Instance>();
+        HashMap<Double, Instance> artifactNames = new HashMap<>();
 
         // This is to add all data, where the first occurence of the file has a bug
-        ArrayList<Double> firstOccurenceArtifactNames = new ArrayList<Double>();
+        ArrayList<Double> firstOccurenceArtifactNames = new ArrayList<>();
 
         // Sort dataset (StateID is connected to the date of commit: Lower StateID
         // means earlier commit than a higher stateID)
@@ -116,7 +117,7 @@ public class SimulationFilter implements IProcessesingStrategy {
         // the new dataset
 
         double[] artifactNamesinNewDataSet = traindata.attributeToDoubleArray(0);
-        HashMap<Double, Instance> artifactNamesCopy = new HashMap<Double, Instance>(artifactNames);
+        HashMap<Double, Instance> artifactNamesCopy = new HashMap<>(artifactNames);
 
         for (Double artifactName : artifactNames.keySet()) {
 

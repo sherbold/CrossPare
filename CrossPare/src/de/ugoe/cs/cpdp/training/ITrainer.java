@@ -24,5 +24,5 @@ import de.ugoe.cs.cpdp.IParameterizable;
  * @author Steffen Herbold
  */
 public interface ITrainer extends IParameterizable {
-
+    // marker interface
 }

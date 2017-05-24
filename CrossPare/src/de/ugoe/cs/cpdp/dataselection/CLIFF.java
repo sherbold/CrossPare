@@ -46,7 +46,7 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
     @Override
     public void setParameter(String parameters) {
         if (parameters != null) {
-            percentage = Double.parseDouble(parameters);
+            this.percentage = Double.parseDouble(parameters);
         }
     }
 
@@ -121,7 +121,7 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
         }
         double[] sortedPower = powerEntity.clone();
         Arrays.sort(sortedPower);
-        double cutOff = sortedPower[(int) (data.numInstances() * (1 - percentage))];
+        double cutOff = sortedPower[(int) (data.numInstances() * (1 - this.percentage))];
 
         final Instances selected = new Instances(data);
         selected.delete();
@@ -145,11 +145,11 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
      * @return the ranges for the attribute
      */
     private double[] getRanges(Instances data, int j) {
-        double[] values = new double[numRanges + 1];
-        for (int k = 0; k < numRanges; k++) {
-            values[k] = data.kthSmallestValue(j, (int) (data.size() * (k + 1.0) / numRanges));
+        double[] values = new double[this.numRanges + 1];
+        for (int k = 0; k < this.numRanges; k++) {
+            values[k] = data.kthSmallestValue(j, (int) (data.size() * (k + 1.0) / this.numRanges));
         }
-        values[numRanges] = data.attributeStats(j).numericStats.max;
+        values[this.numRanges] = data.attributeStats(j).numericStats.max;
         return values;
     }
 
@@ -167,9 +167,9 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
      * @return probabilities for each range
      */
     private double[] getRangeProbabilities(Instances data, int j, double[] ranges) {
-        double[] probDefectRange = new double[numRanges];
-        int[] countRange = new int[numRanges];
-        int[] countDefect = new int[numRanges];
+        double[] probDefectRange = new double[this.numRanges];
+        int[] countRange = new int[this.numRanges];
+        int[] countDefect = new int[this.numRanges];
         for (int i = 0; i < data.numInstances(); i++) {
             int range = determineRange(ranges, data.instance(i).value(j));
             countRange[range]++;
@@ -178,7 +178,7 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
             }
 
         }
-        for (int k = 0; k < numRanges; k++) {
+        for (int k = 0; k < this.numRanges; k++) {
             probDefectRange[k] = ((double) countDefect[k]) / countRange[k];
         }
         return probDefectRange;
@@ -196,7 +196,7 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
      * @return index of the range
      */
     private int determineRange(double[] ranges, double value) {
-        for (int k = 0; k < numRanges; k++) {
+        for (int k = 0; k < this.numRanges; k++) {
             if (value <= ranges[k + 1]) {
                 return k;
             }

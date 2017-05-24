@@ -46,12 +46,13 @@ public class TurhanFilter implements IPointWiseDataselectionStrategy {
      */
     @Override
     public void setParameter(String parameters) {
-        k = Integer.parseInt(parameters);
+        this.k = Integer.parseInt(parameters);
     }
 
     /**
      * @see IPointWiseDataselectionStrategy#apply(weka.core.Instances, weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public Instances apply(Instances testdata, Instances traindata) {
         final Attribute classAttribute = testdata.classAttribute();
@@ -83,11 +84,11 @@ public class TurhanFilter implements IPointWiseDataselectionStrategy {
 
             double farthestClosestDistance = Double.MAX_VALUE;
             int farthestClosestIndex = 0;
-            double[] closestDistances = new double[k];
+            double[] closestDistances = new double[this.k];
             for (int m = 0; m < closestDistances.length; m++) {
                 closestDistances[m] = Double.MAX_VALUE;
             }
-            int[] closestIndex = new int[k];
+            int[] closestIndex = new int[this.k];
 
             for (int n = 0; n < traindata.numInstances(); n++) {
                 double distance = MathArrays.distance(targetVector, trainDoubles[n]);

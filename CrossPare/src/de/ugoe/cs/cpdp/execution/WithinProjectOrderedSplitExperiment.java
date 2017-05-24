@@ -60,6 +60,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
      * @param config
      *            configuration of the experiment
      */
+    @SuppressWarnings("hiding")
     public WithinProjectOrderedSplitExperiment(ExperimentConfiguration config) {
         this.config = config;
     }
@@ -69,15 +70,16 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
      * 
      * @see Runnable#run()
      */
+    @SuppressWarnings("boxing")
     @Override
     public void run() {
         final List<SoftwareVersion> versions = new LinkedList<>();
 
-        for (IVersionLoader loader : config.getLoaders()) {
+        for (IVersionLoader loader : this.config.getLoaders()) {
             versions.addAll(loader.load());
         }
 
-        for (IVersionFilter filter : config.getVersionFilters()) {
+        for (IVersionFilter filter : this.config.getVersionFilters()) {
             filter.apply(versions);
         }
         boolean writeHeader = true;
@@ -86,31 +88,31 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
         int numTrainers = 0;
 
         for (SoftwareVersion testVersion : versions) {
-            if (isVersion(testVersion, config.getTestVersionFilters())) {
+            if (isVersion(testVersion, this.config.getTestVersionFilters())) {
                 testVersionCount++;
             }
         }
 
-        numTrainers += config.getSetWiseTrainers().size();
-        numTrainers += config.getSetWiseTestdataAwareTrainers().size();
-        numTrainers += config.getTrainers().size();
-        numTrainers += config.getTestAwareTrainers().size();
+        numTrainers += this.config.getSetWiseTrainers().size();
+        numTrainers += this.config.getSetWiseTestdataAwareTrainers().size();
+        numTrainers += this.config.getTrainers().size();
+        numTrainers += this.config.getTestAwareTrainers().size();
 
         // sort versions
         Collections.sort(versions);
 
         for (SoftwareVersion testVersion : versions) {
-            if (isVersion(testVersion, config.getTestVersionFilters())) {
+            if (isVersion(testVersion, this.config.getTestVersionFilters())) {
                 Console.traceln(Level.INFO,
                                 String.format("[%s] [%02d/%02d] %s: starting",
-                                              config.getExperimentName(), versionCount,
+                                              this.config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
-                if (numResultsAvailable >= numTrainers * config.getRepetitions()) {
+                if (numResultsAvailable >= numTrainers * this.config.getRepetitions()) {
                     Console.traceln(Level.INFO,
                                     String.format(
                                                   "[%s] [%02d/%02d] %s: results already available; skipped",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion()));
                     versionCount++;
                     continue;
@@ -122,12 +124,12 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
 
                 // now split data into parts
                 double percentage = 0.5; // 0.5 as default value
-                String param = config.getExecutionStrategyParameters();
-                if (config.getExecutionStrategyParameters() != null) {
+                String param = this.config.getExecutionStrategyParameters();
+                if (this.config.getExecutionStrategyParameters() != null) {
                     try {
                         percentage = Double.parseDouble(param);
                     }
-                    catch (NumberFormatException e) {
+                    catch (@SuppressWarnings("unused") NumberFormatException e) {
                         throw new RuntimeException("invalid execution strategy parameter, must be numeric: " +
                             param);
                     }
@@ -146,78 +148,78 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                     }
                 }
 
-                for (IProcessesingStrategy processor : config.getPreProcessors()) {
+                for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                     Console.traceln(Level.FINE,
                                     String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
                     processor.apply(testdata, traindata);
                 }
-                for (IPointWiseDataselectionStrategy dataselector : config
+                for (IPointWiseDataselectionStrategy dataselector : this.config
                     .getPointWiseSelectors())
                 {
                     Console.traceln(Level.FINE,
                                     String.format(
                                                   "[%s] [%02d/%02d] %s: applying pointwise selection %s",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   dataselector.getClass().getName()));
                     traindata = dataselector.apply(testdata, traindata);
                 }
-                for (IProcessesingStrategy processor : config.getPostProcessors()) {
+                for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                     Console.traceln(Level.FINE,
                                     String.format(
                                                   "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
                     processor.apply(testdata, traindata);
                 }
-                for (ITrainingStrategy trainer : config.getTrainers()) {
+                for (ITrainingStrategy trainer : this.config.getTrainers()) {
                     Console.traceln(Level.FINE,
                                     String.format("[%s] [%02d/%02d] %s: applying trainer %s",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
                     trainer.apply(traindata);
                 }
-                for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
+                for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
                     Console.traceln(Level.FINE,
                                     String.format("[%s] [%02d/%02d] %s: applying trainer %s",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
                     trainer.apply(testdata, traindata);
                 }
-                File resultsDir = new File(config.getResultsPath());
+                File resultsDir = new File(this.config.getResultsPath());
                 if (!resultsDir.exists()) {
                     resultsDir.mkdir();
                 }
-                for (IEvaluationStrategy evaluator : config.getEvaluators()) {
+                for (IEvaluationStrategy evaluator : this.config.getEvaluators()) {
                     Console.traceln(Level.FINE,
                                     String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
-                                                  config.getExperimentName(), versionCount,
+                                                  this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   evaluator.getClass().getName()));
                     List<ITrainer> allTrainers = new LinkedList<>();
-                    for (ITrainingStrategy trainer : config.getTrainers()) {
+                    for (ITrainingStrategy trainer : this.config.getTrainers()) {
                         allTrainers.add(trainer);
                     }
-                    for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
+                    for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
                         allTrainers.add(trainer);
                     }
                     if (writeHeader) {
-                        evaluator.setParameter(config.getResultsPath() + "/" +
-                            config.getExperimentName() + ".csv");
+                        evaluator.setParameter(this.config.getResultsPath() + "/" +
+                            this.config.getExperimentName() + ".csv");
                     }
                     evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
-                                    config.getResultStorages());
+                                    this.config.getResultStorages());
                     writeHeader = false;
                 }
                 Console.traceln(Level.INFO,
                                 String.format("[%s] [%02d/%02d] %s: finished",
-                                              config.getExperimentName(), versionCount,
+                                              this.config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
                 versionCount++;
             }
@@ -233,7 +235,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
      *            list of the filters
      * @return true, if the version passes all filters, false otherwise
      */
-    private boolean isVersion(SoftwareVersion version, List<IVersionFilter> filters) {
+    private static boolean isVersion(SoftwareVersion version, List<IVersionFilter> filters) {
         boolean result = true;
         for (IVersionFilter filter : filters) {
             result &= !filter.apply(version);
@@ -251,30 +253,30 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
      * @return
      */
     private int resultsAvailable(SoftwareVersion version) {
-        if (config.getResultStorages().isEmpty()) {
+        if (this.config.getResultStorages().isEmpty()) {
             return 0;
         }
 
         List<ITrainer> allTrainers = new LinkedList<>();
-        for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
+        for (ISetWiseTrainingStrategy setwiseTrainer : this.config.getSetWiseTrainers()) {
             allTrainers.add(setwiseTrainer);
         }
-        for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
+        for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
             .getSetWiseTestdataAwareTrainers())
         {
             allTrainers.add(setwiseTestdataAwareTrainer);
         }
-        for (ITrainingStrategy trainer : config.getTrainers()) {
+        for (ITrainingStrategy trainer : this.config.getTrainers()) {
             allTrainers.add(trainer);
         }
-        for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
+        for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
             allTrainers.add(trainer);
         }
 
         int available = Integer.MAX_VALUE;
-        for (IResultStorage storage : config.getResultStorages()) {
+        for (IResultStorage storage : this.config.getResultStorages()) {
             String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
-            int curAvailable = storage.containsResult(config.getExperimentName(),
+            int curAvailable = storage.containsResult(this.config.getExperimentName(),
                                                       version.getVersion(), classifierName);
             if (curAvailable < available) {
                 available = curAvailable;

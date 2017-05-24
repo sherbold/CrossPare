@@ -37,17 +37,19 @@ public class CVWekaEvaluation extends AbstractWekaEvaluation {
     @Override
     protected Evaluation createEvaluator(Instances testdata, Classifier classifier) {
         PrintStream errStr = System.err;
-        System.setErr(new PrintStream(new NullOutputStream()));
-        try {
-            final Evaluation eval = new Evaluation(testdata);
-            eval.crossValidateModel(classifier, testdata, 10, new Random(1));
-            return eval;
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        finally {
-            System.setErr(errStr);
+        try(PrintStream nullStream = new PrintStream(new NullOutputStream());) {
+            System.setErr(nullStream);
+            try {
+                final Evaluation eval = new Evaluation(testdata);
+                eval.crossValidateModel(classifier, testdata, 10, new Random(1));
+                return eval;
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            finally {
+                System.setErr(errStr);
+            }
         }
     }
 

@@ -35,7 +35,7 @@ public abstract class FileWatcher extends TimerTask {
      * 
      * @param file file that is watched
      */
-    public FileWatcher(File file) {
+    public FileWatcher(@SuppressWarnings("hiding") File file) {
         this.file = file;
         this.timeStamp = file.lastModified();
     }
@@ -43,14 +43,15 @@ public abstract class FileWatcher extends TimerTask {
     /**
      * Watches a file and executes the onChange Method if a file is changed
      */
+    @Override
     public final void run() {
-        long timeStamp = file.lastModified();
+        long lastModified = this.file.lastModified();
 
-        if (this.timeStamp != timeStamp) {
-            this.timeStamp = timeStamp;
-            onChange(file);
+        if (this.timeStamp != lastModified) {
+            this.timeStamp = lastModified;
+            onChange(this.file);
         }
     }
 
-    protected abstract void onChange(File file);
+    protected abstract void onChange(File changedFile);
 }

@@ -39,12 +39,13 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
      * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
         final Instances data = normalizedCharacteristicInstances(testdata, traindataSet);
 
-        final Set<Integer> selected = new HashSet<Integer>();
-        for (int i = 0; i < k; i++) {
+        final Set<Integer> selected = new HashSet<>();
+        for (int i = 0; i < this.k; i++) {
             int closestIndex = getClosest(data);
 
             selected.add(closestIndex);
@@ -66,7 +67,7 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
      *            data set
      * @return index of the closest instance
      */
-    private int getClosest(Instances data) {
+    private static int getClosest(Instances data) {
         double closestDistance = Double.MAX_VALUE;
         int closestIndex = 1;
         for (int i = 1; i < data.numInstances(); i++) {
@@ -90,7 +91,7 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
     public void setParameter(String parameters) {
         if (!"".equals(parameters)) {
             final String[] split = parameters.split(" ");
-            k = Integer.parseInt(split[0]);
+            this.k = Integer.parseInt(split[0]);
             String str = "";
             for (int i = 1; i < split.length; i++) {
                 str += split[i];

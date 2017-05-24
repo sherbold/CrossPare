@@ -74,7 +74,7 @@ public class FixClass extends AbstractClassifier {
      */
     @Override
     public void setOptions(String[] options) throws Exception {
-        fixedClassValue = Double.parseDouble(Utils.getOption('C', options));
+        this.fixedClassValue = Double.parseDouble(Utils.getOption('C', options));
     }
 
     /*
@@ -84,7 +84,7 @@ public class FixClass extends AbstractClassifier {
      */
     @Override
     public double classifyInstance(Instance instance) {
-        return fixedClassValue;
+        return this.fixedClassValue;
     }
 
     /*

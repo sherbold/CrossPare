@@ -18,9 +18,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 
-import de.lmu.ifi.dbs.elki.logging.Logging.Level;
 import de.ugoe.cs.cpdp.util.SortUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
@@ -93,10 +93,10 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
         String lamdaString = Utils.getOption('L', options);
         String boostingIterString = Utils.getOption('B', options);
         if (!boostingIterString.isEmpty()) {
-            boostingIterations = Integer.parseInt(boostingIterString);
+            this.boostingIterations = Integer.parseInt(boostingIterString);
         }
         if (!lamdaString.isEmpty()) {
-            lamda = Double.parseDouble(lamdaString);
+            this.lamda = Double.parseDouble(lamdaString);
         }
     }
 
@@ -105,6 +105,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      * 
      * @see de.ugoe.cs.cpdp.wekaclassifier.ITestAwareClassifier#setTestdata(weka.core.Instances)
      */
+    @SuppressWarnings("hiding")
     @Override
     public void setTestdata(Instances testdata) {
         this.testdata = testdata;
@@ -115,11 +116,12 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      * 
      * @see weka.classifiers.AbstractClassifier#classifyInstance(weka.core.Instance)
      */
+    @SuppressWarnings("boxing")
     @Override
     public double classifyInstance(Instance instance) throws Exception {
         double classification = 0.0;
-        Iterator<Classifier> classifierIter = boostingClassifiers.iterator();
-        Iterator<Double> weightIter = classifierWeights.iterator();
+        Iterator<Classifier> classifierIter = this.boostingClassifiers.iterator();
+        Iterator<Double> weightIter = this.classifierWeights.iterator();
         while (classifierIter.hasNext()) {
             Classifier classifier = classifierIter.next();
             Double weight = weightIter.next();
@@ -138,6 +140,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      * 
      * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void buildClassifier(Instances data) throws Exception {
         // get validation set
@@ -173,9 +176,9 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
             boostingWeights[i] = 1.0d;
         }
         double bestAuc = 0.0;
-        boostingClassifiers = new LinkedList<>();
-        classifierWeights = new LinkedList<>();
-        for (int boostingIter = 0; boostingIter < boostingIterations; boostingIter++) {
+        this.boostingClassifiers = new LinkedList<>();
+        this.classifierWeights = new LinkedList<>();
+        for (int boostingIter = 0; boostingIter < this.boostingIterations; boostingIter++) {
             for (int i = 0; i < boostingWeights.length; i++) {
                 traindata.get(i).setWeight(boostingWeights[i]);
             }
@@ -201,7 +204,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
                 sumWeights += inst.weight();
             }
             double epsilon = sumWeightedMisclassifications / sumWeights;
-            double alpha = lamda * Math.log((1.0d - epsilon) / epsilon);
+            double alpha = this.lamda * Math.log((1.0d - epsilon) / epsilon);
             for (int i = 0; i < traindata.size(); i++) {
                 Instance inst = traindata.get(i);
                 if (inst.classValue() != internalClassifier.classifyInstance(inst)) {
@@ -211,8 +214,8 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
                     boostingWeights[i] *= boostingWeights[i] * Math.exp(-alpha);
                 }
             }
-            classifierWeights.add(alpha);
-            boostingClassifiers.add(internalClassifier);
+            this.classifierWeights.add(alpha);
+            this.boostingClassifiers.add(internalClassifier);
 
             final Evaluation eval = new Evaluation(validationdata);
             eval.evaluateModel(this, validationdata);
@@ -227,8 +230,8 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
                 // performance drop, abort boosting, classifier of current iteration is dropped
                 Console.traceln(Level.INFO, "no gain for boosting iteration " + (boostingIter + 1) +
                     "; aborting boosting");
-                classifierWeights.remove(classifierWeights.size() - 1);
-                boostingClassifiers.remove(boostingClassifiers.size() - 1);
+                this.classifierWeights.remove(this.classifierWeights.size() - 1);
+                this.boostingClassifiers.remove(this.boostingClassifiers.size() - 1);
                 return;
             }
         }
@@ -243,6 +246,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      *            training data
      * @return vector with similarity weights
      */
+    @SuppressWarnings("boxing")
     private Double[] calculateSimilarityWeights(Instances data) {
         double[] minAttValues = new double[data.numAttributes()];
         double[] maxAttValues = new double[data.numAttributes()];
@@ -250,8 +254,8 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
 
         for (int j = 0; j < data.numAttributes(); j++) {
             if (j != data.classIndex()) {
-                minAttValues[j] = testdata.attributeStats(j).numericStats.min;
-                maxAttValues[j] = testdata.attributeStats(j).numericStats.max;
+                minAttValues[j] = this.testdata.attributeStats(j).numericStats.min;
+                maxAttValues[j] = this.testdata.attributeStats(j).numericStats.max;
             }
         }
 
@@ -280,6 +284,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      * @param similarityWeights
      * @return sampled data
      */
+    @SuppressWarnings("boxing")
     private Instances sampleData(Instances data, Double[] similarityWeights) {
         // split data into four sets;
         Instances similarPositive = new Instances(data);
@@ -332,7 +337,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      *            desired size of the sample
      * @return sampled data
      */
-    private Instances weightedResample(final Instances data, final int size) {
+    private static Instances weightedResample(final Instances data, final int size) {
         if (data.isEmpty()) {
             return data;
         }

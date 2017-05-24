@@ -36,7 +36,7 @@ public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesin
 
     @Override
     public void setParameter(String parameters) {
-        condList = parameters.split(",");
+        this.condList = parameters.split(",");
     }
 
     @Override
@@ -45,12 +45,13 @@ public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesin
         removeInstances(traindata);
     }
 
+    @SuppressWarnings("boxing")
     private void removeInstances(Instances ilist) {
         for (int i = 0; i < ilist.numInstances(); i++) {
-            Boolean matchFound[] = new Boolean[condList.length];
+            Boolean matchFound[] = new Boolean[this.condList.length];
             int j = 0;
             System.out.println("");
-            for (String cond : condList) {
+            for (String cond : this.condList) {
                 String[] match = cond.split(":");
                 matchFound[j] =
                     ilist.get(i).value(ilist.attribute(match[0])) == Double.parseDouble(match[1]);

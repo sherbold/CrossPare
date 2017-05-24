@@ -74,11 +74,12 @@ public class WHICH extends AbstractClassifier {
      * 
      * @see weka.classifiers.Classifier#buildClassifier(weka.core.Instances)
      */
+    @SuppressWarnings("boxing")
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         WhichStack whichStack = new WhichStack();
         Discretize discretize = new Discretize();
-        discretize.setBins(numBins);
+        discretize.setBins(this.numBins);
         discretize.setIgnoreClass(true);
         discretize.setInputFormat(traindata);
         Instances discretizedData = Filter.useFilter(traindata, discretize);
@@ -99,8 +100,8 @@ public class WHICH extends AbstractClassifier {
         int iter = 0;
         do {
             // generate new rules
-            for (int i = 0; i < newRuleIterations; i++) {
-                whichStack.generateRules(numNewRules, discretizedData);
+            for (int i = 0; i < this.newRuleIterations; i++) {
+                whichStack.generateRules(this.numNewRules, discretizedData);
             }
             if (curBestScore >= whichStack.bestScore) {
                 // no improvement, terminate
@@ -109,9 +110,9 @@ public class WHICH extends AbstractClassifier {
             curBestScore = whichStack.bestScore;
             iter++;
         }
-        while (iter < maxIter);
+        while (iter < this.maxIter);
 
-        bestRule = whichStack.bestRule();
+        this.bestRule = whichStack.bestRule();
     }
 
     /*
@@ -121,10 +122,10 @@ public class WHICH extends AbstractClassifier {
      */
     @Override
     public double classifyInstance(Instance instance) {
-        if (bestRule == null) {
+        if (this.bestRule == null) {
             throw new RuntimeException("you have to build the classifier first!");
         }
-        return bestRule.applyRule(instance, false) ? 0.0 : 1.0;
+        return this.bestRule.applyRule(instance, false) ? 0.0 : 1.0;
     }
 
     /**
@@ -183,6 +184,7 @@ public class WHICH extends AbstractClassifier {
          * @param ranges
          *            range strings
          */
+        @SuppressWarnings("hiding")
         public WhichRule(List<Integer> attributeIndizes,
                          List<Double> rangeIndizes,
                          List<String> ranges)
@@ -203,14 +205,14 @@ public class WHICH extends AbstractClassifier {
          *            second rule in combination
          */
         public WhichRule(WhichRule rule1, WhichRule rule2) {
-            attributeIndizes = new ArrayList<>(rule1.attributeIndizes);
-            rangeIndizes = new ArrayList<>(rule1.rangeIndizes);
-            ranges = new ArrayList<>(rule1.ranges);
+            this.attributeIndizes = new ArrayList<>(rule1.attributeIndizes);
+            this.rangeIndizes = new ArrayList<>(rule1.rangeIndizes);
+            this.ranges = new ArrayList<>(rule1.ranges);
             for (int k = 0; k < rule2.attributeIndizes.size(); k++) {
-                if (!attributeIndizes.contains(rule2.attributeIndizes.get(k))) {
-                    attributeIndizes.add(rule2.attributeIndizes.get(k));
-                    rangeIndizes.add(rule2.rangeIndizes.get(k));
-                    ranges.add(rule2.ranges.get(k));
+                if (!this.attributeIndizes.contains(rule2.attributeIndizes.get(k))) {
+                    this.attributeIndizes.add(rule2.attributeIndizes.get(k));
+                    this.rangeIndizes.add(rule2.rangeIndizes.get(k));
+                    this.ranges.add(rule2.ranges.get(k));
                 }
             }
         }
@@ -252,24 +254,24 @@ public class WHICH extends AbstractClassifier {
                     }
                 }
             }
-            support = numMatches / ((double) traindata.size());
+            this.support = numMatches / ((double) traindata.size());
             if (numMatches > 0) {
-                e1 = numMatchNondefective / ((double) numMatches);
-                e2 = numMatchDefective / ((double) numMatches);
-                if (e2 > 0) {
-                    score = e1 / e2 * support;
+                this.e1 = numMatchNondefective / ((double) numMatches);
+                this.e2 = numMatchDefective / ((double) numMatches);
+                if (this.e2 > 0) {
+                    this.score = this.e1 / this.e2 * this.support;
                 }
                 else {
-                    score = 0;
+                    this.score = 0;
                 }
             }
             else {
-                e1 = 0;
-                e2 = 0;
-                score = 0;
+                this.e1 = 0;
+                this.e2 = 0;
+                this.score = 0;
             }
-            if (score == 0) {
-                score = 0.000000001; // to disallow 0 total score
+            if (this.score == 0) {
+                this.score = 0.000000001; // to disallow 0 total score
             }
         }
 
@@ -285,17 +287,18 @@ public class WHICH extends AbstractClassifier {
          *            otherwise the data is numeric and the range string is used.
          * @return true if the rule applies
          */
+        @SuppressWarnings("boxing")
         public boolean applyRule(Instance instance, boolean isTraining) {
             boolean result = true;
-            for (int k = 0; k < attributeIndizes.size(); k++) {
-                int attrIndex = attributeIndizes.get(k);
+            for (int k = 0; k < this.attributeIndizes.size(); k++) {
+                int attrIndex = this.attributeIndizes.get(k);
                 if (isTraining) {
-                    double rangeIndex = rangeIndizes.get(k);
+                    double rangeIndex = this.rangeIndizes.get(k);
                     double instanceValue = instance.value(attrIndex);
                     result &= (instanceValue == rangeIndex);
                 }
                 else {
-                    String range = ranges.get(k);
+                    String range = this.ranges.get(k);
                     if ("'All'".equals(range)) {
                         result = true;
                     }
@@ -308,40 +311,38 @@ public class WHICH extends AbstractClassifier {
                             // second value is negative
                             throw new RuntimeException("negative second value cannot be handled by WHICH yet");
                         }
-                        else {
-                            splitResult = range.split("-");
-                            if (splitResult.length > 2) {
-                                // first value is negative
-                                if ("inf".equals(splitResult[1])) {
-                                    lowerBound = Double.NEGATIVE_INFINITY;
-                                }
-                                else {
-                                    lowerBound = -Double.parseDouble(splitResult[1]);
-                                }
-                                if (splitResult[2].startsWith("inf")) {
-                                    upperBound = Double.POSITIVE_INFINITY;
-                                }
-                                else {
-                                    upperBound = Double.parseDouble(splitResult[2]
-                                        .substring(0, splitResult[2].length() - 2));
-                                }
+                        splitResult = range.split("-");
+                        if (splitResult.length > 2) {
+                            // first value is negative
+                            if ("inf".equals(splitResult[1])) {
+                                lowerBound = Double.NEGATIVE_INFINITY;
                             }
                             else {
-                                // first value is positive
-                                if (splitResult[0].substring(2, splitResult[0].length())
-                                    .equals("ll'"))
-                                {
-                                    System.out.println("foo");
-                                }
-                                lowerBound = Double.parseDouble(splitResult[0]
-                                    .substring(2, splitResult[0].length()));
-                                if (splitResult[1].startsWith("inf")) {
-                                    upperBound = Double.POSITIVE_INFINITY;
-                                }
-                                else {
-                                    upperBound = Double.parseDouble(splitResult[1]
-                                        .substring(0, splitResult[1].length() - 2));
-                                }
+                                lowerBound = -Double.parseDouble(splitResult[1]);
+                            }
+                            if (splitResult[2].startsWith("inf")) {
+                                upperBound = Double.POSITIVE_INFINITY;
+                            }
+                            else {
+                                upperBound = Double.parseDouble(splitResult[2]
+                                    .substring(0, splitResult[2].length() - 2));
+                            }
+                        }
+                        else {
+                            // first value is positive
+                            if (splitResult[0].substring(2, splitResult[0].length())
+                                .equals("ll'"))
+                            {
+                                System.out.println("foo");
+                            }
+                            lowerBound = Double.parseDouble(splitResult[0]
+                                .substring(2, splitResult[0].length()));
+                            if (splitResult[1].startsWith("inf")) {
+                                upperBound = Double.POSITIVE_INFINITY;
+                            }
+                            else {
+                                upperBound = Double.parseDouble(splitResult[1]
+                                    .substring(0, splitResult[1].length() - 2));
                             }
                         }
                         boolean lowerBoundMatch =
@@ -366,7 +367,7 @@ public class WHICH extends AbstractClassifier {
          * @return the score
          */
         public double getScore() {
-            return score;
+            return this.score;
         }
 
         /*
@@ -405,8 +406,8 @@ public class WHICH extends AbstractClassifier {
                 return false;
             }
             WhichRule otherRule = (WhichRule) other;
-            return attributeIndizes.equals(otherRule.attributeIndizes) &&
-                rangeIndizes.equals(otherRule.rangeIndizes) && ranges.equals(otherRule.ranges);
+            return this.attributeIndizes.equals(otherRule.attributeIndizes) &&
+                this.rangeIndizes.equals(otherRule.rangeIndizes) && this.ranges.equals(otherRule.ranges);
         }
 
         /*
@@ -416,7 +417,7 @@ public class WHICH extends AbstractClassifier {
          */
         @Override
         public int hashCode() {
-            return 117 + attributeIndizes.hashCode() + rangeIndizes.hashCode() + ranges.hashCode();
+            return 117 + this.attributeIndizes.hashCode() + this.rangeIndizes.hashCode() + this.ranges.hashCode();
         }
 
         /*
@@ -426,7 +427,7 @@ public class WHICH extends AbstractClassifier {
          */
         @Override
         public String toString() {
-            return "indizes: " + attributeIndizes + "\tranges: " + ranges + "\t score: " + score;
+            return "indizes: " + this.attributeIndizes + "\tranges: " + this.ranges + "\t score: " + this.score;
         }
     }
 
@@ -472,10 +473,10 @@ public class WHICH extends AbstractClassifier {
          *
          */
         public WhichStack() {
-            rules = new LinkedList<>();
-            scoreSum = 0.0;
-            bestScore = 0.0;
-            pushAfterSort = false;
+            this.rules = new LinkedList<>();
+            this.scoreSum = 0.0;
+            this.bestScore = 0.0;
+            this.pushAfterSort = false;
         }
 
         /**
@@ -487,12 +488,12 @@ public class WHICH extends AbstractClassifier {
          *            that is added.
          */
         public void push(WhichRule rule) {
-            rules.add(rule);
-            scoreSum += rule.getScore();
-            if (rule.getScore() > bestScore) {
-                bestScore = rule.getScore();
+            this.rules.add(rule);
+            this.scoreSum += rule.getScore();
+            if (rule.getScore() > this.bestScore) {
+                this.bestScore = rule.getScore();
             }
-            pushAfterSort = true;
+            this.pushAfterSort = true;
         }
 
         /**
@@ -537,9 +538,9 @@ public class WHICH extends AbstractClassifier {
          * @return drawn rule
          */
         public WhichRule drawRule() {
-            double randVal = rand.nextDouble() * scoreSum;
+            double randVal = this.rand.nextDouble() * this.scoreSum;
             double curSum = 0.0;
-            for (WhichRule rule : rules) {
+            for (WhichRule rule : this.rules) {
                 curSum += rule.getScore();
                 if (curSum >= randVal) {
                     return rule;
@@ -557,13 +558,13 @@ public class WHICH extends AbstractClassifier {
          * @return best rule
          */
         public WhichRule bestRule() {
-            if (rules.isEmpty()) {
+            if (this.rules.isEmpty()) {
                 return null;
             }
-            if (pushAfterSort) {
-                Collections.sort(rules);
+            if (this.pushAfterSort) {
+                Collections.sort(this.rules);
             }
-            return rules.get(0);
+            return this.rules.get(0);
         }
     }
 }

@@ -32,7 +32,7 @@ public class MaxInstanceNumberFilter extends AbstractVersionFilter {
      */
     @Override
     public boolean apply(SoftwareVersion version) {
-        return version.getInstances().numInstances() > maxInstances;
+        return version.getInstances().numInstances() > this.maxInstances;
     }
 
     /**
@@ -43,7 +43,7 @@ public class MaxInstanceNumberFilter extends AbstractVersionFilter {
      */
     @Override
     public void setParameter(String parameters) {
-        maxInstances = Integer.parseInt(parameters);
+        this.maxInstances = Integer.parseInt(parameters);
     }
 
 }

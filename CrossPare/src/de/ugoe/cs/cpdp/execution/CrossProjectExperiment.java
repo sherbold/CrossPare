@@ -32,6 +32,7 @@ public class CrossProjectExperiment extends AbstractCrossProjectExperiment {
      * @param config
      *            configuration of the experiment
      */
+    @SuppressWarnings("hiding")
     public CrossProjectExperiment(ExperimentConfiguration config) {
         super(config);
     }

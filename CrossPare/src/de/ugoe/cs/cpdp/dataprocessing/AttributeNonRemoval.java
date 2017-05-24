@@ -30,7 +30,7 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
     /**
      * names of the attributes to be kept (determined by {@link #setParameter(String)})
      */
-    private ArrayList<String> attributeNames = new ArrayList<String>();
+    private ArrayList<String> attributeNames = new ArrayList<>();
 
     /**
      * Sets that attributes that will be kept. The string contains the blank-separated names of the
@@ -46,7 +46,7 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
         if (parameters != null) {
             String[] attributeNamesArray = parameters.split(" ");
             for (String attributeName : attributeNamesArray) {
-                attributeNames.add(attributeName);
+                this.attributeNames.add(attributeName);
             }
         }
     }
@@ -57,7 +57,7 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
      */
     @Override
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (String attributeName : attributeNames) {
+        for (String attributeName : this.attributeNames) {
             for (int i = 0; i < testdata.numAttributes(); i++) {
                 if (!attributeName.equals(testdata.attribute(i).name())) {
                     testdata.deleteAttributeAt(i);
@@ -75,7 +75,7 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
     @Override
     public void apply(Instances testdata, Instances traindata) {
         for (int i = testdata.numAttributes() - 1; i >= 0; i--) {
-            if (!attributeNames.contains(testdata.attribute(i).name())) {
+            if (!this.attributeNames.contains(testdata.attribute(i).name())) {
                 testdata.deleteAttributeAt(i);
                 traindata.deleteAttributeAt(i);
             }

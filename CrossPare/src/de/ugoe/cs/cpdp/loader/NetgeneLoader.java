@@ -41,6 +41,7 @@ public class NetgeneLoader implements SingleVersionLoader {
      * 
      * @see de.ugoe.cs.cpdp.loader.SingleVersionLoader#load(java.io.File)
      */
+    @SuppressWarnings("boxing")
     @Override
     public Instances load(File fileMetricsFile) {
         // first determine all files
@@ -74,7 +75,7 @@ public class NetgeneLoader implements SingleVersionLoader {
                             try {
                                 tmpVals[i] = Double.parseDouble(val);
                             }
-                            catch (NumberFormatException e) {
+                            catch (@SuppressWarnings("unused") NumberFormatException e) {
                                 // not a number, using 0.0;
                                 tmpVals[i] = 0.0;
                             }
@@ -104,7 +105,7 @@ public class NetgeneLoader implements SingleVersionLoader {
                             try {
                                 tmpVals[i] = Double.parseDouble(val);
                             }
-                            catch (NumberFormatException e) {
+                            catch (@SuppressWarnings("unused") NumberFormatException e) {
                                 // not a number, using 0.0;
                                 tmpVals[i] = 0.0;
                             }
@@ -142,7 +143,7 @@ public class NetgeneLoader implements SingleVersionLoader {
 
             // add bug information
             attributeIndex = metricsData.numAttributes();
-            final ArrayList<String> classAttVals = new ArrayList<String>();
+            final ArrayList<String> classAttVals = new ArrayList<>();
             classAttVals.add("0");
             classAttVals.add("1");
             final Attribute classAtt = new Attribute("bug", classAttVals);

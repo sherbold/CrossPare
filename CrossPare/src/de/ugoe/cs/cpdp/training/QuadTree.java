@@ -63,7 +63,7 @@ public class QuadTree {
     /**
      * helper list for child quadrant generation
      */
-    private ArrayList<QuadTree> l = new ArrayList<QuadTree>();
+    private ArrayList<QuadTree> l = new ArrayList<>();
 
     /**
      * debugging attribute
@@ -99,13 +99,13 @@ public class QuadTree {
      * data for each cluster
      */
     public static ArrayList<ArrayList<QuadTreePayload<Instance>>> ccluster =
-        new ArrayList<ArrayList<QuadTreePayload<Instance>>>();
+        new ArrayList<>();
 
     /**
      * cluster sizes (index is cluster number, {@link ArrayList} is list of boxes (x0,y0,x1,y1
      */
     public static HashMap<Integer, ArrayList<Double[][]>> csize =
-        new HashMap<Integer, ArrayList<Double[][]>>();
+        new HashMap<>();
 
     /**
      * data within this quadrant
@@ -122,6 +122,7 @@ public class QuadTree {
      * @param payload
      *            data within the quadrant
      */
+    @SuppressWarnings("hiding")
     public QuadTree(QuadTree parent, ArrayList<QuadTreePayload<Instance>> payload) {
         this.parent = parent;
         this.payload = payload;
@@ -138,8 +139,8 @@ public class QuadTree {
         if (this.parent == null) {
             n += "rootnode ";
         }
-        String level = new String(new char[this.level]).replace("\0", "-");
-        n += level + " instances: " + this.getNumbers();
+        String myLevel = new String(new char[this.level]).replace("\0", "-");
+        n += myLevel + " instances: " + this.getNumbers();
         return n;
     }
 
@@ -180,6 +181,7 @@ public class QuadTree {
      * @param y
      *            y-dimension
      */
+    @SuppressWarnings("hiding")
     public void setSize(double[] x, double[] y) {
         this.x = x;
         this.y = y;
@@ -204,6 +206,7 @@ public class QuadTree {
      *
      * @return size of the current quadrant
      */
+    @SuppressWarnings("boxing")
     public Double[][] getSizeDouble() {
         Double[] tmpX = new Double[2];
         Double[] tmpY = new Double[2];
@@ -320,10 +323,10 @@ public class QuadTree {
         double medy = this.getMedianForY();
 
         // Payload lists for each child
-        ArrayList<QuadTreePayload<Instance>> nw = new ArrayList<QuadTreePayload<Instance>>();
-        ArrayList<QuadTreePayload<Instance>> sw = new ArrayList<QuadTreePayload<Instance>>();
-        ArrayList<QuadTreePayload<Instance>> ne = new ArrayList<QuadTreePayload<Instance>>();
-        ArrayList<QuadTreePayload<Instance>> se = new ArrayList<QuadTreePayload<Instance>>();
+        ArrayList<QuadTreePayload<Instance>> nw = new ArrayList<>();
+        ArrayList<QuadTreePayload<Instance>> sw = new ArrayList<>();
+        ArrayList<QuadTreePayload<Instance>> ne = new ArrayList<>();
+        ArrayList<QuadTreePayload<Instance>> se = new ArrayList<>();
 
         // sort the payloads to new payloads
         // here we have the problem that payloads with the same values are sorted
@@ -413,18 +416,18 @@ public class QuadTree {
         if (q.getNumbers() < QuadTree.alpha) {
             return;
         }
-        else {
-            // exception is thrown if we would run into an endless loop (see comments in split())
-            try {
-                QuadTree[] childs = q.split();
-                recursiveSplit(childs[0]);
-                recursiveSplit(childs[1]);
-                recursiveSplit(childs[2]);
-                recursiveSplit(childs[3]);
-            }
-            catch (Exception e) {
-                return;
-            }
+        // exception is thrown if we would run into an endless loop (see comments in split())
+        try {
+            QuadTree[] childs = q.split();
+            recursiveSplit(childs[0]);
+            recursiveSplit(childs[1]);
+            recursiveSplit(childs[2]);
+            recursiveSplit(childs[3]);
+        }
+        catch (@SuppressWarnings("unused") Exception e) {
+            // no split anymore
+            // ignore exception
+            return;
         }
     }
 
@@ -527,6 +530,7 @@ public class QuadTree {
      * @param list
      *            List of QuadTree (children only)
      */
+    @SuppressWarnings("boxing")
     public void gridClustering(ArrayList<QuadTree> list) {
 
         if (list.size() == 0) {
@@ -541,19 +545,19 @@ public class QuadTree {
         ArrayList<QuadTreePayload<Instance>> current_cluster;
 
         // remove list (for removal of items after scanning of the list)
-        ArrayList<Integer> remove = new ArrayList<Integer>();
+        ArrayList<Integer> remove = new ArrayList<>();
 
         // 1. find biggest, and add it
         biggest = list.get(list.size() - 1);
         stop_rule = biggest.getDensity() * 0.5;
 
-        current_cluster = new ArrayList<QuadTreePayload<Instance>>();
+        current_cluster = new ArrayList<>();
         current_cluster.addAll(biggest.getPayload());
 
         // remove the biggest because we are starting with it
         remove.add(list.size() - 1);
 
-        ArrayList<Double[][]> tmpSize = new ArrayList<Double[][]>();
+        ArrayList<Double[][]> tmpSize = new ArrayList<>();
         tmpSize.add(biggest.getSizeDouble());
 
         // check the items for their density

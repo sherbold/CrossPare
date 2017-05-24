@@ -14,9 +14,10 @@ import weka.core.Instances;
 
 public class TurhanFilterTest {
 
-	@Test
+	@SuppressWarnings("boxing")
+    @Test
 	public void testApply() {
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		ArrayList<Attribute> attributes = new ArrayList<>();
 		attributes.add(new Attribute("attr1"));
 		attributes.add(new Attribute("class"));
 		

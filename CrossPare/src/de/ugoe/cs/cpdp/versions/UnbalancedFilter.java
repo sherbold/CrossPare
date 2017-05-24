@@ -37,7 +37,7 @@ public class UnbalancedFilter extends AbstractVersionFilter {
      */
     @Override
     public void setParameter(String parameters) {
-        quantil = Double.parseDouble(parameters);
+        this.quantil = Double.parseDouble(parameters);
     }
 
     /**
@@ -48,8 +48,8 @@ public class UnbalancedFilter extends AbstractVersionFilter {
         final Instances instances = version.getInstances();
 
         final int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
-        return ((double) counts[0]) / instances.numInstances() >= (1 - quantil) ||
-            ((double) counts[0]) / instances.numInstances() <= (quantil);
+        return ((double) counts[0]) / instances.numInstances() >= (1 - this.quantil) ||
+            ((double) counts[0]) / instances.numInstances() <= (this.quantil);
     }
 
 }

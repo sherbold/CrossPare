@@ -59,7 +59,7 @@ class AUDIDataLoader implements SingleVersionLoader {
         }
 
         // configure Instances
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
 
         String[] lineSplit = lines[0].split(";");
         // ignore first three/four and last two columns
@@ -73,7 +73,7 @@ class AUDIDataLoader implements SingleVersionLoader {
         for (int j = 0; j < lineSplit.length - (offset + 2); j++) {
             atts.add(new Attribute(lineSplit[j + offset]));
         }
-        final ArrayList<String> classAttVals = new ArrayList<String>();
+        final ArrayList<String> classAttVals = new ArrayList<>();
         classAttVals.add("0");
         classAttVals.add("1");
         final Attribute classAtt = new Attribute("bug", classAttVals);

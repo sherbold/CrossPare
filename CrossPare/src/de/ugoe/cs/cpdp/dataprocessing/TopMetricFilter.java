@@ -60,7 +60,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
     @Override
     public void setParameter(String parameters) {
         if (parameters != null && !parameters.equals("")) {
-            correlationThreshold = Double.parseDouble(parameters);
+            this.correlationThreshold = Double.parseDouble(parameters);
         }
     }
 
@@ -75,6 +75,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         }
     }
 
+    @SuppressWarnings("boxing")
     private void determineTopKAttributes(Instances testdata, SetUniqueList<Instances> traindataSet)
         throws Exception
     {
@@ -219,6 +220,10 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
                 }
             }
         }
+        if( opttopkSetIndexSet==null ) {
+            throw new RuntimeException("Could not determine a best top-k set with optimal coverage. This means that the top-k set and the subset determined by CFS are disjunctive.");
+        }
+        
         Set<Integer> opttopkIndex = new TreeSet<>();
         for (Integer index : opttopkSetIndexSet) {
             opttopkIndex.add(topkIndex[index]);
@@ -238,19 +243,20 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         }
     }
 
+    @SuppressWarnings("boxing")
     private boolean isUncorrelated(double[][] correlationMatrix, Set<Integer> combination) {
         Integer[] intCombination = combination.toArray(new Integer[0]);
         boolean areUncorrelated = true;
         for (int i = 0; areUncorrelated && i < intCombination.length; i++) {
             for (int j = i + 1; areUncorrelated && j < intCombination.length; j++) {
                 areUncorrelated &=
-                    correlationMatrix[intCombination[i]][intCombination[j]] > correlationThreshold;
+                    correlationMatrix[intCombination[i]][intCombination[j]] > this.correlationThreshold;
             }
         }
         return areUncorrelated;
     }
 
-    private double coverage(Set<Integer> topkSet, Set<Integer> cfsSet) {
+    private static double coverage(Set<Integer> topkSet, Set<Integer> cfsSet) {
         Set<Integer> topkSetCopy1 = new HashSet<>(topkSet);
         topkSetCopy1.retainAll(cfsSet);
         Set<Integer> topkSetCopy2 = new HashSet<>(topkSet);

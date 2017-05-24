@@ -68,7 +68,7 @@ public class JsonDataLoader implements SingleVersionLoader {
             keySet.addAll(entityArray.getJSONObject(i).keySet());
         }
         // configure Instances
-        final ArrayList<Attribute> atts = new ArrayList<Attribute>();
+        final ArrayList<Attribute> atts = new ArrayList<>();
 
         for (String key : keySet) {
             // filter keys that are not metrics
@@ -76,7 +76,7 @@ public class JsonDataLoader implements SingleVersionLoader {
                 atts.add(new Attribute(key));
             }
         }
-        final ArrayList<String> classAttVals = new ArrayList<String>();
+        final ArrayList<String> classAttVals = new ArrayList<>();
         classAttVals.add("0");
         classAttVals.add("1");
         final Attribute classAtt = new Attribute("bug", classAttVals);
