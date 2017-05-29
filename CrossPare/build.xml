@@ -2,79 +2,80 @@
 <project basedir="." default="dist" name="Crosspare">
 	<!-- General Properties -->
 	<property environment="env" />
-	<property name="source.location" value="src/main/java" />
-	<property name="source-generated.location" value="src/main/generated-java" />
-	<property name="build.location" value="bin" />
-	<property name="dist.location" value="dist" />
-	<property name="javadoc.location" value="javadoc" />
-	<property name="downloads.location" value="downloads" />
 	<property name="debuglevel" value="source,lines,vars" />
 	<property name="target" value="1.8" />
 	<property name="source" value="1.8" />
-
-	<path id="src.path">
-		<pathelement location="${source.location}" />
-		<pathelement location="${source-generated.location}" />
+			
+	<!-- Properties for main build -->
+	<property name="main.source.location" value="src/main/java" />
+	<property name="main.generated.location" value="src/main/generated-java" />
+	<property name="main.build.location" value="build/main" />
+	<property name="main.dependencies.location" value="lib" />
+	
+	<!-- Properties for JUnit -->
+	<property name="test.source.location" value="src/test/java" />
+	<property name="test.build.location" value="build/test" />
+	<property name="test.dependencies.location" value="lib-test" />
+	
+	<!-- Properties for Javadoc -->
+	<property name="javadoc.location" value="javadoc" />
+	
+	<!-- Properties for creation of distribution -->
+	<property name="dist.location" value="dist" />
+	<property name="dist.jarname" value="crosspare.jar" />
+	<property name="dist.mainclass" value="de.ugoe.cs.cpdp.Runner" />
+		
+	<!-- Define classpaths -->
+	<path id="main.src.path">
+		<pathelement location="${main.source.location}" />
+		<pathelement location="${main.generated.location}" />
 	</path>
 	
-	<!-- Crosspare Properties -->
-	<property name="Crosspare.jarname" value="crosspare.jar" />
-	<path id="Crosspare.classpath">
-		<pathelement location="${build.location}" />
-		<pathelement location="lib/commons-collections4-4.0-alpha1.jar" />
-		<pathelement location="lib/commons-io-2.4.jar" />
-		<pathelement location="lib/java-utils-0.0.1.jar" />
-		<pathelement location="lib/weka.jar" />
-		<pathelement location="lib/RBFNetwork.jar" />
-		<pathelement location="lib/epsilon-1.2-kitchensink.jar" />
-		<pathelement location="lib/org.antlr.runtime_3.1.b1_3.1.0.jar" />
-		<pathelement location="lib/org.eclipse.ocl.common_1.1.0.v20130531-0544.jar" />
-		<pathelement location="lib/org.eclipse.ocl.ecore_3.3.0.v20130520-1222.jar" />
-		<pathelement location="lib/commons-math3-3.5.jar" />
-		<pathelement location="lib/ojalgo-37.1.jar" />
-		<pathelement location="lib/elki-bundle-0.7.1.jar" />
-		<pathelement location="lib/alternatingDecisionTrees.jar" />
-		<pathelement location="lib/guava-19.0.jar" />
-		<pathelement location="lib/mysql-connector-java-5.1.38-bin.jar" />
-		<pathelement location="lib/jmetal-algorithm-5.0-jar-with-dependencies.jar" />
-		<pathelement location="lib/jmetal-core-5.0-jar-with-dependencies.jar" />
-		<pathelement location="lib/jmetal-exec-5.0-jar-with-dependencies.jar" />
-		<pathelement location="lib/probabilisticSignificanceAE-1.0.2.jar" />
-		<pathelement location="lib/log4j-1.2-api-2.5.jar" />
-		<pathelement location="lib/log4j-api-2.5.jar" />
-		<pathelement location="lib/log4j-core-2.5.jar" />
-		<pathelement location="lib/log4j-iostreams-2.5.jar" />
-		<pathelement location="lib/commons-lang-2.6.jar" />
-		<pathelement location="lib/commons-lang3-3.4.jar" />
-		<pathelement location="lib/dbcp2-2.1.1.jar" />
-		<pathelement location="lib/jgap.jar" />
-		<pathelement location="lib/json-20160810.jar" />
+	<path id="main.classpath">
+		<pathelement location="${main.build.location}" />
+		<fileset dir="${main.dependencies.location}">
+		    <include name="*.jar"/>
+		</fileset>
 	</path>
 	
-	<path id="Javadoc.classpath">
+	<path id="test.classpath">
+		<pathelement location="${main.build.location}" />
+		<fileset dir="${main.dependencies.location}">
+		    <include name="*.jar"/>
+		</fileset>
+		<fileset dir="${test.dependencies.location}">
+		    <include name="*.jar"/>
+		</fileset>
+	</path>
+	
+	<path id="javadoc.classpath">
 		<fileset dir="lib">
 		    <include name="*.jar"/>
+			<!-- Exclude ojalgo due to bugs in Javadoc -->
 		    <exclude name="ojalgo-37.1.jar"/>
 		</fileset>
 	</path>
 
 	<!-- Initialization Targets -->
-	<target name="init.build">
-		<mkdir dir="${build.location}" />
+	<target name="init.main.build">
+		<mkdir dir="${main.build.location}" />
+	</target>
+	<target name="init.test.build">
+		<mkdir dir="${test.build.location}" />
 	</target>
 	<target name="init.dist">
 		<mkdir dir="${dist.location}" />
 	</target>
-	<target name="init.downloads">
-		<mkdir dir="${downloads.location}" />
-	</target>
 	<target name="init.javadoc">
 		<mkdir dir="${javadoc.location}" />
 	</target>
-
+	
 	<!-- Clean-up Targets -->
-	<target name="clean.build">
-		<delete dir="${build.location}" />
+	<target name="clean.main.build">
+		<delete dir="${main.build.location}" />
+	</target>
+	<target name="clean.test.build">
+		<delete dir="${main.build.location}" />
 	</target>
 	<target name="clean.dist">
 		<delete dir="${dist.location}" />
@@ -82,18 +83,25 @@
 	<target name="clean.javadoc">
 		<delete dir="${javadoc.location}" />
 	</target>
-	<target depends="clean.build,clean.dist,clean.javadoc" name="clean.all" />
+	<target depends="clean.main.build,clean.test.build,clean.dist,clean.javadoc" name="clean.all" />
 
 	<!-- Build Targets -->
-	<target depends="init.build" name="build">
-		<javac debug="false" destdir="${build.location}" source="${source}" target="${target}" includeantruntime="false" encoding="UTF-8">
-			<src refid="src.path" />
-			<classpath refid="Crosspare.classpath" />
+	<target depends="init.main.build" name="main.build">
+		<javac debug="false" destdir="${main.build.location}" source="${source}" target="${target}" includeantruntime="false" encoding="UTF-8">
+			<src refid="main.src.path" />
+			<classpath refid="main.classpath" />
+		</javac>
+	</target>
+	
+	<target depends="init.test.build" name="test.build">
+		<javac debug="false" destdir="${test.build.location}" source="${source}" target="${target}" includeantruntime="false" encoding="UTF-8">
+			<src path="${test.source.location}" />
+			<classpath refid="test.classpath" />
 		</javac>
 	</target>
 	
 	<!-- Distribution Targets -->
-	<target depends="build,init.dist,javadoc" name="dist">
+	<target depends="junit,javadoc,init.dist" name="dist">
 		<!-- dist of main components, i.e., the console -->
 		<pathconvert property="dist.libs" pathsep=" ">
 			<mapper>
@@ -109,15 +117,15 @@
 			</path>
 		</pathconvert>
 		<property name="dist.classpath"	value="${dist.libs}"></property>
-		<jar destfile="${dist.location}/${Crosspare.jarname}" basedir="${build.location}">
+		<jar destfile="${dist.location}/${dist.jarname}" basedir="${main.build.location}">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
-				<attribute name="Main-Class" value="de.ugoe.cs.cpdp.Runner" />
+				<attribute name="Main-Class" value="${dist.mainclass}" />
 				<attribute name="Class-Path" value="${dist.classpath}" />
 			</manifest>
 		</jar>
 		<copy includeemptydirs="false" todir="${dist.location}/lib">
-			<fileset dir="lib" />
+			<fileset dir="${main.dependencies.location}" />
 		</copy>
 		
 		<!-- copy Javadoc to dist -->
@@ -126,21 +134,28 @@
 		</copy>
 	</target>
 
-
-	<target depends="init.downloads,dist" name="createDownloads">
-		<zip destfile="${downloads.location}/crosspare.zip">
-			<fileset dir="${dist.location}" />
-		</zip>
-	</target>
-
 	<!-- Javadoc Targets -->
 	<target depends="init.javadoc" name="javadoc"
 		description="o Create Javadocs (Requires Javadoc 1.4+)">
 		<javadoc destdir="${javadoc.location}"
 			additionalparam="-J-Dorg.apache.commons.attributes.javadoc.CATaglet.sources=${basedir}">
 			<classpath refid="Javadoc.classpath" />
-			<link href="http://download.oracle.com/javase/7/docs/api/" />
-			<fileset dir="${source.location}" includes="**/*.java" />
+			<link href="http://download.oracle.com/javase/8/docs/api/" />
+			<fileset dir="${main.source.location}" includes="**/*.java" />
 		</javadoc>
+	</target>
+	
+	<!-- JUnit Targets -->
+	<target depends="main.build,test.build" name="junit">
+		<junit printsummary="on" haltonfailure="yes" fork="true">
+	        <classpath>
+	          <path refid="test.classpath"/>
+	          <pathelement location="${test.build.location}"/>
+	        </classpath>
+	        <formatter type="brief" usefile="false" />
+	        <batchtest>
+	            <fileset dir="${test.source.location}" includes="**/*Test.java" />
+	        </batchtest>
+	    </junit>
 	</target>
 </project>
