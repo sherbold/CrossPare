@@ -4,4 +4,5 @@ jdk:
   - oraclejdk8
   
 script:
-  - ant -buildfile CrossPare/build.xml dist
+  - cd CrossPare
+  - ant dist
