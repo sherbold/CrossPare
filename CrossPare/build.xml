@@ -139,7 +139,7 @@
 		description="o Create Javadocs (Requires Javadoc 1.4+)">
 		<javadoc destdir="${javadoc.location}"
 			additionalparam="-J-Dorg.apache.commons.attributes.javadoc.CATaglet.sources=${basedir}">
-			<classpath refid="Javadoc.classpath" />
+			<classpath refid="javadoc.classpath" />
 			<link href="http://download.oracle.com/javase/8/docs/api/" />
 			<fileset dir="${main.source.location}" includes="**/*.java" />
 		</javadoc>
