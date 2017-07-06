@@ -17,22 +17,18 @@ package de.ugoe.cs.cpdp.eval;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.mysql.fabric.xmlrpc.base.Array;
 
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
-import de.ugoe.cs.cpdp.util.SortUtils;
 import de.ugoe.cs.util.StringTools;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.core.Attribute;
 import weka.core.Instances;
 
 /**
