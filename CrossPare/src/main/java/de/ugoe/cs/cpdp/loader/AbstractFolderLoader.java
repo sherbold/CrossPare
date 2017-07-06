@@ -106,6 +106,10 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
             effortAtt = data.attribute("CountLineCodeExe");
         }
         if (effortAtt == null) {
+            // attribute in the SMARTSHARK data
+            effortAtt = data.attribute("LOC");
+        }
+        if (effortAtt == null) {
             return null;
         }
         List<Double> efforts = new ArrayList<>(data.size());

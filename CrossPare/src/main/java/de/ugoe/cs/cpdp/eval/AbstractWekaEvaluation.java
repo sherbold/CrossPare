@@ -18,12 +18,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.mysql.fabric.xmlrpc.base.Array;
+
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
+import de.ugoe.cs.cpdp.util.SortUtils;
 import de.ugoe.cs.util.StringTools;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -162,7 +167,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
             double succZi =
                 eval.recall(1) >= 0.75 && eval.precision(1) >= 0.75 && eval.errorRate() <= 0.25
-                    ? 1.0 : 0.0;
+                    ? 1.0
+                    : 0.0;
             double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
             double succG60 = gmeasure > 0.6 ? 1.0 : 0.0;
 
@@ -217,7 +223,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
 
     /**
      * <p>
-     * Calculates the effort. TODO: IMPLEMENTATION BUGGY! MUST BE FIXED!
+     * Calculates the AUCEC.
      * </p>
      *
      * @param testdata
@@ -226,210 +232,50 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      *            the classifier
      * @param efforts
      *            the effort information for each instance in the test data
-     * @return
+     * @return AUCEC if efforts defined, -1 otherwise
      */
     @SuppressWarnings("boxing")
     private static double calculateReviewEffort(Instances testdata,
-                                         Classifier classifier,
-                                         List<Double> efforts)
+                                                Classifier classifier,
+                                                List<Double> efforts)
     {
         if (efforts == null) {
-            return 0;
+            return -1.0;
         }
 
-        final List<Integer> bugPredicted = new ArrayList<>();
-        final List<Integer> nobugPredicted = new ArrayList<>();
-        double totalLoc = 0.0d;
-        int totalBugs = 0;
+        final ScoreEffortPair[] scores = new ScoreEffortPair[testdata.size()];
+        double totalEffort = 0.0d;
+        double totalBugs = 0;
         for (int i = 0; i < testdata.numInstances(); i++) {
             try {
-                if (Double.compare(classifier.classifyInstance(testdata.instance(i)), 0.0d) == 0) {
-                    nobugPredicted.add(i);
-                }
-                else {
-                    bugPredicted.add(i);
-                }
+                double curEffort = efforts.get(i);
+                double curScore = classifier.distributionForInstance(testdata.instance(i))[1];
+                double curActualClass = testdata.instance(i).classValue();
+                scores[i] = new ScoreEffortPair(curScore, curEffort, curActualClass);
+                totalEffort += curEffort;
+                totalBugs += curActualClass;
             }
             catch (Exception e) {
                 throw new RuntimeException("unexpected error during the evaluation of the review effort",
                                            e);
             }
-            if (Double.compare(testdata.instance(i).classValue(), 1.0d) == 0) {
-                totalBugs++;
-            }
-            totalLoc += efforts.get(i);
         }
 
-        final List<Double> reviewLoc = new ArrayList<>(testdata.numInstances());
-        final List<Double> bugsFound = new ArrayList<>(testdata.numInstances());
+        // sort by score (descending), in case of equal scores use size (ascending)
+        Arrays.sort(scores, Collections.reverseOrder());
 
-        double currentBugsFound = 0;
-
-        while (!bugPredicted.isEmpty()) {
-            double minLoc = Double.MAX_VALUE;
-            int minIndex = -1;
-            for (int i = 0; i < bugPredicted.size(); i++) {
-                double currentLoc = efforts.get(bugPredicted.get(i));
-                if (currentLoc < minLoc) {
-                    minIndex = i;
-                    minLoc = currentLoc;
-                }
-            }
-            if (minIndex != -1) {
-                reviewLoc.add(minLoc / totalLoc);
-
-                currentBugsFound += testdata.instance(bugPredicted.get(minIndex)).classValue();
-                bugsFound.add(currentBugsFound);
-
-                bugPredicted.remove(minIndex);
-            }
-            else {
-                throw new RuntimeException("Shouldn't happen!");
-            }
+        // now calculate the Riemann integral
+        // y-axis = relative number of bugs found
+        // x-axis = relative effort related overall project size
+        double aucec = 0.0;
+        double relativeBugsFound = 0.0;
+        for (ScoreEffortPair score : scores) {
+            double curRelativeEffort = score.getEffort() / totalEffort;
+            double curRelativeBugsFound = score.getActualClass() / totalBugs;
+            relativeBugsFound += curRelativeBugsFound;
+            aucec += curRelativeEffort * relativeBugsFound; // simple Riemann integral
         }
-
-        while (!nobugPredicted.isEmpty()) {
-            double minLoc = Double.MAX_VALUE;
-            int minIndex = -1;
-            for (int i = 0; i < nobugPredicted.size(); i++) {
-                double currentLoc = efforts.get(nobugPredicted.get(i));
-                if (currentLoc < minLoc) {
-                    minIndex = i;
-                    minLoc = currentLoc;
-                }
-            }
-            if (minIndex != -1) {
-                reviewLoc.add(minLoc / totalLoc);
-
-                currentBugsFound += testdata.instance(nobugPredicted.get(minIndex)).classValue();
-                bugsFound.add(currentBugsFound);
-                nobugPredicted.remove(minIndex);
-            }
-            else {
-                throw new RuntimeException("Shouldn't happen!");
-            }
-        }
-
-        double auc = 0.0;
-        for (int i = 0; i < bugsFound.size(); i++) {
-            auc += reviewLoc.get(i) * bugsFound.get(i) / totalBugs;
-        }
-
-        return auc;
-    }
-
-    /**
-     * <p>
-     * Calculates effort. Deprecated. Do not use!
-     * </p>
-     *
-     * @param testdata
-     *            the test data
-     * @param classifier
-     *            the classifier
-     * @return
-     */
-    @SuppressWarnings({ "unused", "boxing" })
-    @Deprecated
-    private static double calculateReviewEffort(Instances testdata, Classifier classifier) {
-
-        // attribute in the JURECZKO data and default
-        Attribute loc = testdata.attribute("loc");
-        if (loc == null) {
-            // attribute in the NASA/SOFTMINE/MDP data
-            loc = testdata.attribute("LOC_EXECUTABLE");
-        }
-        if (loc == null) {
-            // attribute in the AEEEM data
-            loc = testdata.attribute("numberOfLinesOfCode");
-        }
-        if (loc == null) {
-            // attribute in the RELINK data
-            loc = testdata.attribute("CountLineCodeExe");
-        }
-        if (loc == null) {
-            return 0.0;
-        }
-
-        final List<Integer> bugPredicted = new ArrayList<>();
-        final List<Integer> nobugPredicted = new ArrayList<>();
-        double totalLoc = 0.0d;
-        int totalBugs = 0;
-        for (int i = 0; i < testdata.numInstances(); i++) {
-            try {
-                if (Double.compare(classifier.classifyInstance(testdata.instance(i)), 0.0d) == 0) {
-                    nobugPredicted.add(i);
-                }
-                else {
-                    bugPredicted.add(i);
-                }
-            }
-            catch (Exception e) {
-                throw new RuntimeException("unexpected error during the evaluation of the review effort",
-                                           e);
-            }
-            if (Double.compare(testdata.instance(i).classValue(), 1.0d) == 0) {
-                totalBugs++;
-            }
-            totalLoc += testdata.instance(i).value(loc);
-        }
-
-        final List<Double> reviewLoc = new ArrayList<>(testdata.numInstances());
-        final List<Double> bugsFound = new ArrayList<>(testdata.numInstances());
-
-        double currentBugsFound = 0;
-
-        while (!bugPredicted.isEmpty()) {
-            double minLoc = Double.MAX_VALUE;
-            int minIndex = -1;
-            for (int i = 0; i < bugPredicted.size(); i++) {
-                double currentLoc = testdata.instance(bugPredicted.get(i)).value(loc);
-                if (currentLoc < minLoc) {
-                    minIndex = i;
-                    minLoc = currentLoc;
-                }
-            }
-            if (minIndex != -1) {
-                reviewLoc.add(minLoc / totalLoc);
-
-                currentBugsFound += testdata.instance(bugPredicted.get(minIndex)).classValue();
-                bugsFound.add(currentBugsFound);
-
-                bugPredicted.remove(minIndex);
-            }
-            else {
-                throw new RuntimeException("Shouldn't happen!");
-            }
-        }
-
-        while (!nobugPredicted.isEmpty()) {
-            double minLoc = Double.MAX_VALUE;
-            int minIndex = -1;
-            for (int i = 0; i < nobugPredicted.size(); i++) {
-                double currentLoc = testdata.instance(nobugPredicted.get(i)).value(loc);
-                if (currentLoc < minLoc) {
-                    minIndex = i;
-                    minLoc = currentLoc;
-                }
-            }
-            if (minIndex != -1) {
-                reviewLoc.add(minLoc / totalLoc);
-
-                currentBugsFound += testdata.instance(nobugPredicted.get(minIndex)).classValue();
-                bugsFound.add(currentBugsFound);
-                nobugPredicted.remove(minIndex);
-            }
-            else {
-                throw new RuntimeException("Shouldn't happen!");
-            }
-        }
-
-        double auc = 0.0;
-        for (int i = 0; i < bugsFound.size(); i++) {
-            auc += reviewLoc.get(i) * bugsFound.get(i) / totalBugs;
-        }
-
-        return auc;
+        return aucec;
     }
 
     /*
@@ -458,5 +304,78 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * <p>
+     * Helper class for AUCEC calculation
+     * </p>
+     * 
+     * @author Steffen Herbold
+     */
+    private static class ScoreEffortPair implements Comparable<ScoreEffortPair> {
+
+        /**
+         * Defect prediction score of the pair
+         */
+        private final double score;
+
+        /**
+         * Associated review effort
+         */
+        private final double effort;
+
+        /**
+         * Class of the instance
+         */
+        private final double actualClass;
+
+        @SuppressWarnings("hiding")
+        public ScoreEffortPair(double score, double effort, double actualClass) {
+            this.score = score;
+            this.effort = effort;
+            this.actualClass = actualClass;
+        }
+
+        /**
+         * @return the effort
+         */
+        public double getEffort() {
+            return effort;
+        }
+
+        /**
+         * @return the actual class
+         */
+        public double getActualClass() {
+            return actualClass;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Comparable#compareTo(java.lang.Object)
+         */
+        @Override
+        public int compareTo(ScoreEffortPair other) {
+            if (score > other.score || (score == other.score && effort < other.effort)) {
+                return 1;
+            }
+            if (score < other.score || (score == other.score && effort > other.effort)) {
+                return -1;
+            }
+            return 0;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "score=" + score + ", effort=" + effort + ", actualClass=" + actualClass;
+        }
+
     }
 }
