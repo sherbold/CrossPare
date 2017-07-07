@@ -133,6 +133,35 @@
 			<fileset dir="${javadoc.location}" />
 		</copy>
 	</target>
+	
+	<!-- Distribution Targets -->
+	<target depends="main.build,init.dist" name="dist-untestedjaronly">
+		<!-- dist of main components, i.e., the console -->
+		<pathconvert property="dist.libs" pathsep=" ">
+			<mapper>
+				<chainedmapper>
+					<flattenmapper />
+					<globmapper from="*" to="lib/*" />
+				</chainedmapper>
+			</mapper>
+			<path>
+				<fileset dir="lib">
+					<include name="**/*.jar" />
+				</fileset>
+			</path>
+		</pathconvert>
+		<property name="dist.classpath"	value="${dist.libs}"></property>
+		<jar destfile="${dist.location}/${dist.jarname}" basedir="${main.build.location}">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="${dist.mainclass}" />
+				<attribute name="Class-Path" value="${dist.classpath}" />
+			</manifest>
+		</jar>
+		<copy includeemptydirs="false" todir="${dist.location}/lib">
+			<fileset dir="${main.dependencies.location}" />
+		</copy>
+	</target>
 
 	<!-- Javadoc Targets -->
 	<target depends="init.javadoc" name="javadoc"
