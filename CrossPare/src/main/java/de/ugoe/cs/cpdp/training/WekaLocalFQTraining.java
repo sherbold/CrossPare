@@ -26,6 +26,8 @@ import de.ugoe.cs.cpdp.training.QuadTree;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
+import weka.classifiers.meta.CVParameterSelection;
+import weka.classifiers.rules.ZeroR;
 import weka.core.DenseInstance;
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
@@ -36,9 +38,9 @@ import weka.filters.unsupervised.attribute.Remove;
 /**
  * <p>
  * Trainer with reimplementation of WHERE clustering algorithm from: Tim Menzies, Andrew Butcher,
- * David Cok, Andrian Marcus, Lucas Layman, Forrest Shull, Burak Turhan, Thomas Zimmermann,
- * "Local versus Global Lessons for Defect Prediction and Effort Estimation," IEEE Transactions on
- * Software Engineering, vol. 39, no. 6, pp. 822-834, June, 2013
+ * David Cok, Andrian Marcus, Lucas Layman, Forrest Shull, Burak Turhan, Thomas Zimmermann, "Local
+ * versus Global Lessons for Defect Prediction and Effort Estimation," IEEE Transactions on Software
+ * Engineering, vol. 39, no. 6, pp. 822-834, June, 2013
  * </p>
  * <p>
  * With WekaLocalFQTraining we do the following:
@@ -236,17 +238,17 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 // order defined above
                 double[][] distmat = new double[2 * FMAP.target_dims + 1][2 * FMAP.target_dims + 1];
                 distmat[0][0] = 0;
-                distmat[0][1] = dist.distance(clusterInstance,
-                                              this.cpivots.get(this.cpivotindices[0][0]));
-                distmat[0][2] = dist.distance(clusterInstance,
-                                              this.cpivots.get(this.cpivotindices[1][0]));
-                distmat[0][3] = dist.distance(clusterInstance,
-                                              this.cpivots.get(this.cpivotindices[0][1]));
-                distmat[0][4] = dist.distance(clusterInstance,
-                                              this.cpivots.get(this.cpivotindices[1][1]));
+                distmat[0][1] =
+                    dist.distance(clusterInstance, this.cpivots.get(this.cpivotindices[0][0]));
+                distmat[0][2] =
+                    dist.distance(clusterInstance, this.cpivots.get(this.cpivotindices[1][0]));
+                distmat[0][3] =
+                    dist.distance(clusterInstance, this.cpivots.get(this.cpivotindices[0][1]));
+                distmat[0][4] =
+                    dist.distance(clusterInstance, this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[1][0] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
-                                              clusterInstance);
+                distmat[1][0] =
+                    dist.distance(this.cpivots.get(this.cpivotindices[0][0]), clusterInstance);
                 distmat[1][1] = 0;
                 distmat[1][2] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
                                               this.cpivots.get(this.cpivotindices[1][0]));
@@ -255,8 +257,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 distmat[1][4] = dist.distance(this.cpivots.get(this.cpivotindices[0][0]),
                                               this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[2][0] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
-                                              clusterInstance);
+                distmat[2][0] =
+                    dist.distance(this.cpivots.get(this.cpivotindices[1][0]), clusterInstance);
                 distmat[2][1] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
                                               this.cpivots.get(this.cpivotindices[0][0]));
                 distmat[2][2] = 0;
@@ -265,8 +267,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 distmat[2][4] = dist.distance(this.cpivots.get(this.cpivotindices[1][0]),
                                               this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[3][0] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
-                                              clusterInstance);
+                distmat[3][0] =
+                    dist.distance(this.cpivots.get(this.cpivotindices[0][1]), clusterInstance);
                 distmat[3][1] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
                                               this.cpivots.get(this.cpivotindices[0][0]));
                 distmat[3][2] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
@@ -275,8 +277,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 distmat[3][4] = dist.distance(this.cpivots.get(this.cpivotindices[0][1]),
                                               this.cpivots.get(this.cpivotindices[1][1]));
 
-                distmat[4][0] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
-                                              clusterInstance);
+                distmat[4][0] =
+                    dist.distance(this.cpivots.get(this.cpivotindices[1][1]), clusterInstance);
                 distmat[4][1] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
                                               this.cpivots.get(this.cpivotindices[0][0]));
                 distmat[4][2] = dist.distance(this.cpivots.get(this.cpivotindices[1][1]),
@@ -553,9 +555,54 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
             // int traindata_count = 0;
             while (clusternumber.hasNext()) {
                 cnumber = clusternumber.next();
-                this.cclassifier.put(cnumber, setupClassifier()); // this is the classifier used for the
-                                                             // cluster
-                this.cclassifier.get(cnumber).buildClassifier(this.ctraindata.get(cnumber));
+                this.cclassifier.put(cnumber, setupClassifier()); // this is the classifier used for
+                                                                  // the
+                // cluster
+                try {
+                    this.cclassifier.get(cnumber).buildClassifier(this.ctraindata.get(cnumber));
+                }
+                catch (IllegalArgumentException e) {
+                    Classifier tmpClassifier = this.cclassifier.get(cnumber);
+                    Instances tmpTraindata = this.ctraindata.get(cnumber);
+                    if (tmpClassifier instanceof CVParameterSelection) {
+                        // in case of parameter selection, check if internal cross validation loop
+                        // is the problem
+                        Console.traceln(Level.WARNING, "error with CVParameterSelection training");
+                        Console.traceln(Level.WARNING, "trying without parameter selection...");
+                        System.out.println();
+                        try {
+                            Classifier internalClassifier =
+                                ((CVParameterSelection) tmpClassifier).getClassifier();
+                            internalClassifier.buildClassifier(tmpTraindata);
+                        }
+                        catch (IllegalArgumentException e2) {
+                            Console.traceln(Level.WARNING,
+                                            "still not working - try if ZeroR is sufficient");
+                            int countNoBug = tmpTraindata
+                                .attributeStats(tmpTraindata.classIndex()).nominalCounts[0];
+                            int countBug = tmpTraindata
+                                .attributeStats(tmpTraindata.classIndex()).nominalCounts[1];
+                            Console.traceln(Level.WARNING, "trainsize: " + tmpTraindata.size() +
+                                "; numNoBug: " + countNoBug + "; numBug: " + countBug);
+                            if (tmpTraindata.size() < 10 && (countNoBug <= 1 || countBug <= 1)) {
+                                Console
+                                    .traceln(Level.WARNING,
+                                             "only one instance in minority class and less than 10 instances");
+                                Console.traceln(Level.WARNING, "using ZeroR instead");
+                                Classifier replacementClassifier = new ZeroR();
+                                replacementClassifier.buildClassifier(tmpTraindata);
+                                this.cclassifier.put(cnumber, replacementClassifier);
+                            }
+                            else {
+                                throw e2;
+                            }
+                        }
+                        Console.traceln(Level.WARNING, "...success");
+                    }
+                    else {
+                        throw e;
+                    }
+                }
                 // Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
                 // traindata_count += ctraindata.get(cnumber).size();
                 // Console.traceln(Level.INFO,
