@@ -45,8 +45,14 @@ public class NormalizationUtil {
 
                 for (int i = 0; i < data.numInstances(); i++) {
                     Instance inst = data.instance(i);
-                    double newValue = (inst.value(j) - min) / (max - min);
-                    inst.setValue(j, newValue);
+                    if (max - min == 0.0) {
+                        inst.setValue(j, 0.0);
+                    }
+                    else {
+                        double newValue = (inst.value(j) - min) / (max - min);
+                        inst.setValue(j, newValue);
+                    }
+
                 }
             }
         }
@@ -167,7 +173,13 @@ public class NormalizationUtil {
             Instance instance = data.instance(i);
             for (int j = 0; j < data.numAttributes(); j++) {
                 if (data.classIndex() != j) {
-                    instance.setValue(j, instance.value(j) - mean[j] / std[j]);
+                    if (std[j] == 0.0) {
+                        // in case of zero standard deviation just use mean centering
+                        instance.setValue(j, instance.value(j) - mean[j]);
+                    }
+                    else {
+                        instance.setValue(j, instance.value(j) - mean[j] / std[j]);
+                    }
                 }
             }
         }
