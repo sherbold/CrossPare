@@ -12,7 +12,6 @@
 	<classpathentry kind="lib" path="lib/commons-collections4-4.0-alpha1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/java-utils-0.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="lib" path="lib/RBFNetwork.jar"/>
 	<classpathentry kind="lib" path="lib/epsilon-1.2-kitchensink.jar"/>
 	<classpathentry kind="lib" path="lib/org.antlr.runtime_3.1.b1_3.1.0.jar"/>
@@ -36,5 +35,6 @@
 	<classpathentry kind="lib" path="lib/log4j-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/json-20160810.jar"/>
+	<classpathentry kind="lib" path="lib/weka-monolithic.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
