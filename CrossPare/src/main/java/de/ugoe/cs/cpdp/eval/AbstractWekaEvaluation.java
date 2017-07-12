@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.util.StringTools;
@@ -160,7 +159,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
             double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
-            double aucec = calculateReviewEffort(testdata, classifier, efforts);
+            double aucec = calculateReviewEffort(testdata, classifier, efforts, numBugs);
             double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
             double succZi =
                 eval.recall(1) >= 0.75 && eval.precision(1) >= 0.75 && eval.errorRate() <= 0.25
@@ -229,12 +228,15 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      *            the classifier
      * @param efforts
      *            the effort information for each instance in the test data
+     * @param numBugs
+     *            the bug counts for each instance in the test data
      * @return AUCEC if efforts defined, -1 otherwise
      */
     @SuppressWarnings("boxing")
     private static double calculateReviewEffort(Instances testdata,
                                                 Classifier classifier,
-                                                List<Double> efforts)
+                                                List<Double> efforts,
+                                                List<Double> numBugs)
     {
         if (efforts == null) {
             return -1.0;
@@ -247,10 +249,10 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             try {
                 double curEffort = efforts.get(i);
                 double curScore = classifier.distributionForInstance(testdata.instance(i))[1];
-                double curActualClass = testdata.instance(i).classValue();
-                scores[i] = new ScoreEffortPair(curScore, curEffort, curActualClass);
+                double curBugCount = numBugs.get(i);
+                scores[i] = new ScoreEffortPair(curScore, curEffort, curBugCount);
                 totalEffort += curEffort;
-                totalBugs += curActualClass;
+                totalBugs += curBugCount;
             }
             catch (Exception e) {
                 throw new RuntimeException("unexpected error during the evaluation of the review effort",
@@ -268,7 +270,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         double relativeBugsFound = 0.0;
         for (ScoreEffortPair score : scores) {
             double curRelativeEffort = score.getEffort() / totalEffort;
-            double curRelativeBugsFound = score.getActualClass() / totalBugs;
+            double curRelativeBugsFound = score.getBugCount() / totalBugs;
             relativeBugsFound += curRelativeBugsFound;
             aucec += curRelativeEffort * relativeBugsFound; // simple Riemann integral
         }
@@ -325,13 +327,13 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         /**
          * Class of the instance
          */
-        private final double actualClass;
+        private final double bugCount;
 
         @SuppressWarnings("hiding")
-        public ScoreEffortPair(double score, double effort, double actualClass) {
+        public ScoreEffortPair(double score, double effort, double bugCount) {
             this.score = score;
             this.effort = effort;
-            this.actualClass = actualClass;
+            this.bugCount = bugCount;
         }
 
         /**
@@ -344,8 +346,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         /**
          * @return the actual class
          */
-        public double getActualClass() {
-            return actualClass;
+        public double getBugCount() {
+            return bugCount;
         }
 
         /*
@@ -371,7 +373,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
          */
         @Override
         public String toString() {
-            return "score=" + score + ", effort=" + effort + ", actualClass=" + actualClass;
+            return "score=" + score + ", effort=" + effort + ", bugCount=" + bugCount;
         }
 
     }
