@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
@@ -36,9 +37,9 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      * Path of the data.
      */
     protected String path = "";
-    
+
     /**
-     * Default for class type is binary, not numeric. This ensure downwards compability. 
+     * Default for class type is binary, not numeric. This ensure downwards compability.
      */
     private boolean isBinaryClass = true;
 
@@ -49,17 +50,18 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
     public void setLocation(String location) {
         this.path = location;
     }
-    
+
     @Override
     public void setClassType(String classType) {
-        if("binary".equals(classType)) {
+        if ("binary".equals(classType)) {
             isBinaryClass = true;
         }
-        else if("numeric".equals(classType)) {
+        else if ("numeric".equals(classType)) {
             isBinaryClass = false;
         }
         else {
-            throw new RuntimeException("Unsupported type for class attribute (allowed: binary, numeric): " + classType);
+            throw new RuntimeException("Unsupported type for class attribute (allowed: binary, numeric): " +
+                classType);
         }
     }
 
@@ -90,8 +92,9 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             Instances data = instancesLoader.load(versionFile, isBinaryClass);
                             String versionName = data.relationName();
                             List<Double> efforts = getEfforts(data);
+                            List<Double> numBugs = getNumBugs(data);
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
-                                                             data, efforts));
+                                                             data, efforts, numBugs));
                         }
                     }
                 }
@@ -137,6 +140,24 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
             efforts.add(data.get(i).value(effortAtt));
         }
         return efforts;
+    }
+
+    /**
+     * <p>
+     * Retrieves the number of bugs from the class attribute of the data and stores it separately in
+     * a list.
+     * </p>
+     *
+     * @param data
+     *            the data
+     * @return list with bug counts
+     */
+    private static List<Double> getNumBugs(Instances data) {
+        List<Double> numBugs = new ArrayList<>(data.size());
+        for (Instance instance : data) {
+            numBugs.add(instance.classValue());
+        }
+        return numBugs;
     }
 
     /**

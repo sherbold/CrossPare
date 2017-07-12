@@ -94,15 +94,15 @@ public class DecentFolderLoader extends AbstractFolderLoader {
      *            list, where the weka instances are added to
      */
     private static void loadDataFromFile(File versionFile,
-                                  SingleVersionLoader instancesLoader,
-                                  String projectName,
-                                  List<SoftwareVersion> versions)
+                                         SingleVersionLoader instancesLoader,
+                                         String projectName,
+                                         List<SoftwareVersion> versions)
     {
         if (versionFile.isFile() && instancesLoader.filenameFilter(versionFile.getName())) {
             String versionName = versionFile.getName();
             // TODO currently only supports binary class
             Instances data = instancesLoader.load(versionFile, true);
-            versions.add(new SoftwareVersion("decent", projectName, versionName, data, null));
+            versions.add(new SoftwareVersion("decent", projectName, versionName, data, null, null));
         }
     }
 
