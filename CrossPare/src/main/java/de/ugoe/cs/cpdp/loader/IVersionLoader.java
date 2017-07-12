@@ -32,6 +32,13 @@ public interface IVersionLoader {
      *            location of the data
      */
     public void setLocation(String location);
+    
+    /**
+     * Sets the type of class loading that is used. Allowed options are "binary" and "numeric". 
+     *
+     * @param classType the class type.
+     */
+    public void setClassType(String classType);
 
     /**
      * Loads the data.

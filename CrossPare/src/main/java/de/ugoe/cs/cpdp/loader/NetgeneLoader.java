@@ -43,7 +43,7 @@ public class NetgeneLoader implements SingleVersionLoader {
      */
     @SuppressWarnings("boxing")
     @Override
-    public Instances load(File fileMetricsFile) {
+    public Instances load(File fileMetricsFile, boolean binaryClass) {
         // first determine all files
         String path = fileMetricsFile.getParentFile().getAbsolutePath();
         String project = fileMetricsFile.getName().split("_")[0];
@@ -143,16 +143,29 @@ public class NetgeneLoader implements SingleVersionLoader {
 
             // add bug information
             attributeIndex = metricsData.numAttributes();
-            final ArrayList<String> classAttVals = new ArrayList<>();
-            classAttVals.add("0");
-            classAttVals.add("1");
-            final Attribute classAtt = new Attribute("bug", classAttVals);
+            Attribute classAtt;
+            if(binaryClass) {
+                // add nominal class attribute
+                final ArrayList<String> classAttVals = new ArrayList<>();
+                classAttVals.add("0");
+                classAttVals.add("1");
+                classAtt = new Attribute("bug", classAttVals);
+            } else {
+                // add numeric class attribute
+                classAtt = new Attribute("bugs");
+            }
             metricsData.insertAttributeAt(classAtt, attributeIndex);
             for (int i = 0; i < bugsData.size(); i++) {
                 if (bugsData.instance(i).value(2) > 0.0d) {
                     Integer instanceIndex = filenames.get(bugsData.instance(i).stringValue(1));
                     if (instanceIndex != null) {
-                        metricsData.instance(instanceIndex).setValue(attributeIndex, 1.0);
+                        if(binaryClass) {
+                            // binary label
+                            metricsData.instance(instanceIndex).setValue(attributeIndex, 1.0);
+                        } else {
+                            // bug count
+                            metricsData.instance(instanceIndex).setValue(attributeIndex, bugsData.instance(i).value(2));
+                        }
                     }
                 }
             }

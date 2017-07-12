@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.core.Instances;
 
 /**
@@ -20,7 +21,7 @@ import weka.core.Instances;
 public class RelinkLoader implements SingleVersionLoader {
 
     @Override
-    public Instances load(File file) {
+    public Instances load(File file, boolean binaryClass) {
         Instances tmpData;
         try(BufferedReader reader = new BufferedReader(new FileReader(file));) {
             tmpData = new Instances(reader);
@@ -80,6 +81,10 @@ public class RelinkLoader implements SingleVersionLoader {
 
         // setting class attribute
         tmpData.setClassIndex(tmpData.numAttributes() - 1);
+        
+        if(!binaryClass) {
+            WekaUtils.makeClassNumeric(tmpData);
+        }
 
         return tmpData;
     }

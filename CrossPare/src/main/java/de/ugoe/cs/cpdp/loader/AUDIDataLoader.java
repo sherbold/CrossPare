@@ -38,7 +38,11 @@ class AUDIDataLoader implements SingleVersionLoader {
      * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load( java.io.File)
      */
     @Override
-    public Instances load(File file) {
+    public Instances load(File file, boolean binaryClass) {
+        if(!binaryClass) {
+            // TODO implement regression loading
+            throw new RuntimeException("regrssion loading not yet supported for AUDIDataLoader");
+        }
         final String[] lines;
         try {
             lines = FileTools.getLinesFromFile(file.getAbsolutePath());

@@ -37,7 +37,7 @@ class CSVDataLoader implements SingleVersionLoader {
      * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load( java.io.File)
      */
     @Override
-    public Instances load(File file) {
+    public Instances load(File file, boolean binaryClass) {
         final String[] lines;
         try {
             lines = FileTools.getLinesFromFile(file.getAbsolutePath());
@@ -53,12 +53,19 @@ class CSVDataLoader implements SingleVersionLoader {
         for (int j = 0; j < lineSplit.length - 4; j++) {
             atts.add(new Attribute(lineSplit[j + 3]));
         }
-        final ArrayList<String> classAttVals = new ArrayList<>();
-        classAttVals.add("0");
-        classAttVals.add("1");
-        final Attribute classAtt = new Attribute("bug", classAttVals);
+        Attribute classAtt;
+        if(binaryClass) {
+            // add nominal class attribute
+            final ArrayList<String> classAttVals = new ArrayList<>();
+            classAttVals.add("0");
+            classAttVals.add("1");
+            classAtt = new Attribute("bug", classAttVals);
+        } else {
+            // add numeric class attribute
+            classAtt = new Attribute("bugs");
+        }
         atts.add(classAtt);
-
+        
         final Instances data = new Instances(file.getName(), atts, 0);
         data.setClass(classAtt);
 
@@ -69,7 +76,13 @@ class CSVDataLoader implements SingleVersionLoader {
             for (int j = 0; j < values.length - 1; j++) {
                 values[j] = Double.parseDouble(lineSplit[j + 3].trim());
             }
-            values[values.length - 1] = lineSplit[lineSplit.length - 1].trim().equals("0") ? 0 : 1;
+            if(binaryClass) {
+                // nominal class value
+                values[values.length - 1] = lineSplit[lineSplit.length - 1].trim().equals("0") ? 0 : 1;
+            } else {
+                // numeric class value
+                values[values.length - 1] = Double.parseDouble(lineSplit[lineSplit.length - 1].trim());
+            }
             data.add(new DenseInstance(1.0, values));
         }
 

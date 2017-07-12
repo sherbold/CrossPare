@@ -127,7 +127,11 @@ class AUDIChangeLoader implements SingleVersionLoader {
      */
     @SuppressWarnings("boxing")
     @Override
-    public Instances load(File file) {
+    public Instances load(File file, boolean binaryClass) {
+        if(!binaryClass) {
+            // TODO implement regression loading
+            throw new RuntimeException("regrssion loading not yet supported for AUDIChangeLoader");
+        }
         final String[] lines;
         String[] lineSplit;
         String[] lineSplitBug;

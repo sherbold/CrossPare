@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
@@ -123,7 +124,7 @@ public class NasaARFFLoader implements SingleVersionLoader {
      * @see de.ugoe.cs.cpdp.loader.SingleVersionLoader#load(java.io.File)
      */
     @Override
-    public Instances load(File file) {
+    public Instances load(File file, boolean binaryClass) {
         Instances data;
         try(BufferedReader reader = new BufferedReader(new FileReader(file));) {
             data = new Instances(reader);
@@ -208,6 +209,10 @@ public class NasaARFFLoader implements SingleVersionLoader {
         int oldClassIndex = data.classIndex();
         data.setClassIndex(oldClassIndex + 1);
         data.deleteAttributeAt(oldClassIndex);
+        
+        if(!binaryClass) {
+            WekaUtils.makeClassNumeric(data);
+        }
 
         return data;
     }

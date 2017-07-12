@@ -128,8 +128,12 @@ public class DecentDataLoader implements SingleVersionLoader {
      * @return Instances in WEKA format
      */
     @Override
-    public Instances load(File file) {
-
+    public Instances load(File file, boolean binaryClass) {
+        if(!binaryClass) {
+            // TODO implement regression loading
+            throw new RuntimeException("regrssion loading not yet supported for DecentDataLoader");
+        }
+        
         // Set attributeFilter
         setAttributeFilter();
 

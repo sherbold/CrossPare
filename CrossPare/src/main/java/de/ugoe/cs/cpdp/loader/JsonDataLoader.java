@@ -51,7 +51,7 @@ public class JsonDataLoader implements SingleVersionLoader {
      * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load( java.io.File)
      */
     @Override
-    public Instances load(File file) {
+    public Instances load(File file, boolean binaryClass) {
         String jsonData = null;
         try {
             jsonData = FileUtils.readFileToString(file);
@@ -76,10 +76,17 @@ public class JsonDataLoader implements SingleVersionLoader {
                 atts.add(new Attribute(key));
             }
         }
-        final ArrayList<String> classAttVals = new ArrayList<>();
-        classAttVals.add("0");
-        classAttVals.add("1");
-        final Attribute classAtt = new Attribute("bug", classAttVals);
+        Attribute classAtt;
+        if(binaryClass) {
+            // add nominal class attribute
+            final ArrayList<String> classAttVals = new ArrayList<>();
+            classAttVals.add("0");
+            classAttVals.add("1");
+            classAtt = new Attribute("bug", classAttVals);
+        } else {
+            // add numeric class attribute
+            classAtt = new Attribute("bugs");
+        }
         atts.add(classAtt);
 
         final Instances data = new Instances(file.getName(), atts, 0);
@@ -117,7 +124,11 @@ public class JsonDataLoader implements SingleVersionLoader {
             }
             if (!hasMissingValue) {
                 // only add instances without missing values.
-                values[values.length - 1] = entity.getBoolean("label") ? 1.0 : 0.0;
+                if(binaryClass) {
+                    values[values.length - 1] = entity.getBoolean("label") ? 1.0 : 0.0;
+                } else {
+                    values[values.length - 1] = entity.getDouble("bugs");
+                }
                 data.add(new DenseInstance(1.0, values));
             }
         }

@@ -30,9 +30,10 @@ public interface SingleVersionLoader {
      * 
      * @param file
      *            handle to the file of the instances
+     * @param binaryClass defines if the classification is loaded binary (0,1) or as a bug count >=0
      * @return the instances
      */
-    Instances load(File file);
+    Instances load(File file, boolean binaryClass);
 
     /**
      * Defines a filter for the files to be loaded; only strings that end with the filter are

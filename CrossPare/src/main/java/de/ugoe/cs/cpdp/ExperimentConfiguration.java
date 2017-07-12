@@ -469,6 +469,10 @@ public class ExperimentConfiguration extends DefaultHandler {
                 final IVersionLoader loader = (IVersionLoader) Class
                     .forName("de.ugoe.cs.cpdp.loader." + attributes.getValue("name")).newInstance();
                 loader.setLocation(attributes.getValue("datalocation"));
+                String classType = attributes.getValue("classtype");
+                if( classType!=null ) {
+                    loader.setClassType(classType);
+                }
                 this.loaders.add(loader);
 
                 // TODO location as relative

@@ -14,6 +14,7 @@
 
 package de.ugoe.cs.cpdp.util;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
@@ -23,6 +24,7 @@ import weka.classifiers.Classifier;
 import weka.classifiers.functions.RBFNetwork;
 import weka.classifiers.meta.CVParameterSelection;
 import weka.classifiers.rules.ZeroR;
+import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -86,7 +88,8 @@ public class WekaUtils {
          * @param num
          *            number of instance
          */
-        @SuppressWarnings("hiding") DistChar(double mean, double std, double min, double max, int num) {
+        @SuppressWarnings("hiding")
+        DistChar(double mean, double std, double min, double max, int num) {
             this.mean = mean;
             this.std = std;
             this.min = min;
@@ -262,15 +265,17 @@ public class WekaUtils {
         }
         return traindataCopy;
     }
-    
+
     /**
      * <p>
-     * Wrapper function around the buildClassifier method of WEKA. The intend is to collect workarounds
-     * required to get some WEKA classifiers running here. 
+     * Wrapper function around the buildClassifier method of WEKA. The intend is to collect
+     * workarounds required to get some WEKA classifiers running here.
      * </p>
      *
-     * @param classifier the classifier that is trained
-     * @param traindata the training data
+     * @param classifier
+     *            the classifier that is trained
+     * @param traindata
+     *            the training data
      */
     public static Classifier buildClassifier(Classifier classifier, Instances traindata) {
         try {
@@ -285,20 +290,18 @@ public class WekaUtils {
                 // is the problem
                 Console.traceln(Level.WARNING, "error with CVParameterSelection training");
                 Console.traceln(Level.WARNING, "trying without parameter selection...");
-                Classifier internalClassifier =
-                    ((CVParameterSelection) classifier).getClassifier();
+                Classifier internalClassifier = ((CVParameterSelection) classifier).getClassifier();
                 classifier = buildClassifier(internalClassifier, traindata);
                 Console.traceln(Level.WARNING, "...success");
             }
-            else if( classifier instanceof RBFNetwork) {
-                Console.traceln(Level.WARNING,
-                        "Failure in RBFNetwork training. Checking if this is due to too small and skewed training data.");
-                int countNoBug = traindata
-                    .attributeStats(traindata.classIndex()).nominalCounts[0];
-                int countBug = traindata
-                    .attributeStats(traindata.classIndex()).nominalCounts[1];
-                Console.traceln(Level.WARNING, "trainsize: " + traindata.size() +
-                    "; numNoBug: " + countNoBug + "; numBug: " + countBug);
+            else if (classifier instanceof RBFNetwork) {
+                Console
+                    .traceln(Level.WARNING,
+                             "Failure in RBFNetwork training. Checking if this is due to too small and skewed training data.");
+                int countNoBug = traindata.attributeStats(traindata.classIndex()).nominalCounts[0];
+                int countBug = traindata.attributeStats(traindata.classIndex()).nominalCounts[1];
+                Console.traceln(Level.WARNING, "trainsize: " + traindata.size() + "; numNoBug: " +
+                    countNoBug + "; numBug: " + countBug);
                 if (traindata.size() <= 10 && (countNoBug <= 1 || countBug <= 1)) {
                     Console
                         .traceln(Level.WARNING,
@@ -306,7 +309,7 @@ public class WekaUtils {
                     Console.traceln(Level.WARNING, "using ZeroR instead");
                     classifier = new ZeroR();
                     classifier = buildClassifier(classifier, traindata);
-                } 
+                }
                 else {
                     throw new RuntimeException(e);
                 }
@@ -332,5 +335,62 @@ public class WekaUtils {
             }
         }
         return classifier;
+    }
+
+    /**
+     * <p>
+     * Makes the class attribute binary, in case it is currently numeric.
+     * </p>
+     *
+     * @param data
+     *            the data
+     */
+    public static void makeClassBinary(Instances data) {
+        if (data.classAttribute().isNumeric()) {
+            // create new nominal attribute
+            final ArrayList<String> classAttVals = new ArrayList<>();
+            classAttVals.add("0");
+            classAttVals.add("1");
+            final Attribute classAtt =
+                new Attribute(data.classAttribute().name() + "Cls", classAttVals);
+            data.insertAttributeAt(classAtt, data.numAttributes());
+            for (Instance instance : data) {
+                double value = instance.classValue() < 1.0 ? 0 : 1;
+                instance.setValue(data.numAttributes() - 1, value);
+            }
+            // update class index and delete old class attribute
+            int oldClassIndex = data.classIndex();
+            data.setClassIndex(data.numAttributes() - 1);
+            data.deleteAttributeAt(oldClassIndex);
+        }
+        else if (!data.classAttribute().isNominal()) {
+            throw new RuntimeException("class attribute invalid: neither numeric nor nominal");
+        }
+    }
+    
+    /**
+     * <p>
+     * Makes a nominal class attribute numeric. The numeric values will just be an enumeration of the nominal classes, no real counts.
+     * </p>
+     *
+     * @param data
+     *            the data
+     */
+    public static void makeClassNumeric(Instances data) {
+        if (data.classAttribute().isNominal()) {
+            Console.traceln(Level.WARNING, "data only binary, i.e., numeric attribute will not be real counts, but still just 0, 1");
+            // create new numeric attribute
+            data.insertAttributeAt(new Attribute(data.classAttribute().name()+"Num"), data.numAttributes());
+            for (Instance instance : data) {
+                instance.setValue(data.numAttributes() - 1, instance.classValue());
+            }
+            // update class index and delete old class attribute
+            int oldClassIndex = data.classIndex();
+            data.setClassIndex(data.numAttributes() - 1);
+            data.deleteAttributeAt(oldClassIndex);
+        }
+        else if (!data.classAttribute().isNumeric()) {
+            throw new RuntimeException("class attribute invalid: neither numeric nor nominal");
+        }
     }
 }

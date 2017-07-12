@@ -36,6 +36,11 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      * Path of the data.
      */
     protected String path = "";
+    
+    /**
+     * Default for class type is binary, not numeric. This ensure downwards compability. 
+     */
+    private boolean isBinaryClass = true;
 
     /**
      * @see de.ugoe.cs.cpdp.loader.IVersionLoader#setLocation(java.lang.String)
@@ -43,6 +48,19 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
     @Override
     public void setLocation(String location) {
         this.path = location;
+    }
+    
+    @Override
+    public void setClassType(String classType) {
+        if("binary".equals(classType)) {
+            isBinaryClass = true;
+        }
+        else if("numeric".equals(classType)) {
+            isBinaryClass = false;
+        }
+        else {
+            throw new RuntimeException("Unsupported type for class attribute (allowed: binary, numeric): " + classType);
+        }
     }
 
     /*
@@ -67,7 +85,9 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                         if (versionFile.isFile() &&
                             instancesLoader.filenameFilter(versionFile.getName()))
                         {
-                            Instances data = instancesLoader.load(versionFile);
+                            // currently only supports binary classification
+                            // TODO allow regression loading
+                            Instances data = instancesLoader.load(versionFile, isBinaryClass);
                             String versionName = data.relationName();
                             List<Double> efforts = getEfforts(data);
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
