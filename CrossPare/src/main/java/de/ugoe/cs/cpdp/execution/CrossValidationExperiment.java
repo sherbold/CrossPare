@@ -156,11 +156,10 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
                 if (numResultsAvailable >= numTrainers * this.config.getRepetitions()) {
-                    Console.traceln(Level.INFO,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: results already available; skipped",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion()));
+                    Console.traceln(Level.INFO, String
+                        .format("[%s] [%02d/%02d] %s: results already available; skipped",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion()));
                     versionCount++;
                     continue;
                 }
@@ -168,6 +167,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
+                List<Double> numBugs = testVersion.getNumBugs();
 
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
                     Console.traceln(Level.FINE,
@@ -189,7 +189,9 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                                   testVersionCount, testVersion.getVersion(),
                                                   evaluator.getClass().getName()));
                     List<ITrainer> allTrainers = new LinkedList<>();
-                    for (ISetWiseTrainingStrategy setwiseTrainer : this.config.getSetWiseTrainers()) {
+                    for (ISetWiseTrainingStrategy setwiseTrainer : this.config
+                        .getSetWiseTrainers())
+                    {
                         allTrainers.add(setwiseTrainer);
                     }
                     for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
@@ -207,7 +209,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, testdata, allTrainers, efforts, writeHeader,
+                    evaluator.apply(testdata, testdata, allTrainers, efforts, numBugs, writeHeader,
                                     this.config.getResultStorages());
                     writeHeader = false;
                 }

@@ -109,11 +109,10 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
                 if (numResultsAvailable >= numTrainers * this.config.getRepetitions()) {
-                    Console.traceln(Level.INFO,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: results already available; skipped",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion()));
+                    Console.traceln(Level.INFO, String
+                        .format("[%s] [%02d/%02d] %s: results already available; skipped",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion()));
                     versionCount++;
                     continue;
                 }
@@ -121,6 +120,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
+                List<Double> numBugs = testVersion.getNumBugs();
 
                 // now split data into parts
                 double percentage = 0.5; // 0.5 as default value
@@ -142,6 +142,9 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         if (efforts != null) {
                             efforts.remove(i);
                         }
+                        if (numBugs != null) {
+                            numBugs.remove(i);
+                        }
                     }
                     else {
                         traindata.delete(i);
@@ -159,21 +162,17 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                 for (IPointWiseDataselectionStrategy dataselector : this.config
                     .getPointWiseSelectors())
                 {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying pointwise selection %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  dataselector.getClass().getName()));
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), dataselector.getClass().getName()));
                     traindata = dataselector.apply(testdata, traindata);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  processor.getClass().getName()));
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
                     processor.apply(testdata, traindata);
                 }
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
@@ -213,7 +212,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
+                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, writeHeader,
                                     this.config.getResultStorages());
                     writeHeader = false;
                 }

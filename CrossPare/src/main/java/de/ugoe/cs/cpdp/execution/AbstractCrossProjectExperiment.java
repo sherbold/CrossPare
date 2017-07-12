@@ -168,11 +168,10 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
                 if (numResultsAvailable >= this.config.getRepetitions()) {
-                    Console.traceln(Level.INFO,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: results already available; skipped",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion()));
+                    Console.traceln(Level.INFO, String
+                        .format("[%s] [%02d/%02d] %s: results already available; skipped",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion()));
                     versionCount++;
                     continue;
                 }
@@ -180,6 +179,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 // Setup testdata and training data
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
+                List<Double> numBugs = testVersion.getNumBugs();
                 SetUniqueList<Instances> traindataSet =
                     SetUniqueList.setUniqueList(new LinkedList<Instances>());
                 for (SoftwareVersion trainingVersion : versions) {
@@ -193,15 +193,15 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 }
 
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  processor.getClass().getName()));
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
                     processor.apply(testdata, traindataSet);
                 }
-                for (ISetWiseDataselectionStrategy dataselector : this.config.getSetWiseSelectors()) {
+                for (ISetWiseDataselectionStrategy dataselector : this.config
+                    .getSetWiseSelectors())
+                {
                     Console
                         .traceln(Level.FINE,
                                  String.format("[%s] [%02d/%02d] %s: applying setwise selection %s",
@@ -210,13 +210,13 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                                dataselector.getClass().getName()));
                     dataselector.apply(testdata, traindataSet);
                 }
-                for (ISetWiseProcessingStrategy processor : this.config.getSetWisePostprocessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  processor.getClass().getName()));
+                for (ISetWiseProcessingStrategy processor : this.config
+                    .getSetWisePostprocessors())
+                {
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
                     processor.apply(testdata, traindataSet);
                 }
                 for (ISetWiseTrainingStrategy setwiseTrainer : this.config.getSetWiseTrainers()) {
@@ -231,12 +231,10 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
                     .getSetWiseTestdataAwareTrainers())
                 {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying testdata aware setwise trainer %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  setwiseTestdataAwareTrainer.getName()));
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying testdata aware setwise trainer %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), setwiseTestdataAwareTrainer.getName()));
                     setwiseTestdataAwareTrainer.apply(traindataSet, testdata);
                 }
                 Instances traindata = makeSingleTrainingSet(traindataSet);
@@ -251,21 +249,17 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 for (IPointWiseDataselectionStrategy dataselector : this.config
                     .getPointWiseSelectors())
                 {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying pointwise selection %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  dataselector.getClass().getName()));
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), dataselector.getClass().getName()));
                     traindata = dataselector.apply(testdata, traindata);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format(
-                                                  "[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
-                                                  this.config.getExperimentName(), versionCount,
-                                                  testVersionCount, testVersion.getVersion(),
-                                                  processor.getClass().getName()));
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
                     processor.apply(testdata, traindata);
                 }
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
@@ -295,7 +289,9 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                                   testVersionCount, testVersion.getVersion(),
                                                   evaluator.getClass().getName()));
                     List<ITrainer> allTrainers = new LinkedList<>();
-                    for (ISetWiseTrainingStrategy setwiseTrainer : this.config.getSetWiseTrainers()) {
+                    for (ISetWiseTrainingStrategy setwiseTrainer : this.config
+                        .getSetWiseTrainers())
+                    {
                         allTrainers.add(setwiseTrainer);
                     }
                     for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
@@ -313,7 +309,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
+                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, writeHeader,
                                     this.config.getResultStorages());
                     writeHeader = false;
                 }

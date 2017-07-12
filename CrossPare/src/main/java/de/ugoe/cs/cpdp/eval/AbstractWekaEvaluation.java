@@ -99,6 +99,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                       Instances traindata,
                       List<ITrainer> trainers,
                       List<Double> efforts,
+                      List<Double> numBugs,
                       boolean writeHeader,
                       List<IResultStorage> storages)
     {

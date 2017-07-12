@@ -103,6 +103,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             Instances testdata = testVersion.getInstances();
             Instances traindata = new Instances(testdata);
             List<Double> efforts = testVersion.getEfforts();
+            List<Double> numBugs = testVersion.getNumBugs();
 
             // Give the dataset a new name
             testdata.setRelationName(testVersion.getProject());
@@ -116,7 +117,9 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                 processor.apply(testdata, traindata);
             }
 
-            for (IPointWiseDataselectionStrategy dataselector : this.config.getPointWiseSelectors()) {
+            for (IPointWiseDataselectionStrategy dataselector : this.config
+                .getPointWiseSelectors())
+            {
                 Console
                     .traceln(Level.FINE,
                              String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
@@ -175,7 +178,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     evaluator.setParameter(this.config.getResultsPath() + "/" +
                         this.config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testdata, traindata, allTrainers, efforts, writeHeader,
+                evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, writeHeader,
                                 this.config.getResultStorages());
                 writeHeader = false;
             }
@@ -184,8 +187,8 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
 
             Console.traceln(Level.INFO,
                             String.format("[%s] [%02d/%02d] %s: finished",
-                                          this.config.getExperimentName(), versionCount, versions.size(),
-                                          testVersion.getProject()));
+                                          this.config.getExperimentName(), versionCount,
+                                          versions.size(), testVersion.getProject()));
 
         }
 

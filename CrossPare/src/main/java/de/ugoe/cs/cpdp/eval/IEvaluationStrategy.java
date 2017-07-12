@@ -39,6 +39,8 @@ public interface IEvaluationStrategy extends IParameterizable {
      *            list of training algorithms used to train the classifiers
      * @param efforts
      *            list with review efforts for each instance
+     * @param numBugs
+     *            list with the number of bugs for each instance
      * @param writeHeader
      *            if true, a header line for the results file is written (may not be applicable)
      * @param storages
@@ -48,6 +50,7 @@ public interface IEvaluationStrategy extends IParameterizable {
                Instances traindata,
                List<ITrainer> trainers,
                List<Double> efforts,
+               List<Double> numBugs,
                boolean writeHeader,
                List<IResultStorage> storages);
 }
