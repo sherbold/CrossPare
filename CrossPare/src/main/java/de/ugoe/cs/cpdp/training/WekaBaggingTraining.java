@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.DenseInstance;
@@ -167,7 +168,7 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
             this.trainingData = new LinkedList<>();
             for (Instances traindata : traindataSet) {
                 Classifier currentClassifier = setupClassifier();
-                currentClassifier.buildClassifier(traindata);
+                currentClassifier = WekaUtils.buildClassifier(currentClassifier, traindata);
                 this.classifiers.add(currentClassifier);
                 this.trainingData.add(new Instances(traindata));
             }
@@ -182,8 +183,8 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
         public void buildClassifier(Instances traindata) throws Exception {
             this.classifiers = new LinkedList<>();
             this.trainingData = new LinkedList<>();
-            final Classifier currentClassifier = setupClassifier();
-            currentClassifier.buildClassifier(traindata);
+            Classifier currentClassifier = setupClassifier();
+            currentClassifier = WekaUtils.buildClassifier(currentClassifier, traindata);
             this.classifiers.add(currentClassifier);
             this.trainingData.add(new Instances(traindata));
         }

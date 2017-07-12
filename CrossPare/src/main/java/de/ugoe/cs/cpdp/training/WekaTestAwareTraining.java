@@ -16,9 +16,9 @@ package de.ugoe.cs.cpdp.training;
 
 import java.util.logging.Level;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.cpdp.wekaclassifier.ITestAwareClassifier;
 import de.ugoe.cs.util.console.Console;
-import weka.classifiers.rules.ZeroR;
 import weka.core.Instances;
 
 /**
@@ -44,28 +44,9 @@ public class WekaTestAwareTraining extends WekaBaseTraining implements ITestAwar
             throw new RuntimeException("classifier must implement the ITestAwareClassifier interface in order to be used as TestAwareTrainingStrategy");
         }
         ((ITestAwareClassifier) this.classifier).setTestdata(testdata);
-        try {
-            if (this.classifier == null) {
-                Console.traceln(Level.WARNING, String.format("classifier null!"));
-            }
-            this.classifier.buildClassifier(traindata);
+        if (this.classifier == null) {
+            Console.traceln(Level.WARNING, String.format("classifier null!"));
         }
-        catch (Exception e) {
-            if (e.getMessage().contains("Not enough training instances with class labels")) {
-                Console.traceln(Level.SEVERE,
-                                "failure due to lack of instances: " + e.getMessage());
-                Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
-                this.classifier = new ZeroR();
-                try {
-                    this.classifier.buildClassifier(traindata);
-                }
-                catch (Exception e2) {
-                    throw new RuntimeException(e2);
-                }
-            }
-            else {
-                throw new RuntimeException(e);
-            }
-        }
+        this.classifier = WekaUtils.buildClassifier(this.classifier, traindata);
     }
 }

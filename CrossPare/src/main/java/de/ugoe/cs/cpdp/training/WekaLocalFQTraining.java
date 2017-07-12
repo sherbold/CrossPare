@@ -23,11 +23,10 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import de.ugoe.cs.cpdp.training.QuadTree;
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
-import weka.classifiers.meta.CVParameterSelection;
-import weka.classifiers.rules.ZeroR;
 import weka.core.DenseInstance;
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
@@ -558,51 +557,9 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 this.cclassifier.put(cnumber, setupClassifier()); // this is the classifier used for
                                                                   // the
                 // cluster
-                try {
-                    this.cclassifier.get(cnumber).buildClassifier(this.ctraindata.get(cnumber));
-                }
-                catch (IllegalArgumentException e) {
-                    Classifier tmpClassifier = this.cclassifier.get(cnumber);
-                    Instances tmpTraindata = this.ctraindata.get(cnumber);
-                    if (tmpClassifier instanceof CVParameterSelection) {
-                        // in case of parameter selection, check if internal cross validation loop
-                        // is the problem
-                        Console.traceln(Level.WARNING, "error with CVParameterSelection training");
-                        Console.traceln(Level.WARNING, "trying without parameter selection...");
-                        System.out.println();
-                        try {
-                            Classifier internalClassifier =
-                                ((CVParameterSelection) tmpClassifier).getClassifier();
-                            internalClassifier.buildClassifier(tmpTraindata);
-                        }
-                        catch (IllegalArgumentException e2) {
-                            Console.traceln(Level.WARNING,
-                                            "still not working - try if ZeroR is sufficient");
-                            int countNoBug = tmpTraindata
-                                .attributeStats(tmpTraindata.classIndex()).nominalCounts[0];
-                            int countBug = tmpTraindata
-                                .attributeStats(tmpTraindata.classIndex()).nominalCounts[1];
-                            Console.traceln(Level.WARNING, "trainsize: " + tmpTraindata.size() +
-                                "; numNoBug: " + countNoBug + "; numBug: " + countBug);
-                            if (tmpTraindata.size() < 10 && (countNoBug <= 1 || countBug <= 1)) {
-                                Console
-                                    .traceln(Level.WARNING,
-                                             "only one instance in minority class and less than 10 instances");
-                                Console.traceln(Level.WARNING, "using ZeroR instead");
-                                Classifier replacementClassifier = new ZeroR();
-                                replacementClassifier.buildClassifier(tmpTraindata);
-                                this.cclassifier.put(cnumber, replacementClassifier);
-                            }
-                            else {
-                                throw e2;
-                            }
-                        }
-                        Console.traceln(Level.WARNING, "...success");
-                    }
-                    else {
-                        throw e;
-                    }
-                }
+                Classifier currentClassifier = setupClassifier();
+                currentClassifier = WekaUtils.buildClassifier(currentClassifier, this.ctraindata.get(cnumber));
+                this.cclassifier.put(cnumber, currentClassifier);
                 // Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
                 // traindata_count += ctraindata.get(cnumber).size();
                 // Console.traceln(Level.INFO,

@@ -14,8 +14,15 @@
 
 package de.ugoe.cs.cpdp.util;
 
+import java.util.logging.Level;
+
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
+import de.ugoe.cs.util.console.Console;
+import weka.classifiers.Classifier;
+import weka.classifiers.functions.RBFNetwork;
+import weka.classifiers.meta.CVParameterSelection;
+import weka.classifiers.rules.ZeroR;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -254,5 +261,76 @@ public class WekaUtils {
                                           traindata.get(i).value(attributeIndex) * SCALER);
         }
         return traindataCopy;
+    }
+    
+    /**
+     * <p>
+     * Wrapper function around the buildClassifier method of WEKA. The intend is to collect workarounds
+     * required to get some WEKA classifiers running here. 
+     * </p>
+     *
+     * @param classifier the classifier that is trained
+     * @param traindata the training data
+     */
+    public static Classifier buildClassifier(Classifier classifier, Instances traindata) {
+        try {
+            if (classifier == null) {
+                Console.traceln(Level.WARNING, String.format("classifier null!"));
+            }
+            classifier.buildClassifier(traindata);
+        }
+        catch (IllegalArgumentException e) {
+            if (classifier instanceof CVParameterSelection) {
+                // in case of parameter selection, check if internal cross validation loop
+                // is the problem
+                Console.traceln(Level.WARNING, "error with CVParameterSelection training");
+                Console.traceln(Level.WARNING, "trying without parameter selection...");
+                Classifier internalClassifier =
+                    ((CVParameterSelection) classifier).getClassifier();
+                classifier = buildClassifier(internalClassifier, traindata);
+                Console.traceln(Level.WARNING, "...success");
+            }
+            else if( classifier instanceof RBFNetwork) {
+                Console.traceln(Level.WARNING,
+                        "Failure in RBFNetwork training. Checking if this is due to too small and skewed training data.");
+                int countNoBug = traindata
+                    .attributeStats(traindata.classIndex()).nominalCounts[0];
+                int countBug = traindata
+                    .attributeStats(traindata.classIndex()).nominalCounts[1];
+                Console.traceln(Level.WARNING, "trainsize: " + traindata.size() +
+                    "; numNoBug: " + countNoBug + "; numBug: " + countBug);
+                if (traindata.size() <= 10 && (countNoBug <= 1 || countBug <= 1)) {
+                    Console
+                        .traceln(Level.WARNING,
+                                 "only one instance in minority class and less than 10 instances");
+                    Console.traceln(Level.WARNING, "using ZeroR instead");
+                    classifier = new ZeroR();
+                    classifier = buildClassifier(classifier, traindata);
+                } 
+                else {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        catch (Exception e) {
+            if (e.getMessage() != null &&
+                e.getMessage().contains("Not enough training instances with class labels"))
+            {
+                Console.traceln(Level.SEVERE,
+                                "failure due to lack of instances: " + e.getMessage());
+                Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
+                classifier = new ZeroR();
+                try {
+                    classifier.buildClassifier(traindata);
+                }
+                catch (Exception e2) {
+                    throw new RuntimeException(e2);
+                }
+            }
+            else {
+                throw new RuntimeException(e);
+            }
+        }
+        return classifier;
     }
 }

@@ -177,7 +177,7 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
         public void buildClassifier(Instances traindata) throws Exception {
             this.traindata = new Instances(traindata);
             this.laserClassifier = setupClassifier();
-            this.laserClassifier.buildClassifier(traindata);
+            this.laserClassifier = WekaUtils.buildClassifier(this.laserClassifier, traindata);
         }
     }
 }

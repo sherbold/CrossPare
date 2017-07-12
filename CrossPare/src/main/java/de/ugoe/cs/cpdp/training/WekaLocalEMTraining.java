@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
@@ -255,8 +256,9 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
             Iterator<Integer> clusternumber = this.ctraindata.keySet().iterator();
             while (clusternumber.hasNext()) {
                 int cnumber = clusternumber.next();
-                this.cclassifier.put(cnumber, setupClassifier());
-                this.cclassifier.get(cnumber).buildClassifier(this.ctraindata.get(cnumber));
+                Classifier currentClassifier = setupClassifier();
+                currentClassifier = WekaUtils.buildClassifier(currentClassifier, this.ctraindata.get(cnumber));
+                this.cclassifier.put(cnumber, currentClassifier);
 
                 // Console.traceln(Level.INFO, String.format("classifier in cluster "+cnumber));
             }

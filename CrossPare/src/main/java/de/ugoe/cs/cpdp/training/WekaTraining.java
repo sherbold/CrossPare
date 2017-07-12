@@ -16,8 +16,8 @@ package de.ugoe.cs.cpdp.training;
 
 import java.util.logging.Level;
 
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.util.console.Console;
-import weka.classifiers.rules.ZeroR;
 import weka.core.Instances;
 
 /**
@@ -32,7 +32,8 @@ import weka.core.Instances;
  * {@code
  * <!-- examples -->
  * <trainer name="WekaTraining" param="NaiveBayes weka.classifiers.bayes.NaiveBayes" />
- * <trainer name="WekaTraining" param="Logistic weka.classifiers.functions.Logistic -R 1.0E-8 -M -1" />
+ * <trainer name="WekaTraining" param=
+"Logistic weka.classifiers.functions.Logistic -R 1.0E-8 -M -1" />
  * }
  * </pre>
  * 
@@ -46,30 +47,9 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
             Console.printerr("classifier of WekaTraining is null");
             throw new RuntimeException("classifier of WekaTraining is null");
         }
-        try {
-            if (this.classifier == null) {
-                Console.traceln(Level.WARNING, String.format("classifier null!"));
-            }
-            this.classifier.buildClassifier(traindata);
+        if (this.classifier == null) {
+            Console.traceln(Level.WARNING, String.format("classifier null!"));
         }
-        catch (Exception e) {
-            if (e.getMessage() != null &&
-                e.getMessage().contains("Not enough training instances with class labels"))
-            {
-                Console.traceln(Level.SEVERE,
-                                "failure due to lack of instances: " + e.getMessage());
-                Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
-                this.classifier = new ZeroR();
-                try {
-                    this.classifier.buildClassifier(traindata);
-                }
-                catch (Exception e2) {
-                    throw new RuntimeException(e2);
-                }
-            }
-            else {
-                throw new RuntimeException(e);
-            }
-        }
+        this.classifier = WekaUtils.buildClassifier(this.classifier, traindata);
     }
 }
