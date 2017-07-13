@@ -153,8 +153,17 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`fscore`,");
         preparedSql.append("`gscore`,");
         preparedSql.append("`mcc`,");
+        preparedSql.append("`balance`,");
         preparedSql.append("`auc`,");
         preparedSql.append("`aucec`,");
+        preparedSql.append("`nofb20`,");
+        preparedSql.append("`relb20`,");
+        preparedSql.append("`nofi80`,");
+        preparedSql.append("`reli80`,");
+        preparedSql.append("`rele80`,");
+        preparedSql.append("`necm15`,");
+        preparedSql.append("`necm20`,");
+        preparedSql.append("`necm25`,");
         preparedSql.append("`tpr`,");
         preparedSql.append("`tnr`,");
         preparedSql.append("`fpr`,");
@@ -163,7 +172,7 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`fn`,");
         preparedSql.append("`tn`,");
         preparedSql.append("`fp`) VALUES ");
-        preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql.toString());) {
             stmt.setString(1, result.getConfigurationName());
@@ -178,15 +187,24 @@ public class MySQLResultStorage implements IResultStorage {
             stmt.setDouble(10, result.getGscore());
             stmt.setDouble(11, result.getMcc());
             stmt.setDouble(12, result.getAuc());
-            stmt.setDouble(13, result.getAucec());
-            stmt.setDouble(14, result.getTpr());
-            stmt.setDouble(15, result.getTnr());
-            stmt.setDouble(16, result.getFpr());
-            stmt.setDouble(17, result.getFnr());
-            stmt.setDouble(18, result.getTp());
-            stmt.setDouble(19, result.getFn());
-            stmt.setDouble(20, result.getTn());
-            stmt.setDouble(21, result.getFp());
+            stmt.setDouble(13, result.getBalance());
+            stmt.setDouble(14, result.getAucec());
+            stmt.setDouble(15, result.getNofb20());
+            stmt.setDouble(16, result.getRelb20());
+            stmt.setDouble(17, result.getNofi80());
+            stmt.setDouble(18, result.getReli80());
+            stmt.setDouble(19, result.getRele80());
+            stmt.setDouble(20, result.getNecm15());
+            stmt.setDouble(21, result.getNecm20());
+            stmt.setDouble(22, result.getNecm25());
+            stmt.setDouble(23, result.getTpr());
+            stmt.setDouble(24, result.getTnr());
+            stmt.setDouble(25, result.getFpr());
+            stmt.setDouble(26, result.getFnr());
+            stmt.setDouble(27, result.getTp());
+            stmt.setDouble(28, result.getFn());
+            stmt.setDouble(29, result.getTn());
+            stmt.setDouble(30, result.getFp());
 
             int qryResult = stmt.executeUpdate();
             if (qryResult < 1) {
@@ -267,7 +285,12 @@ public class MySQLResultStorage implements IResultStorage {
             "`recall` double DEFAULT NULL," + "`precision` double DEFAULT NULL," +
             "`fscore` double DEFAULT NULL," + "`gscore` double DEFAULT NULL," +
             "`mcc` double DEFAULT NULL," + "`auc` double DEFAULT NULL," +
-            "`aucec` double DEFAULT NULL," + "`tpr` double DEFAULT NULL," +
+            "`balance` double DEFAULT NULL," + 
+            "`aucec` double DEFAULT NULL," + "`nofb20` double DEFAULT NULL," +
+            "`relb20` double DEFAULT NULL," + "`nofi80` double DEFAULT NULL," +  
+            "`reli80` double DEFAULT NULL," + "`rele80` double DEFAULT NULL," +  
+            "`necm15` double DEFAULT NULL," + "`necm20` double DEFAULT NULL," +  
+            "`necm25` double DEFAULT NULL," + "`tpr` double DEFAULT NULL," +
             "`tnr` double DEFAULT NULL," + "`fpr` double DEFAULT NULL," +
             "`fnr` double DEFAULT NULL," + "`tp` double DEFAULT NULL," +
             "`fn` double DEFAULT NULL," + "`tn` double DEFAULT NULL," +
