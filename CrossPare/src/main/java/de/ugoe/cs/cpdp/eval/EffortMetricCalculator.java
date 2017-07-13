@@ -102,6 +102,9 @@ public class EffortMetricCalculator {
      * @return AUCEC value
      */
     public double getAUCEC() {
+        if( scores==null ) {
+            return -1;
+        }
         // Calculate the Riemann integral
         // y-axis = relative number of bugs found
         // x-axis = relative effort related overall project size
@@ -122,6 +125,9 @@ public class EffortMetricCalculator {
      * @return NofB20 value
      */
     public double getNofb20() {
+        if( scores==null ) {
+            return -1;
+        }
         double bugsFound = 0.0;
         double relativeEffort = 0.0;
         for (ScoreEffortPair score : scores) {
@@ -142,6 +148,9 @@ public class EffortMetricCalculator {
      * @return RelB20 value
      */
     public double getRelb20() {
+        if( scores==null ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         double relativeEffort = 0.0;
         for (ScoreEffortPair score : scores) {
@@ -164,6 +173,9 @@ public class EffortMetricCalculator {
      * @return NofI80 value
      */
     public double getNofi80() {
+        if( scores==null ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         int numInstances = 0;
         for (ScoreEffortPair score : scores) {
@@ -185,6 +197,9 @@ public class EffortMetricCalculator {
      * @return RelI80 value
      */
     public double getReli80() {
+        if( scores==null ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         int numInstances = 0;
         for (ScoreEffortPair score : scores) {
@@ -206,6 +221,9 @@ public class EffortMetricCalculator {
      * @return
      */
     public double getRele80() {
+        if( scores==null ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         double relativeEffort = 0.0;
         for (ScoreEffortPair score : scores) {
