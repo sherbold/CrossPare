@@ -17,8 +17,6 @@ package de.ugoe.cs.cpdp.eval;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,10 +32,6 @@ import weka.core.Instances;
  * Base class for the evaluation of results of classifiers compatible with the {@link Classifier}
  * interface. For each classifier, the following metrics are calculated:
  * <ul>
- * <li>succHe: Success with recall>0.7, precision>0.5</li>
- * <li>succZi: Success with recall>=0.75, precision>=0.7, and error<=0.25</li>
- * <li>succG75: Success with gscore>0.75</li>
- * <li>succG60: Success with gscore>0.6</li>
  * <li>error</li>
  * <li>recall</li>
  * <li>precision</li>
@@ -45,7 +39,16 @@ import weka.core.Instances;
  * <li>gscore</li>
  * <li>MCC</li>
  * <li>AUC</li>
- * <li>AUCEC (weighted by LOC, if applicable; 0.0 if LOC not available)</li>
+ * <li>balance</li>
+ * <li>AUCEC</li>
+ * <li>NofB20</li>
+ * <li>RelB20</li>
+ * <li>NofI80</li>
+ * <li>RelI80</li>
+ * <li>RelE80</li>
+ * <li>NECM15</li>
+ * <li>NECM20</li>
+ * <li>NECM25</li>
  * <li>tpr: true positive rate</li>
  * <li>tnr: true negative rate</li>
  * <li>fpr: false positive rate</li>
@@ -121,10 +124,6 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         if (writeHeader) {
             this.output.append("version,size_test,size_training");
             for (ITrainer trainer : trainers) {
-                this.output.append(",succHe_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",succZi_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",succG75_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",succG60_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",error_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",recall_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",precision_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -150,28 +149,29 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         this.output.append("," + traindata.numInstances());
 
         Evaluation eval = null;
+        EffortMetricCalculator effortEval = null;
         Iterator<Classifier> classifierIter = classifiers.iterator();
         Iterator<ExperimentResult> resultIter = experimentResults.iterator();
         while (classifierIter.hasNext()) {
             Classifier classifier = classifierIter.next();
             eval = createEvaluator(testdata, classifier);
-
+            effortEval = new EffortMetricCalculator(testdata, classifier, efforts, numBugs);
+            
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
             double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
-            double aucec = calculateReviewEffort(testdata, classifier, efforts, numBugs);
-            double succHe = eval.recall(1) >= 0.7 && eval.precision(1) >= 0.5 ? 1.0 : 0.0;
-            double succZi =
-                eval.recall(1) >= 0.75 && eval.precision(1) >= 0.75 && eval.errorRate() <= 0.25
-                    ? 1.0
-                    : 0.0;
-            double succG75 = gmeasure > 0.75 ? 1.0 : 0.0;
-            double succG60 = gmeasure > 0.6 ? 1.0 : 0.0;
-
-            this.output.append("," + succHe);
-            this.output.append("," + succZi);
-            this.output.append("," + succG75);
-            this.output.append("," + succG60);
+            double balance = 1.0-Math.sqrt(Math.pow(1-eval.recall(1),2)+Math.pow(pf,2))/Math.sqrt(2);
+            double aucec = effortEval.getAUCEC();
+            double nofb20 = effortEval.getNofb20();
+            double relb20 = effortEval.getRelb20();
+            double nofi80 = effortEval.getNofi80();
+            double reli80 = effortEval.getReli80();
+            double rele80 = effortEval.getRele80();
+            
+            double necm15 = getNECM(eval, 15.0);
+            double necm20 = getNECM(eval, 20.0);
+            double necm25 = getNECM(eval, 25.0);
+            
             this.output.append("," + eval.errorRate());
             this.output.append("," + eval.recall(1));
             this.output.append("," + eval.precision(1));
@@ -199,7 +199,16 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             result.setGscore(gmeasure);
             result.setMcc(eval.matthewsCorrelationCoefficient(1));
             result.setAuc(eval.areaUnderROC(1));
+            result.setBalance(balance);
             result.setAucec(aucec);
+            result.setNofb20(nofb20);
+            result.setRelb20(relb20);
+            result.setNofi80(nofi80);
+            result.setReli80(reli80);
+            result.setRele80(rele80);
+            result.setNecm15(necm15);
+            result.setNecm20(necm20);
+            result.setNecm25(necm25);
             result.setTpr(eval.truePositiveRate(1));
             result.setTnr(eval.trueNegativeRate(1));
             result.setFpr(eval.falsePositiveRate(1));
@@ -215,66 +224,6 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
 
         this.output.append(StringTools.ENDLINE);
         this.output.flush();
-    }
-
-    /**
-     * <p>
-     * Calculates the AUCEC.
-     * </p>
-     *
-     * @param testdata
-     *            the test data
-     * @param classifier
-     *            the classifier
-     * @param efforts
-     *            the effort information for each instance in the test data
-     * @param numBugs
-     *            the bug counts for each instance in the test data
-     * @return AUCEC if efforts defined, -1 otherwise
-     */
-    @SuppressWarnings("boxing")
-    private static double calculateReviewEffort(Instances testdata,
-                                                Classifier classifier,
-                                                List<Double> efforts,
-                                                List<Double> numBugs)
-    {
-        if (efforts == null) {
-            return -1.0;
-        }
-
-        final ScoreEffortPair[] scores = new ScoreEffortPair[testdata.size()];
-        double totalEffort = 0.0d;
-        double totalBugs = 0;
-        for (int i = 0; i < testdata.numInstances(); i++) {
-            try {
-                double curEffort = efforts.get(i);
-                double curScore = classifier.distributionForInstance(testdata.instance(i))[1];
-                double curBugCount = numBugs.get(i);
-                scores[i] = new ScoreEffortPair(curScore, curEffort, curBugCount);
-                totalEffort += curEffort;
-                totalBugs += curBugCount;
-            }
-            catch (Exception e) {
-                throw new RuntimeException("unexpected error during the evaluation of the review effort",
-                                           e);
-            }
-        }
-
-        // sort by score (descending), in case of equal scores use size (ascending)
-        Arrays.sort(scores, Collections.reverseOrder());
-
-        // now calculate the Riemann integral
-        // y-axis = relative number of bugs found
-        // x-axis = relative effort related overall project size
-        double aucec = 0.0;
-        double relativeBugsFound = 0.0;
-        for (ScoreEffortPair score : scores) {
-            double curRelativeEffort = score.getEffort() / totalEffort;
-            double curRelativeBugsFound = score.getBugCount() / totalBugs;
-            relativeBugsFound += curRelativeBugsFound;
-            aucec += curRelativeEffort * relativeBugsFound; // simple Riemann integral
-        }
-        return aucec;
     }
 
     /*
@@ -304,77 +253,20 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
         }
     }
-
+    
     /**
      * <p>
-     * Helper class for AUCEC calculation
+     * Calculates the normalized expected cost of misclassification through a ratio
+     * of the cost between the cost of false positives (unnecessary review effort) vs
+     * the cost of false negatives (due to the bug introduced in the final product).
      * </p>
-     * 
-     * @author Steffen Herbold
+     *
+     * @param eval evaluator used
+     * @param factor ratio between the costs as cost_fn/cost_fp
+     * @return NECM value
      */
-    private static class ScoreEffortPair implements Comparable<ScoreEffortPair> {
-
-        /**
-         * Defect prediction score of the pair
-         */
-        private final double score;
-
-        /**
-         * Associated review effort
-         */
-        private final double effort;
-
-        /**
-         * Class of the instance
-         */
-        private final double bugCount;
-
-        @SuppressWarnings("hiding")
-        public ScoreEffortPair(double score, double effort, double bugCount) {
-            this.score = score;
-            this.effort = effort;
-            this.bugCount = bugCount;
-        }
-
-        /**
-         * @return the effort
-         */
-        public double getEffort() {
-            return effort;
-        }
-
-        /**
-         * @return the actual class
-         */
-        public double getBugCount() {
-            return bugCount;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Comparable#compareTo(java.lang.Object)
-         */
-        @Override
-        public int compareTo(ScoreEffortPair other) {
-            if (score > other.score || (score == other.score && effort < other.effort)) {
-                return 1;
-            }
-            if (score < other.score || (score == other.score && effort > other.effort)) {
-                return -1;
-            }
-            return 0;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return "score=" + score + ", effort=" + effort + ", bugCount=" + bugCount;
-        }
-
+    public static double getNECM(Evaluation eval, double factor) {
+        return (eval.numFalsePositives(1)+factor*eval.numFalseNegatives(1))/
+                (eval.numInstances());
     }
 }

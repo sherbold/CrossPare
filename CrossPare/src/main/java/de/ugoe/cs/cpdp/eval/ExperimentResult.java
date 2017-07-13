@@ -20,6 +20,9 @@ public class ExperimentResult {
      */
     private final String productName;
 
+    /**
+     * name of the training product
+     */
     private String trainProductName = "";
 
     /**
@@ -73,9 +76,54 @@ public class ExperimentResult {
     double auc = Double.NaN;
 
     /**
+     * Balance between recall and probability of false detection
+     */
+    double balance = Double.NaN;
+
+    /**
      * Effort of the prediction
      */
     double aucec = Double.NaN;
+
+    /**
+     * Number of bugs found if 20 percent of the code are reviewed
+     */
+    double nofb20 = Double.NaN;
+
+    /**
+     * Relative number of bugs found if 20 percent of the code are reviewed
+     */
+    double relb20 = Double.NaN;
+
+    /**
+     * Number of instances that have to be visited before 80 percent of the bugs are found
+     */
+    double nofi80 = Double.NaN;
+
+    /**
+     * Relative number of instances that have to be visited before 80 percent of the bugs are found
+     */
+    double reli80 = Double.NaN;
+
+    /**
+     * Relative effort invested before 80 percent of the bugs are found
+     */
+    double rele80 = Double.NaN;
+
+    /**
+     * Normalized expected cost of misclassification with factor 15
+     */
+    double necm15 = Double.NaN;
+
+    /**
+     * Normalized expected cost of misclassification with factor 20
+     */
+    double necm20 = Double.NaN;
+
+    /**
+     * Normalized expected cost of misclassification with factor 25
+     */
+    double necm25 = Double.NaN;
 
     /**
      * True positive rate of the prediction
@@ -425,6 +473,30 @@ public class ExperimentResult {
 
     /**
      * <p>
+     * returns the balance
+     * </p>
+     *
+     * @return the balance
+     */
+    public double getBalance() {
+        return this.balance;
+    }
+
+    /**
+     * <p>
+     * sets the balance
+     * </p>
+     *
+     * @param auc
+     *            the balance
+     */
+    @SuppressWarnings("hiding")
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    /**
+     * <p>
      * returns the effort as AUCEC
      * </p>
      *
@@ -445,6 +517,198 @@ public class ExperimentResult {
     @SuppressWarnings("hiding")
     public void setAucec(double aucec) {
         this.aucec = aucec;
+    }
+
+    /**
+     * <p>
+     * returns the effort as NofB20
+     * </p>
+     *
+     * @return the effort as NofB20
+     */
+    public double getNofb20() {
+        return this.nofb20;
+    }
+
+    /**
+     * <p>
+     * sets the effort as NofB20
+     * </p>
+     *
+     * @param aucec
+     *            the effort as NofB20
+     */
+    @SuppressWarnings("hiding")
+    public void setNofb20(double nofb20) {
+        this.nofb20 = nofb20;
+    }
+
+    /**
+     * <p>
+     * returns the effort as RelB20
+     * </p>
+     *
+     * @return the effort as RelB20
+     */
+    public double getRelb20() {
+        return this.relb20;
+    }
+
+    /**
+     * <p>
+     * sets the effort as RelB20
+     * </p>
+     *
+     * @param aucec
+     *            the effort as RelB20
+     */
+    @SuppressWarnings("hiding")
+    public void setRelb20(double relb20) {
+        this.relb20 = relb20;
+    }
+
+    /**
+     * <p>
+     * returns the effort as NofI80
+     * </p>
+     *
+     * @return the effort as NofI80
+     */
+    public double getNofi80() {
+        return this.nofi80;
+    }
+
+    /**
+     * <p>
+     * sets the effort as NofI80
+     * </p>
+     *
+     * @param aucec
+     *            the effort as NofI80
+     */
+    @SuppressWarnings("hiding")
+    public void setNofi80(double nofi80) {
+        this.nofi80 = nofi80;
+    }
+
+    /**
+     * <p>
+     * returns the effort as RelI80
+     * </p>
+     *
+     * @return the effort as RelI80
+     */
+    public double getReli80() {
+        return this.reli80;
+    }
+
+    /**
+     * <p>
+     * sets the effort as RelI80
+     * </p>
+     *
+     * @param aucec
+     *            the effort as RelI80
+     */
+    @SuppressWarnings("hiding")
+    public void setReli80(double reli80) {
+        this.reli80 = reli80;
+    }
+
+    /**
+     * <p>
+     * returns the effort as RelE80
+     * </p>
+     *
+     * @return the effort as RelE80
+     */
+    public double getRele80() {
+        return this.rele80;
+    }
+
+    /**
+     * <p>
+     * sets the effort as RelE80
+     * </p>
+     *
+     * @param aucec
+     *            the effort as RelE80
+     */
+    @SuppressWarnings("hiding")
+    public void setRele80(double rele80) {
+        this.rele80 = rele80;
+    }
+
+    /**
+     * <p>
+     * returns the cost as NECM15
+     * </p>
+     *
+     * @return the cost as NECM15
+     */
+    public double getNecm15() {
+        return this.necm15;
+    }
+
+    /**
+     * <p>
+     * sets the cost as NECM15
+     * </p>
+     *
+     * @param aucec
+     *            the cost as NECM15
+     */
+    @SuppressWarnings("hiding")
+    public void setNecm15(double necm15) {
+        this.necm15 = necm15;
+    }
+
+    /**
+     * <p>
+     * returns the cost as NECM20
+     * </p>
+     *
+     * @return the cost as NECM20
+     */
+    public double getNecm20() {
+        return this.necm20;
+    }
+
+    /**
+     * <p>
+     * sets the cost as NECM20
+     * </p>
+     *
+     * @param aucec
+     *            the cost as NECM20
+     */
+    @SuppressWarnings("hiding")
+    public void setNecm20(double necm20) {
+        this.necm20 = necm20;
+    }
+
+    /**
+     * <p>
+     * returns the cost as NECM25
+     * </p>
+     *
+     * @return the cost as NECM25
+     */
+    public double getNecm25() {
+        return this.necm25;
+    }
+
+    /**
+     * <p>
+     * sets the cost as NECM25
+     * </p>
+     *
+     * @param aucec
+     *            the cost as NECM25
+     */
+    @SuppressWarnings("hiding")
+    public void setNecm25(double necm25) {
+        this.necm25 = necm25;
     }
 
     /**
