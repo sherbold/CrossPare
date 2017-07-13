@@ -132,12 +132,14 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
             // attribute in the SMARTSHARK data
             effortAtt = data.attribute("LOC");
         }
-        if (effortAtt == null) {
-            return null;
-        }
         List<Double> efforts = new ArrayList<>(data.size());
         for (int i = 0; i < data.size(); i++) {
-            efforts.add(data.get(i).value(effortAtt));
+            if(effortAtt!=null) {
+                efforts.add(data.get(i).value(effortAtt));
+            } else {
+                // add constant effort per instance (default)
+                efforts.add(1.0);
+            }
         }
         return efforts;
     }
