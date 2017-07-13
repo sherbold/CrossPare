@@ -297,15 +297,15 @@ public class WekaUtils {
             else if (classifier instanceof RBFNetwork) {
                 Console
                     .traceln(Level.WARNING,
-                             "Failure in RBFNetwork training. Checking if this is due to too small and skewed training data.");
+                             "Failure in RBFNetwork training. Checking if this is due to skewed training data with less than two instances in the minority class.");
                 int countNoBug = traindata.attributeStats(traindata.classIndex()).nominalCounts[0];
                 int countBug = traindata.attributeStats(traindata.classIndex()).nominalCounts[1];
                 Console.traceln(Level.WARNING, "trainsize: " + traindata.size() + "; numNoBug: " +
                     countNoBug + "; numBug: " + countBug);
-                if (traindata.size() <= 10 && (countNoBug <= 1 || countBug <= 1)) {
+                if (countNoBug <= 1 || countBug <= 1) {
                     Console
                         .traceln(Level.WARNING,
-                                 "only one instance in minority class and less than 10 instances");
+                                 "less than two instances in minority class");
                     Console.traceln(Level.WARNING, "using ZeroR instead");
                     classifier = new ZeroR();
                     classifier = buildClassifier(classifier, traindata);
