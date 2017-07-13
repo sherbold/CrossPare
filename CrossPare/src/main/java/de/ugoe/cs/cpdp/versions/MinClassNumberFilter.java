@@ -14,6 +14,7 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import weka.core.Instance;
 import weka.core.Instances;
 
 /**
@@ -35,7 +36,29 @@ public class MinClassNumberFilter extends AbstractVersionFilter {
     @Override
     public boolean apply(SoftwareVersion version) {
         Instances instances = version.getInstances();
-        int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
+        int[] counts;
+        if (instances.classAttribute().isNominal()) {
+            counts = instances.attributeStats(instances.classIndex()).nominalCounts;
+
+        }
+        else if (instances.classAttribute().isNumeric()) {
+            // count values == 0.0 and values!=0
+            int countNull = 0;
+            int countNonNull = 0;
+            for (Instance instance : instances) {
+                if (instance.classValue() > 0.0 || instance.classValue() < 0.0) {
+                    countNonNull++;
+                }
+                else {
+                    countNull++;
+                }
+            }
+            counts = new int[]
+                { countNull, countNonNull };
+        }
+        else {
+            throw new RuntimeException("class attribute invalid: neither numeric nor nominal");
+        }
         boolean toSmall = false;
         for (int count : counts) {
             toSmall |= count < this.minInstances;
