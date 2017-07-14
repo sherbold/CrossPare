@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataselection;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
@@ -26,7 +27,7 @@ import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
-import weka.filters.supervised.instance.Resample;
+import weka.filters.unsupervised.instance.Resample;
 
 /**
  * <p>
@@ -80,17 +81,25 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
                 // determine distance for leader-follower algorithm
                 Instances sample;
                 if (traindata.size() > 100) {
-                    Resample resample = new Resample();
-                    resample.setSampleSizePercent(100.0 / traindata.size() * 100.0);
-                    resample.setBiasToUniformClass(0.0);
-                    resample.setNoReplacement(true);
-                    try {
-                        resample.setInputFormat(traindata);
-                        sample = Filter.useFilter(traindata, resample);
+                    int countNoBug;
+                    int countBug;
+                    Random rand = new Random();
+                    do {
+                        Resample resample = new Resample();
+                        resample.setSampleSizePercent(100.0 / traindata.size() * 100.0);
+                        resample.setNoReplacement(true);
+                        resample.setRandomSeed(rand.nextInt()); // otherwise seed not random
+                        try {
+                            resample.setInputFormat(traindata);
+                            sample = Filter.useFilter(traindata, resample);
+                        }
+                        catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        countNoBug = sample.attributeStats(sample.classIndex()).nominalCounts[0];
+                        countBug = sample.attributeStats(sample.classIndex()).nominalCounts[1];
                     }
-                    catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    while (countNoBug < 1 || countBug < 1); // check if both classes are present
                 }
                 else {
                     sample = new Instances(traindata);
