@@ -122,8 +122,8 @@ public class LogisticEnsemble extends AbstractClassifier {
                 this.classifiers.add(classifier);
                 Evaluation eval = new Evaluation(copy);
                 eval.evaluateModel(classifier, copy);
-                weightsTmp.add(eval.matthewsCorrelationCoefficient(1));
-                sumWeights += eval.matthewsCorrelationCoefficient(1);
+                weightsTmp.add((eval.matthewsCorrelationCoefficient(1)+1)/2);
+                sumWeights += (eval.matthewsCorrelationCoefficient(1)+1)/2;
             }
         }
         for (double tmp : weightsTmp) {
