@@ -36,9 +36,9 @@ import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
 import org.uma.jmetal.util.solutionattribute.impl.NumberOfViolatedConstraints;
 import org.uma.jmetal.util.solutionattribute.impl.OverallConstraintViolation;
 
+import de.ugoe.cs.cpdp.loader.AbstractFolderLoader;
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
-import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Utils;
@@ -306,6 +306,11 @@ public class MODEPClassifier extends AbstractClassifier {
          * Data for which MODEP is defined
          */
         private final Instances data;
+        
+        /**
+         * Efforts for the data. 
+         */
+        private final List<Double> efforts;
 
         /**
          * Minimal desired effectiveness.
@@ -335,6 +340,7 @@ public class MODEPClassifier extends AbstractClassifier {
         @SuppressWarnings({ "hiding", "boxing" })
         public MODEPProblem(Instances data, double minEffectiveness) {
             this.data = data;
+            this.efforts = AbstractFolderLoader.getEfforts(this.data);
             this.minEffectiveness = minEffectiveness;
             setNumberOfVariables(2 * (data.numAttributes() - 1));
             setNumberOfObjectives(2);
@@ -365,7 +371,6 @@ public class MODEPClassifier extends AbstractClassifier {
         public void evaluate(DoubleSolution solution) {
             double[][] coefficients = solutionToCoefficients(solution);
 
-            final Attribute loc = this.data.attribute("loc");
             double effectiveness = 0.0;
             double cost = 0.0;
             for (int i = 0; i < this.data.size(); i++) {
@@ -374,7 +379,7 @@ public class MODEPClassifier extends AbstractClassifier {
                     if (this.data.get(i).classValue() == 1.0) {
                         effectiveness++;
                     }
-                    cost -= this.data.get(i).value(loc);
+                    cost -= efforts.get(i);
                 }
             }
 

@@ -113,7 +113,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      * @return
      */
     @SuppressWarnings("boxing")
-    private static List<Double> getEfforts(Instances data) {
+    public static List<Double> getEfforts(Instances data) {
         // attribute in the JURECZKO data and default
         Attribute effortAtt = data.attribute("loc");
         if (effortAtt == null) {
