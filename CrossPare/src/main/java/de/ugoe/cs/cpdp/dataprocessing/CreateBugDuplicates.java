@@ -42,6 +42,7 @@ public class CreateBugDuplicates implements ISetWiseProcessingStrategy, IProcess
         for (Instances traindata : traindataSet) {
             createDuplicates(traindata);
         }
+        WekaUtils.makeClassBinary(testdata);
     }
 
     /**
@@ -50,6 +51,7 @@ public class CreateBugDuplicates implements ISetWiseProcessingStrategy, IProcess
     @Override
     public void apply(Instances testdata, Instances traindata) {
         createDuplicates(traindata);
+        WekaUtils.makeClassBinary(testdata);
     }
 
     /**
