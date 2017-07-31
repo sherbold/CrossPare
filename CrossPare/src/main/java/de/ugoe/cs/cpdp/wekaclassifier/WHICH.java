@@ -349,10 +349,13 @@ public class WHICH extends AbstractClassifier {
                         double instanceValue = instance.value(attrIndex);
                         double lowerBound;
                         double upperBound;
+                        // set to -1.0 for negative second value
+                        double secondMultiplier = 1.0; 
                         String[] splitResult = range.split("--");
                         if (splitResult.length > 1) {
                             // second value is negative
-                            throw new RuntimeException("negative second value cannot be handled by WHICH yet");
+                            secondMultiplier = -1.0;
+                            range.replace("--", "-");
                         }
                         splitResult = range.split("-");
                         if (splitResult.length > 2) {
@@ -364,15 +367,18 @@ public class WHICH extends AbstractClassifier {
                                 lowerBound = -Double.parseDouble(splitResult[1]);
                             }
                             if (splitResult[2].startsWith("inf")) {
-                                upperBound = Double.POSITIVE_INFINITY;
+                                upperBound = secondMultiplier*Double.POSITIVE_INFINITY;
                             }
                             else {
-                                upperBound = Double.parseDouble(splitResult[2]
+                                upperBound = secondMultiplier*Double.parseDouble(splitResult[2]
                                     .substring(0, splitResult[2].length() - 2));
                             }
                         }
                         else {
                             // first value is positive
+                            if( secondMultiplier<0.0 ) {
+                                throw new RuntimeException("Invalid Range, first value positive, second value negative: " + range);
+                            }
                             if (splitResult[0].substring(2, splitResult[0].length())
                                 .equals("ll'"))
                             {
