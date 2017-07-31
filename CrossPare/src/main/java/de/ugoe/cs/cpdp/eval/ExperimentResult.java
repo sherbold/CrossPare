@@ -126,6 +126,16 @@ public class ExperimentResult {
     double necm25 = Double.NaN;
 
     /**
+     * Number of bugs that are found if the classification is used, i.e., all instances are reviewed that are predicted as defect-prone.
+     */
+    double nofbPredicted = Double.NaN;
+    
+    /**
+     * Number of bugs that are missed if the classification is used, i.e., all instances are reviewed that are predicted as defect-prone.
+     */
+    double nofbMissed = Double.NaN;
+    
+    /**
      * True positive rate of the prediction
      */
     double tpr = Double.NaN;
@@ -709,6 +719,53 @@ public class ExperimentResult {
     @SuppressWarnings("hiding")
     public void setNecm25(double necm25) {
         this.necm25 = necm25;
+    }
+    
+    /**
+     * <p>
+     * returns the predicted defects
+     * </p>
+     *
+     * @return the predicted defects
+     */
+    public double getNofbPredicted() {
+        return this.nofbPredicted;
+    }
+
+    /**
+     * <p>
+     * sets the predicted defects
+     * </p>
+     *
+     * @param nofbPredicted
+     *            the nofbPredicted
+     */
+    @SuppressWarnings("hiding")
+    public void setNofbPredicted(double nofbPredicted) {
+        this.nofbPredicted = nofbPredicted;
+    }
+    /**
+     * <p>
+     * returns the missed defects
+     * </p>
+     *
+     * @return the missed defects
+     */
+    public double getNofbMissed() {
+        return this.nofbMissed;
+    }
+
+    /**
+     * <p>
+     * sets the missed defects
+     * </p>
+     *
+     * @param nofbMissed
+     *            the missed defects
+     */
+    @SuppressWarnings("hiding")
+    public void setNofbMissed(double nofbMissed) {
+        this.nofbMissed = nofbMissed;
     }
 
     /**

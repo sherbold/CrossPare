@@ -177,6 +177,9 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             double necm20 = getNECM(eval, 20.0);
             double necm25 = getNECM(eval, 25.0);
             
+            double nofbPredicted = effortEval.getNofBPredicted();
+            double nofbMissed = effortEval.getNofBMissed();
+            
             this.output.append("," + eval.errorRate());
             this.output.append("," + eval.recall(1));
             this.output.append("," + eval.precision(1));
@@ -214,6 +217,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             result.setNecm15(necm15);
             result.setNecm20(necm20);
             result.setNecm25(necm25);
+            result.setNofbPredicted(nofbPredicted);
+            result.setNofbMissed(nofbMissed);
             result.setTpr(eval.truePositiveRate(1));
             result.setTnr(eval.trueNegativeRate(1));
             result.setFpr(eval.falsePositiveRate(1));

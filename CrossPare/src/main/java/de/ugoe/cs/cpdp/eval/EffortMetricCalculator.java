@@ -79,8 +79,9 @@ public class EffortMetricCalculator {
                 try {
                     double curEffort = efforts.get(i);
                     double curScore = classifier.distributionForInstance(testdata.instance(i))[1];
+                    double curClass = classifier.classifyInstance(testdata.instance(i));
                     double curBugCount = numBugs.get(i);
-                    this.scores[i] = new ScoreEffortPair(curScore, curEffort, curBugCount);
+                    this.scores[i] = new ScoreEffortPair(curScore, curClass, curEffort, curBugCount);
                     tmpTotalEffort += curEffort;
                     tmpTotalBugs += curBugCount;
                 }
@@ -238,6 +239,40 @@ public class EffortMetricCalculator {
         }
         return relativeEffort;
     }
+    
+    /**
+     * <p>
+     * Number of bugs that are found if the classification is used, i.e., all instances are reviewed that are predicted as defect-prone.
+     * </p>
+     *
+     * @return
+     */
+    public double getNofBPredicted() {
+        double nofbPredicted = 0.0;
+        for( ScoreEffortPair score : scores ) {
+            if(score.getClassification()==1.0) {
+                nofbPredicted += score.getBugCount();
+            }
+        }
+        return nofbPredicted;
+    }
+    
+    /**
+     * <p>
+     * Number of bugs that are missed if the classification is used, i.e., all instances are reviewed that are predicted as defect-prone.
+     * </p>
+     *
+     * @return
+     */
+    public double getNofBMissed() {
+        double nofbMissed = 0.0;
+        for( ScoreEffortPair score : scores ) {
+            if(score.getClassification()!=1.0) {
+                nofbMissed += score.getBugCount();
+            }
+        }
+        return nofbMissed;
+    }
 
     /**
      * <p>
@@ -252,6 +287,11 @@ public class EffortMetricCalculator {
          * Defect prediction score of the pair
          */
         private final double score;
+        
+        /**
+         * Classification of the pair
+         */
+        private final double classification;
 
         /**
          * Associated review effort
@@ -264,12 +304,17 @@ public class EffortMetricCalculator {
         private final double bugCount;
 
         @SuppressWarnings("hiding")
-        public ScoreEffortPair(double score, double effort, double bugCount) {
+        public ScoreEffortPair(double score, double classification, double effort, double bugCount) {
             this.score = score;
+            this.classification = classification;
             this.effort = effort;
             this.bugCount = bugCount;
         }
 
+        public double getClassification() {
+            return classification;
+        }
+        
         /**
          * @return the effort
          */

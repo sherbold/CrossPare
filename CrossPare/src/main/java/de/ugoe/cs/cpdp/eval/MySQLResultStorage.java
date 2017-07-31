@@ -164,6 +164,8 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`necm15`,");
         preparedSql.append("`necm20`,");
         preparedSql.append("`necm25`,");
+        preparedSql.append("`nofbPredicted`,");
+        preparedSql.append("`nofbMissed`,");
         preparedSql.append("`tpr`,");
         preparedSql.append("`tnr`,");
         preparedSql.append("`fpr`,");
@@ -172,7 +174,7 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`fn`,");
         preparedSql.append("`tn`,");
         preparedSql.append("`fp`) VALUES ");
-        preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql.toString());) {
             stmt.setString(1, result.getConfigurationName());
@@ -197,14 +199,16 @@ public class MySQLResultStorage implements IResultStorage {
             stmt.setDouble(20, result.getNecm15());
             stmt.setDouble(21, result.getNecm20());
             stmt.setDouble(22, result.getNecm25());
-            stmt.setDouble(23, result.getTpr());
-            stmt.setDouble(24, result.getTnr());
-            stmt.setDouble(25, result.getFpr());
-            stmt.setDouble(26, result.getFnr());
-            stmt.setDouble(27, result.getTp());
-            stmt.setDouble(28, result.getFn());
-            stmt.setDouble(29, result.getTn());
-            stmt.setDouble(30, result.getFp());
+            stmt.setDouble(23, result.getNofbPredicted());
+            stmt.setDouble(24, result.getNofbMissed());
+            stmt.setDouble(25, result.getTpr());
+            stmt.setDouble(26, result.getTnr());
+            stmt.setDouble(27, result.getFpr());
+            stmt.setDouble(28, result.getFnr());
+            stmt.setDouble(29, result.getTp());
+            stmt.setDouble(30, result.getFn());
+            stmt.setDouble(31, result.getTn());
+            stmt.setDouble(32, result.getFp());
 
             int qryResult = stmt.executeUpdate();
             if (qryResult < 1) {
@@ -290,7 +294,8 @@ public class MySQLResultStorage implements IResultStorage {
             "`relb20` double DEFAULT NULL," + "`nofi80` double DEFAULT NULL," +  
             "`reli80` double DEFAULT NULL," + "`rele80` double DEFAULT NULL," +  
             "`necm15` double DEFAULT NULL," + "`necm20` double DEFAULT NULL," +  
-            "`necm25` double DEFAULT NULL," + "`tpr` double DEFAULT NULL," +
+            "`necm25` double DEFAULT NULL," + "`nofbPredicted` double DEFAULT NULL," + 
+            "`nofbMissed` double DEFAULT NULL," + "`tpr` double DEFAULT NULL," +
             "`tnr` double DEFAULT NULL," + "`fpr` double DEFAULT NULL," +
             "`fnr` double DEFAULT NULL," + "`tp` double DEFAULT NULL," +
             "`fn` double DEFAULT NULL," + "`tn` double DEFAULT NULL," +
