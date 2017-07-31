@@ -17,10 +17,14 @@ package de.ugoe.cs.cpdp.wekaclassifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
@@ -67,7 +71,7 @@ public class WHICH extends AbstractClassifier {
     /**
      * best rule determined by the training, i.e., the classifier
      */
-    private WhichRule bestRule = null;
+    public WhichRule bestRule = null;
 
     /*
      * (non-Javadoc)
@@ -78,11 +82,50 @@ public class WHICH extends AbstractClassifier {
     @Override
     public void buildClassifier(Instances traindata) throws Exception {
         WhichStack whichStack = new WhichStack();
-        Discretize discretize = new Discretize();
-        discretize.setBins(this.numBins);
-        discretize.setIgnoreClass(true);
-        discretize.setInputFormat(traindata);
-        Instances discretizedData = Filter.useFilter(traindata, discretize);
+        Instances discretizedData = null;
+
+        Set<Integer> ignoredAttributes = new HashSet<>();
+        while (discretizedData == null && ignoredAttributes.size() < traindata.numAttributes()) {
+            // list of attributes for Discretize filter
+            StringBuilder attributeListBuilder = new StringBuilder();
+            for (int j = 0; j < traindata.numAttributes(); j++) {
+                if (j != traindata.classIndex() && !ignoredAttributes.contains(j)) {
+                    attributeListBuilder.append((j + 1) + ",");
+                }
+            }
+            String attributeList =
+                attributeListBuilder.toString().substring(0, attributeListBuilder.length() - 1);
+
+            Discretize discretize = new Discretize();
+            discretize.setBins(this.numBins);
+            discretize.setIgnoreClass(true);
+            discretize.setAttributeIndices(attributeList);
+            discretize.setInputFormat(traindata);
+            try {
+                discretizedData = Filter.useFilter(traindata, discretize);
+            }
+            catch (IllegalArgumentException e) {
+                if (e.getMessage() != null &&
+                    e.getMessage().contains("cannot have duplicate labels"))
+                {
+                    Pattern pattern = Pattern.compile("\\((.*?)\\)");
+                    Matcher matcher = pattern.matcher(e.getMessage());
+                    if (matcher.find()) {
+                        Console
+                            .traceln(Level.WARNING,
+                                     "ignoring attribute for WHICH training because it cannot be discretized: " +
+                                         matcher.group(1));
+                        ignoredAttributes.add(traindata.attribute(matcher.group(1)).index());
+                    }
+                }
+                else {
+                    throw e;
+                }
+            }
+        }
+        if (discretizedData == null) {
+            throw new RuntimeException("could not discretize data for WHICH training");
+        }
         // init WHICH stack
         for (int j = 0; j < discretizedData.numAttributes(); j++) {
             Attribute attr = discretizedData.attribute(j);
@@ -335,8 +378,8 @@ public class WHICH extends AbstractClassifier {
                             {
                                 System.out.println("foo");
                             }
-                            lowerBound = Double.parseDouble(splitResult[0]
-                                .substring(2, splitResult[0].length()));
+                            lowerBound = Double
+                                .parseDouble(splitResult[0].substring(2, splitResult[0].length()));
                             if (splitResult[1].startsWith("inf")) {
                                 upperBound = Double.POSITIVE_INFINITY;
                             }
@@ -407,7 +450,8 @@ public class WHICH extends AbstractClassifier {
             }
             WhichRule otherRule = (WhichRule) other;
             return this.attributeIndizes.equals(otherRule.attributeIndizes) &&
-                this.rangeIndizes.equals(otherRule.rangeIndizes) && this.ranges.equals(otherRule.ranges);
+                this.rangeIndizes.equals(otherRule.rangeIndizes) &&
+                this.ranges.equals(otherRule.ranges);
         }
 
         /*
@@ -417,7 +461,8 @@ public class WHICH extends AbstractClassifier {
          */
         @Override
         public int hashCode() {
-            return 117 + this.attributeIndizes.hashCode() + this.rangeIndizes.hashCode() + this.ranges.hashCode();
+            return 117 + this.attributeIndizes.hashCode() + this.rangeIndizes.hashCode() +
+                this.ranges.hashCode();
         }
 
         /*
@@ -427,7 +472,8 @@ public class WHICH extends AbstractClassifier {
          */
         @Override
         public String toString() {
-            return "indizes: " + this.attributeIndizes + "\tranges: " + this.ranges + "\t score: " + this.score;
+            return "indizes: " + this.attributeIndizes + "\tranges: " + this.ranges + "\t score: " +
+                this.score;
         }
     }
 
