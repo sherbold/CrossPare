@@ -159,7 +159,12 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
-            double gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
+            double gmeasure;
+            if( eval.recall(1)==0.0 && pf==1.0 ) {
+                gmeasure = 0.0;
+            } else {
+                gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
+            }
             double balance = 1.0-Math.sqrt(Math.pow(1-eval.recall(1),2)+Math.pow(pf,2))/Math.sqrt(2);
             double aucec = effortEval.getAUCEC();
             double nofb20 = effortEval.getNofb20();
