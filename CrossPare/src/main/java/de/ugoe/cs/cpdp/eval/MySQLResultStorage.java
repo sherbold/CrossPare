@@ -283,8 +283,8 @@ public class MySQLResultStorage implements IResultStorage {
     public void createResultsTable() {
         String sql = "CREATE TABLE `" + this.resultsTableName + "` (" +
             "`idresults` int(11) NOT NULL AUTO_INCREMENT," +
-            "`configurationName` varchar(45) NOT NULL," + "`productName` varchar(45) NOT NULL," +
-            "`classifier` varchar(45) NOT NULL," + "`testsize` int(11) DEFAULT NULL," +
+            "`configurationName` varchar(250) NOT NULL," + "`productName` varchar(100) NOT NULL," +
+            "`classifier` varchar(50) NOT NULL," + "`testsize` int(11) DEFAULT NULL," +
             "`trainsize` int(11) DEFAULT NULL," + "`error` double DEFAULT NULL," +
             "`recall` double DEFAULT NULL," + "`precision` double DEFAULT NULL," +
             "`fscore` double DEFAULT NULL," + "`gscore` double DEFAULT NULL," +
