@@ -23,6 +23,8 @@ import java.util.logging.Level;
 import org.apache.commons.collections4.list.SetUniqueList;
 
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
+import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
+import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.eval.IResultStorage;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
@@ -168,7 +170,51 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
                 List<Double> numBugs = testVersion.getNumBugs();
-
+                SetUniqueList<Instances> traindataSet =
+                    SetUniqueList.setUniqueList(new LinkedList<Instances>());
+                for (SoftwareVersion trainingVersion : versions) {
+                    if (isVersion(trainingVersion, this.config.getTrainingVersionFilters())) {
+                        if (trainingVersion != testVersion) {
+                            traindataSet.add(trainingVersion.getInstances());
+                        }
+                    }
+                }
+                
+                // allowing processors
+                for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
+                    processor.apply(testdata, traindataSet);
+                }
+                for (ISetWiseProcessingStrategy processor : this.config
+                    .getSetWisePostprocessors())
+                {
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
+                    processor.apply(testdata, traindataSet);
+                }
+                Instances traindata = makeSingleTrainingSet(traindataSet);
+                for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
+                    Console.traceln(Level.FINE,
+                                    String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
+                                                  this.config.getExperimentName(), versionCount,
+                                                  testVersionCount, testVersion.getVersion(),
+                                                  processor.getClass().getName()));
+                    processor.apply(testdata, traindata);
+                }
+                for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
+                    Console.traceln(Level.FINE, String
+                        .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                                this.config.getExperimentName(), versionCount, testVersionCount,
+                                testVersion.getVersion(), processor.getClass().getName()));
+                    processor.apply(testdata, traindata);
+                }
+                
+                // training with test data
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
                     Console.traceln(Level.FINE,
                                     String.format("[%s] [%02d/%02d] %s: applying trainer %s",
