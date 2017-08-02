@@ -41,7 +41,7 @@ public class CVWekaEvaluation extends AbstractWekaEvaluation {
             System.setErr(nullStream);
             try {
                 final Evaluation eval = new Evaluation(testdata);
-                eval.crossValidateModel(classifier, testdata, 10, new Random(1));
+                eval.crossValidateModel(classifier, testdata, 10, new Random());
                 return eval;
             }
             catch (Exception e) {
