@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.Instances;
 
@@ -75,20 +76,22 @@ public class EffortMetricCalculator {
             this.scores = new ScoreEffortPair[testdata.size()];
             double tmpTotalEffort = 0.0d;
             double tmpTotalBugs = 0;
+            double[][] distributions;
+            try {
+                distributions = ((AbstractClassifier) classifier).distributionsForInstances(testdata);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("unexpected error during the evaluation of the review effort",
+                                           e);
+            }
             for (int i = 0; i < testdata.numInstances(); i++) {
-                try {
-                    double curEffort = efforts.get(i);
-                    double curScore = classifier.distributionForInstance(testdata.instance(i))[1];
-                    double curClass = classifier.classifyInstance(testdata.instance(i));
-                    double curBugCount = numBugs.get(i);
-                    this.scores[i] = new ScoreEffortPair(curScore, curClass, curEffort, curBugCount);
-                    tmpTotalEffort += curEffort;
-                    tmpTotalBugs += curBugCount;
-                }
-                catch (Exception e) {
-                    throw new RuntimeException("unexpected error during the evaluation of the review effort",
-                                               e);
-                }
+                double curEffort = efforts.get(i);
+                double curScore = distributions[i][1];
+                double curClass = distributions[i][1]>distributions[i][0] ? 1.0 : 0.0;
+                double curBugCount = numBugs.get(i);
+                this.scores[i] = new ScoreEffortPair(curScore, curClass, curEffort, curBugCount);
+                tmpTotalEffort += curEffort;
+                tmpTotalBugs += curBugCount;
             }
             this.totalEffort = tmpTotalEffort;
             this.totalBugs = tmpTotalBugs;
