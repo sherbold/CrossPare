@@ -43,7 +43,7 @@ public class JsonDataLoader implements SingleVersionLoader {
      * Keys in JSON that do not contain metric data
      */
     private static Set<String> ignoredKeys = new HashSet<>(Arrays.asList(new String[]
-        { "bugs", "file", "label", "imports", "type" }));
+        { "bugs", "file", "label", "imports", "type", "long_name" }));
 
     /*
      * (non-Javadoc)
@@ -61,7 +61,8 @@ public class JsonDataLoader implements SingleVersionLoader {
             e.printStackTrace();
         }
 
-        JSONArray entityArray = new JSONArray(jsonData);
+        JSONObject product = new JSONObject(jsonData);
+        JSONArray entityArray = product.getJSONArray("product");
         // first get all keys (in case of missing values)
         Set<String> keySet = new TreeSet<>();
         for (int i = 0; i < entityArray.length(); i++) {
