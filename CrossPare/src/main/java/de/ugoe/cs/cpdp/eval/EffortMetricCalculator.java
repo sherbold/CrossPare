@@ -183,7 +183,7 @@ public class EffortMetricCalculator {
         double relativeBugsFound = 0.0;
         int numInstances = 0;
         for (ScoreEffortPair score : scores) {
-            if (relativeBugsFound > 0.2) {
+            if (relativeBugsFound > 0.8) {
                 // already found 80% of bugs
                 break;
             }
@@ -207,7 +207,7 @@ public class EffortMetricCalculator {
         double relativeBugsFound = 0.0;
         int numInstances = 0;
         for (ScoreEffortPair score : scores) {
-            if (relativeBugsFound > 0.2) {
+            if (relativeBugsFound > 0.8) {
                 // already found 80% of bugs
                 break;
             }
@@ -231,7 +231,7 @@ public class EffortMetricCalculator {
         double relativeBugsFound = 0.0;
         double relativeEffort = 0.0;
         for (ScoreEffortPair score : scores) {
-            if (relativeBugsFound > 0.2) {
+            if (relativeBugsFound > 0.8) {
                 // already found 80% of bugs
                 break;
             }
