@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.execution;
 
+import java.util.List;
+
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
@@ -44,9 +46,9 @@ public class WithinProjectOldReleasesExperiment extends AbstractCrossProjectExpe
      */
     @Override
     protected boolean isTrainingVersion(SoftwareVersion trainingVersion,
-                                        SoftwareVersion testVersion)
+                                        SoftwareVersion testVersion,
+                                        List<SoftwareVersion> versions)
     {
-        
         boolean isSameProject = trainingVersion.getProject().equals(testVersion.getProject());
         boolean isOlderRelease = trainingVersion.getVersion().compareTo(testVersion.getVersion())<0;
         return isSameProject && isOlderRelease;

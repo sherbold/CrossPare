@@ -102,10 +102,13 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
      *            training version
      * @param testVersion
      *            test candidate
+     * @param versions
+     *            all software versions in the data set
      * @return true if test candidate can be used for training
      */
     protected abstract boolean isTrainingVersion(SoftwareVersion trainingVersion,
-                                                 SoftwareVersion testVersion);
+                                                 SoftwareVersion testVersion,
+                                                 List<SoftwareVersion> versions);
 
     /**
      * Helper method that combines a set of Weka {@link Instances} sets into a single
@@ -185,7 +188,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 for (SoftwareVersion trainingVersion : versions) {
                     if (isVersion(trainingVersion, this.config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
-                            if (isTrainingVersion(trainingVersion, testVersion)) {
+                            if (isTrainingVersion(trainingVersion, testVersion, versions)) {
                                 traindataSet.add(trainingVersion.getInstances());
                             }
                         }

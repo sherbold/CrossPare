@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.execution;
 
+import java.util.List;
+
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
@@ -46,7 +48,8 @@ public class CrossProjectExperiment extends AbstractCrossProjectExperiment {
      */
     @Override
     protected boolean isTrainingVersion(SoftwareVersion trainingVersion,
-                                        SoftwareVersion testVersion)
+                                        SoftwareVersion testVersion,
+                                        List<SoftwareVersion> versions)
     {
         return !trainingVersion.getProject().equals(testVersion.getProject());
     }

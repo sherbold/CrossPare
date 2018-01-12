@@ -103,6 +103,11 @@ public class Runner {
 
                 IExecutionStrategy experiment =
                     (IExecutionStrategy) executionStrategyConstructor.newInstance(config);
+                
+                if( experiment instanceof IParameterizable ) {
+                    ((IParameterizable) experiment).setParameter(config.getExecutionStrategyParameters());
+                }
+                
                 threadPool.execute(experiment);
             }
             catch (NoSuchMethodException e) {

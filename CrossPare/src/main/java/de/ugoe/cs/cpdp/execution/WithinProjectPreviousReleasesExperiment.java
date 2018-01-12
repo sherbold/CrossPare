@@ -17,18 +17,21 @@ package de.ugoe.cs.cpdp.execution;
 import java.util.List;
 
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
+import de.ugoe.cs.cpdp.IParameterizable;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
- * <p>
- * Implements a cross project experiment where all versions not from the same project are used
- * together with all older version from the test product.
- * </p>
+ * Experiment workflow where the n previous versions of a project are used for training. 
  * 
  * @author Steffen Herbold
  */
-public class RelaxedCrossProjectExperiment extends AbstractCrossProjectExperiment {
+public class WithinProjectPreviousReleasesExperiment extends AbstractCrossProjectExperiment implements IParameterizable {
 
+    /**
+     * number of previous releases that are considered
+     */
+    private int numPreviousReleases = 1;
+    
     /**
      * Constructor. Creates a new experiment based on a configuration.
      * 
@@ -36,7 +39,7 @@ public class RelaxedCrossProjectExperiment extends AbstractCrossProjectExperimen
      *            configuration of the experiment
      */
     @SuppressWarnings("hiding")
-    public RelaxedCrossProjectExperiment(ExperimentConfiguration config) {
+    public WithinProjectPreviousReleasesExperiment(ExperimentConfiguration config) {
         super(config);
     }
 
@@ -52,15 +55,20 @@ public class RelaxedCrossProjectExperiment extends AbstractCrossProjectExperimen
                                         SoftwareVersion testVersion,
                                         List<SoftwareVersion> versions)
     {
-        if (trainingVersion.getProject().equals(testVersion.getProject())) {
-            if (trainingVersion.compareTo(testVersion) < 0) {
-                // only add if older
-                return true;
-            }
+        // find all previous versions of test version
+        int trainIndex = versions.indexOf(trainingVersion);
+        int testIndex = versions.indexOf(testVersion);
+        
+        boolean isSameProject = trainingVersion.getProject().equals(testVersion.getProject());
+        boolean isWithinPreviousReleases = testIndex>trainIndex && (testIndex-trainIndex)<=numPreviousReleases;
+        
+        return isSameProject && isWithinPreviousReleases;
+    }
+
+    @Override
+    public void setParameter(String parameters) {
+        if( parameters.length()>0 ) {
+            numPreviousReleases =  Integer.parseInt(parameters);
         }
-        else {
-            return true;
-        }
-        return false;
     }
 }
