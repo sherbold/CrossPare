@@ -191,6 +191,14 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         }
                     }
                 }
+                if( traindataSet.isEmpty() ) {
+                    Console.traceln(Level.WARNING, String
+                                    .format("[%s] [%02d/%02d] %s: no training data this product; skipped",
+                                            this.config.getExperimentName(), versionCount, testVersionCount,
+                                            testVersion.getVersion()));
+                    versionCount++;
+                    continue;
+                }
 
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
                     Console.traceln(Level.FINE, String
