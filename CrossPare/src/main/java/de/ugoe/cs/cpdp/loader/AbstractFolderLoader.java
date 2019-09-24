@@ -90,11 +90,15 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             // currently only supports binary classification
                             // TODO allow regression loading
                             Instances data = instancesLoader.load(versionFile, isBinaryClass);
+                            Instances bugMatrix = null;
+                            if(instancesLoader instanceof IBugMatrixLoader) {
+                            	bugMatrix = ((IBugMatrixLoader) instancesLoader).getBugMatrix();
+                            }
                             String versionName = data.relationName();
                             List<Double> efforts = getEfforts(data);
                             List<Double> numBugs = getNumBugs(data);
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
-                                                             data, efforts, numBugs));
+                                                             data, bugMatrix, efforts, numBugs));
                         }
                     }
                 }
@@ -131,6 +135,9 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
         if (effortAtt == null) {
             // attribute in the SMARTSHARK data
             effortAtt = data.attribute("LOC");
+        }
+        if (effortAtt == null) {
+        	effortAtt = data.attribute("SM_file_lloc");
         }
         List<Double> efforts = new ArrayList<>(data.size());
         for (int i = 0; i < data.size(); i++) {

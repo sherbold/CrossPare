@@ -41,6 +41,11 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * data of the version
      */
     private final Instances instances;
+    
+    /**
+     * bug matrix of the version
+     */
+    private final Instances bugMatrix;
 
     /**
      * Review effort per instance.
@@ -64,6 +69,8 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      *            name of the version
      * @param instances
      *            data of the version
+     * @param bugMatrix
+     *            bug matrix of the version
      * @param efforts
      *            review efforts for the version
      * @param numBugs
@@ -74,6 +81,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
                            String project,
                            String version,
                            Instances instances,
+                           Instances bugMatrix,
                            List<Double> efforts,
                            List<Double> numBugs)
     {
@@ -81,6 +89,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         this.project = project;
         this.version = version;
         this.instances = instances;
+        this.bugMatrix = bugMatrix;
         this.efforts = efforts;
         this.numBugs = numBugs;
     }
@@ -121,6 +130,15 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      */
     public Instances getInstances() {
         return new Instances(this.instances);
+    }
+    
+    /**
+     * returns the bug matrix of this version
+     * 
+     * @return bug matrix
+     */
+    public Instances getBugMatrix() {
+    	return new Instances(this.bugMatrix);
     }
 
     /**

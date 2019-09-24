@@ -102,7 +102,7 @@ public class DecentFolderLoader extends AbstractFolderLoader {
             String versionName = versionFile.getName();
             // TODO currently only supports binary class
             Instances data = instancesLoader.load(versionFile, true);
-            versions.add(new SoftwareVersion("decent", projectName, versionName, data, null, null));
+            versions.add(new SoftwareVersion("decent", projectName, versionName, data, null, null, null));
         }
     }
 
