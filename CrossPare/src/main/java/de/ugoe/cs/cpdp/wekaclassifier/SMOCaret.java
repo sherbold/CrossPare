@@ -2,6 +2,9 @@ package de.ugoe.cs.cpdp.wekaclassifier;
 
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -21,6 +24,12 @@ public class SMOCaret extends AbstractClassifier {
     
     /**  */
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+    
     Classifier internalClassifier = null;
 
     @Override
@@ -47,7 +56,7 @@ public class SMOCaret extends AbstractClassifier {
                 eval.crossValidateModel(currentClassifier, traindata, 2, rand);
                 double currentScore = eval.matthewsCorrelationCoefficient(1);
                 if( currentClassifier==null || currentScore>bestScore ) {
-                    System.out.println("new best score: " + currentScore + ", C: " + valuesC[i] + ", G: " + valuesG[j]);
+                	LOGGER.debug("new best score: " + currentScore + ", C: " + valuesC[i] + ", G: " + valuesG[j]);
                     bestScore = currentScore;
                     bestClassifier = currentClassifier;
                 }
