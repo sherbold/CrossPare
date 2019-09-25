@@ -19,11 +19,12 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+
 
 import org.apache.commons.collections4.list.SetUniqueList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import de.ugoe.cs.util.console.Console;
 import weka.clusterers.EM;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -39,6 +40,11 @@ import weka.filters.unsupervised.attribute.Normalize;
  * Example: <setwiseselector name="SetWiseEMContextSelection" param="AFS TND TNC" />
  */
 public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy {
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * context factors
@@ -99,15 +105,15 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
             }
             while (onlyTarget);
 
-            Console.traceln(Level.INFO, "clusters: " + maxNumClusters);
-            Console.traceln(Level.INFO, "instances vor dem clustern: " + traindataSet.size());
+            LOGGER.debug("clusters: " + maxNumClusters);
+            LOGGER.debug("instances before clustering: " + traindataSet.size());
             int numRemoved = 0;
             for (int i = 0; i < candidateInstances.size(); i++) {
                 if (emeans.clusterInstance(candidateInstances.get(i)) != targetCluster) {
                     traindataSet.remove(i - numRemoved++);
                 }
             }
-            Console.traceln(Level.INFO, "instances nach dem clustern: " + traindataSet.size());
+            LOGGER.debug("instances after clustering: " + traindataSet.size());
         }
         catch (Exception e) {
             throw new RuntimeException("error applying setwise EM clustering training data selection",

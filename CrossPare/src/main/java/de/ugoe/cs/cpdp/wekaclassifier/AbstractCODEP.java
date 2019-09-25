@@ -18,12 +18,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
@@ -50,6 +52,11 @@ public abstract class AbstractCODEP extends AbstractClassifier {
      * Default serialization ID.
      */
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * List of classifiers that is internally used.
@@ -105,8 +112,7 @@ public abstract class AbstractCODEP extends AbstractClassifier {
         for (Classifier classifier : this.internalClassifiers) {
             boolean trainingSuccessfull = false;
             do {
-                Console.traceln(Level.FINE,
-                                "internally training " + classifier.getClass().getName());
+                LOGGER.debug("internally training " + classifier.getClass().getName());
                 try {
                     if (secondAttempt) {
                         classifier.buildClassifier(traindataCopy);
@@ -134,9 +140,7 @@ public abstract class AbstractCODEP extends AbstractClassifier {
                     traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
 
                     this.upscaleIndex.put(classifierIndex, attrIndex);
-                    Console
-                        .traceln(Level.FINE,
-                                 "upscaled attribute " + attributeName + "; restarting training");
+                    LOGGER.info("upscaled attribute " + attributeName + "; restarting training");
                     secondAttempt = true;
                     continue;
                 }

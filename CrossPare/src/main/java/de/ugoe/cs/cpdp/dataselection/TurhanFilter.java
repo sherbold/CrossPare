@@ -20,10 +20,10 @@ import java.util.List;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.util.MathArrays;
 
+import de.ugoe.cs.cpdp.util.ArrayUtils;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-import de.ugoe.cs.util.ArrayTools;
 
 /**
  * Filter according to B. Turhan, T. Menzies, A. Bener, and J. Die Stefano: On the relative value of
@@ -97,7 +97,7 @@ public class TurhanFilter implements IPointWiseDataselectionStrategy {
                     closestIndex[farthestClosestIndex] = n;
                     closestDistances[farthestClosestIndex] = distance;
 
-                    farthestClosestIndex = ArrayTools.findMax(closestDistances);
+                    farthestClosestIndex = ArrayUtils.findMax(closestDistances);
                     farthestClosestDistance = closestDistances[farthestClosestIndex];
                 }
             }

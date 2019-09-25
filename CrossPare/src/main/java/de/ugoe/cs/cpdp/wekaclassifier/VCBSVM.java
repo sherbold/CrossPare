@@ -18,11 +18,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
+
 import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.ugoe.cs.cpdp.util.SortUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -47,6 +49,11 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
      * Default id
      */
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * Test data. CLASSIFICATION MUST BE IGNORED!
@@ -152,7 +159,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
             validationCandidates = Filter.useFilter(data, resample);
         }
         catch (Exception e) {
-            Console.traceln(Level.SEVERE, "failure during validation set selection of VCBSVM");
+            LOGGER.error("failure during validation set selection of VCBSVM");
             throw new RuntimeException(e);
         }
         Double[] validationCandidateWeights = calculateSimilarityWeights(validationCandidates);
@@ -228,7 +235,7 @@ public class VCBSVM extends AbstractClassifier implements ITestAwareClassifier {
             }
             else {
                 // performance drop, abort boosting, classifier of current iteration is dropped
-                Console.traceln(Level.INFO, "no gain for boosting iteration " + (boostingIter + 1) +
+                LOGGER.debug("no gain for boosting iteration " + (boostingIter + 1) +
                     "; aborting boosting");
                 this.classifierWeights.remove(this.classifierWeights.size() - 1);
                 this.boostingClassifiers.remove(this.boostingClassifiers.size() - 1);

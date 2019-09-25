@@ -16,12 +16,13 @@ package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
-import de.ugoe.cs.util.FileTools;
 
 /**
  * <p>
@@ -40,8 +41,8 @@ class CSVMockusDataLoader implements SingleVersionLoader {
         }
         final String[] lines;
         try {
-
-            lines = FileTools.getLinesFromFile(file.getAbsolutePath());
+            List<String> stringList = Files.readAllLines(file.toPath());
+			lines = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);

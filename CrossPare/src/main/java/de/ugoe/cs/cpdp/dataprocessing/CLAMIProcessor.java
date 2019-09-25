@@ -17,11 +17,11 @@ package de.ugoe.cs.cpdp.dataprocessing;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import de.ugoe.cs.util.console.Console;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -43,6 +43,11 @@ import weka.core.Instances;
  */
 public class CLAMIProcessor implements IProcessesingStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /*
      * (non-Javadoc)
      * 
@@ -186,10 +191,10 @@ public class CLAMIProcessor implements IProcessesingStrategy {
         while (numCleanBuggyInstances == 0 || numCleanBugfreeInstances == 0);
 
         // output some interesting information to provide insights into the CLAMI model
-        Console.traceln(Level.FINE, "Selected Metrics and Median-threshold: ");
+        LOGGER.debug("Selected Metrics and Median-threshold: ");
         for (int j = 0; j < data.numAttributes(); j++) {
             if (j != data.classIndex() && numMetricViolations[j] == violationCutoff) {
-                Console.traceln(Level.FINE, "\t" + data.attribute(j).name() + ": " + medians[j]);
+                LOGGER.debug("\t" + data.attribute(j).name() + ": " + medians[j]);
             }
         }
 

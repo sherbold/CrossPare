@@ -15,9 +15,9 @@
 package de.ugoe.cs.cpdp.training;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
-import de.ugoe.cs.util.console.Console;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import weka.core.OptionHandler;
 import weka.classifiers.Classifier;
@@ -44,6 +44,11 @@ import weka.classifiers.meta.Vote;
  */
 public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * reference to the Weka classifier
      */
@@ -159,21 +164,19 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
 
         }
         catch (ClassNotFoundException e) {
-            Console.traceln(Level.WARNING, String.format("class not found: %s", e.toString()));
+            LOGGER.warn(String.format("class not found: %s", e.toString()));
             e.printStackTrace();
         }
         catch (InstantiationException e) {
-            Console.traceln(Level.WARNING,
-                            String.format("Instantiation Exception: %s", e.toString()));
+        	LOGGER.warn(String.format("Instantiation Exception: %s", e.toString()));
             e.printStackTrace();
         }
         catch (IllegalAccessException e) {
-            Console.traceln(Level.WARNING,
-                            String.format("Illegal Access Exception: %s", e.toString()));
+        	LOGGER.warn(String.format("Illegal Access Exception: %s", e.toString()));
             e.printStackTrace();
         }
         catch (Exception e) {
-            Console.traceln(Level.WARNING, String.format("Exception: %s", e.toString()));
+        	LOGGER.warn(String.format("Exception: %s", e.toString()));
             e.printStackTrace();
         }
 

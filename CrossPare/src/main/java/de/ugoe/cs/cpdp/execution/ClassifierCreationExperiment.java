@@ -17,7 +17,9 @@ package de.ugoe.cs.cpdp.execution;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import weka.core.Instances;
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
@@ -29,7 +31,6 @@ import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import de.ugoe.cs.util.console.Console;
 
 /**
  * Class responsible for executing an experiment according to an {@link ExperimentConfiguration}.
@@ -59,6 +60,11 @@ import de.ugoe.cs.util.console.Console;
  */
 public class ClassifierCreationExperiment implements IExecutionStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * configuration of the experiment
      */
@@ -109,8 +115,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             testdata.setRelationName(testVersion.getProject());
 
             for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
-                Console.traceln(Level.FINE,
-                                String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
+                LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                               this.config.getExperimentName(), versionCount,
                                               versions.size(), testVersion.getProject(),
                                               processor.getClass().getName()));
@@ -120,9 +125,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             for (IPointWiseDataselectionStrategy dataselector : this.config
                 .getPointWiseSelectors())
             {
-                Console
-                    .traceln(Level.FINE,
-                             String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
+            	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
                                            this.config.getExperimentName(), versionCount,
                                            versions.size(), testVersion.getProject(),
                                            dataselector.getClass().getName()));
@@ -130,9 +133,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             }
 
             for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
-                Console
-                    .traceln(Level.FINE,
-                             String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+            	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                            this.config.getExperimentName(), versionCount,
                                            versions.size(), testVersion.getProject(),
                                            processor.getClass().getName()));
@@ -168,8 +169,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             }
 
             for (IEvaluationStrategy evaluator : this.config.getEvaluators()) {
-                Console.traceln(Level.FINE,
-                                String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
+            	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
                                               this.config.getExperimentName(), versionCount,
                                               versions.size(), testVersion.getProject(),
                                               evaluator.getClass().getName()));
@@ -185,8 +185,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
 
             versionCount++;
 
-            Console.traceln(Level.INFO,
-                            String.format("[%s] [%02d/%02d] %s: finished",
+            LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",
                                           this.config.getExperimentName(), versionCount,
                                           versions.size(), testVersion.getProject()));
 

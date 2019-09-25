@@ -25,15 +25,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import de.ugoe.cs.util.console.Console;
 import weka.attributeSelection.SignificanceAttributeEval;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
@@ -61,6 +61,11 @@ public class MetricMatchingTraining extends WekaBaseTraining
     implements ISetWiseTestdataAwareTrainingStrategy
 {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     private MetricMatch mm = null;
     private Classifier classifier = null;
 
@@ -138,17 +143,17 @@ public class MetricMatchingTraining extends WekaBaseTraining
         Instances ilist = null;
         if (this.mm != null) {
             ilist = this.mm.getMatchedTrain();
-            Console.traceln(Level.INFO, "[MATCH FOUND] match: [" + biggest_num + "], score: [" +
+            LOGGER.debug("[MATCH FOUND] match: [" + biggest_num + "], score: [" +
                 score + "], instances: [" + ilist.size() + "], attributes: [" +
                 this.mm.attributes.size() + "], ilist attrs: [" + ilist.numAttributes() + "]");
             for (Map.Entry<Integer, Integer> attmatch : this.mm.attributes.entrySet()) {
-                Console.traceln(Level.INFO, "[MATCHED ATTRIBUTE] source attribute: [" +
+                LOGGER.debug("[MATCHED ATTRIBUTE] source attribute: [" +
                     this.mm.train.attribute(attmatch.getKey()).name() + "], target attribute: [" +
                     this.mm.test.attribute(attmatch.getValue()).name() + "]");
             }
         }
         else {
-            Console.traceln(Level.INFO, "[NO MATCH FOUND]");
+            LOGGER.debug("[NO MATCH FOUND]");
         }
 
         // if we have a match we build the MetricMatchingClassifier, if not we fall back to FixClass

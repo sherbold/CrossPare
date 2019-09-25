@@ -16,7 +16,9 @@ package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -24,7 +26,6 @@ import java.util.TreeMap;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
-import de.ugoe.cs.util.FileTools;
 
 /**
  * <p>
@@ -137,7 +138,8 @@ class AUDIChangeLoader implements SingleVersionLoader {
         String[] lineSplitBug;
 
         try {
-            lines = FileTools.getLinesFromFile(file.getAbsolutePath());
+        	List<String> stringList = Files.readAllLines(file.toPath());
+			lines = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -148,7 +150,8 @@ class AUDIChangeLoader implements SingleVersionLoader {
         path = path.substring(0, path.length() - 14) + "repro.csv";
         final String[] linesBug;
         try {
-            linesBug = FileTools.getLinesFromFile(path);
+            List<String> stringList = Files.readAllLines(file.toPath());
+			linesBug = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -282,7 +285,8 @@ class AUDIChangeLoader implements SingleVersionLoader {
     public Instances load(File file, @SuppressWarnings("unused") String dummy) {
         final String[] lines;
         try {
-            lines = FileTools.getLinesFromFile(file.getAbsolutePath());
+        	List<String> stringList = Files.readAllLines(file.toPath());
+			lines = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -293,7 +297,8 @@ class AUDIChangeLoader implements SingleVersionLoader {
         path = path.substring(0, path.length() - 14) + "repro.csv";
         final String[] linesBug;
         try {
-            linesBug = FileTools.getLinesFromFile(path);
+            List<String> stringList = Files.readAllLines(file.toPath());
+			linesBug = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);

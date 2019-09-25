@@ -17,8 +17,9 @@ package de.ugoe.cs.cpdp.dataselection;
 import java.util.ArrayList;
 
 import org.apache.commons.collections4.list.SetUniqueList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
@@ -36,6 +37,11 @@ import weka.core.Instances;
  */
 public class DecisionTreeSelection extends AbstractCharacteristicSelection {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /*
      * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(weka.core.Instances,
      * org.apache.commons.collections4.list.SetUniqueList)
@@ -121,7 +127,7 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
             traindataSet.add(bestScoringProduct);
         }
         catch (Exception e) {
-            Console.printerr("failure during DecisionTreeSelection: " + e.getMessage());
+            LOGGER.error("failure during DecisionTreeSelection: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

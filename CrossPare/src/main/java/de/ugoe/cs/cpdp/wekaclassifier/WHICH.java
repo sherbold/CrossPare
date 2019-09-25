@@ -22,11 +22,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.ugoe.cs.util.console.Console;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import weka.classifiers.AbstractClassifier;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -47,6 +49,11 @@ public class WHICH extends AbstractClassifier {
      * default id.
      */
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * number of bins used for discretization of data
@@ -111,9 +118,7 @@ public class WHICH extends AbstractClassifier {
                     Pattern pattern = Pattern.compile("\\((.*?)\\)");
                     Matcher matcher = pattern.matcher(e.getMessage());
                     if (matcher.find()) {
-                        Console
-                            .traceln(Level.WARNING,
-                                     "ignoring attribute for WHICH training because it cannot be discretized: " +
+                        LOGGER.warn("ignoring attribute for WHICH training because it cannot be discretized: " +
                                          matcher.group(1));
                         ignoredAttributes.add(traindata.attribute(matcher.group(1)).index());
                     }
@@ -598,7 +603,7 @@ public class WHICH extends AbstractClassifier {
                     return rule;
                 }
             }
-            Console.traceln(Level.SEVERE, "could not draw rule; bug in WhichStack.drawRule()");
+            LOGGER.error("could not draw rule; bug in WhichStack.drawRule()");
             return null;
         }
 

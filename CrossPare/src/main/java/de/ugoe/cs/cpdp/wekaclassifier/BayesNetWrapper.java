@@ -16,12 +16,14 @@ package de.ugoe.cs.cpdp.wekaclassifier;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.bayes.BayesNet;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -40,6 +42,11 @@ public class BayesNetWrapper extends BayesNet {
      * generated ID
      */
     private static final long serialVersionUID = -4835134612921456157L;
+    
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * Map that store attributes for upscaling for each classifier
@@ -85,7 +92,7 @@ public class BayesNetWrapper extends BayesNet {
                 traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
 
                 this.upscaleIndex.add(attrIndex);
-                Console.traceln(Level.FINE, "upscaled attribute " + attributeName +
+                LOGGER.info("upscaled attribute " + attributeName +
                     "; restarting training of BayesNet");
                 secondAttempt = true;
                 continue;

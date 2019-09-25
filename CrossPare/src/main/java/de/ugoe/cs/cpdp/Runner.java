@@ -20,11 +20,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 import de.ugoe.cs.cpdp.execution.IExecutionStrategy;
-import de.ugoe.cs.util.console.Console;
-import de.ugoe.cs.util.console.TextConsole;
 
 /**
  * Executable that can be used to run experiments.
@@ -33,6 +42,31 @@ import de.ugoe.cs.util.console.TextConsole;
  * 
  */
 public class Runner {
+	
+	static {
+		String pattern = "%d [%t] %-5level: %msg%n%throwable";
+		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+    	AppenderComponentBuilder stdoutLogger = builder.newAppender("stdout", "Console");
+    	stdoutLogger.add(builder.newLayout("PatternLayout").addAttribute("pattern", pattern));
+    	stdoutLogger.add(builder.newFilter("ThresholdFilter", Filter.Result.DENY, Filter.Result.ACCEPT).addAttribute("level", "error"));
+    	builder.add(stdoutLogger);
+    	AppenderComponentBuilder stderrLogger = builder.newAppender("stderr", "Console");
+    	stderrLogger.add(builder.newLayout("PatternLayout").addAttribute("pattern", pattern));
+    	stderrLogger.add(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.DENY).addAttribute("level", "error"));
+    	stderrLogger.addAttribute("target", ConsoleAppender.Target.SYSTEM_ERR);
+    	builder.add(stderrLogger);
+    	
+    	
+    	RootLoggerComponentBuilder rootLogger = builder.newRootLogger(Level.INFO);
+    	rootLogger.add(builder.newAppenderRef("stdout")).add(builder.newAppenderRef("stderr"));
+    	builder.add(rootLogger);
+    	Configurator.initialize(builder.build());
+	}
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * Main class. The arguments are {@link ExperimentConfiguration} files. Each experiment is
@@ -44,9 +78,8 @@ public class Runner {
      */
     @SuppressWarnings("unused")
     public static void main(String[] args) {
-        new TextConsole(Level.FINE);
         final int concurrentThreads = Runtime.getRuntime().availableProcessors();
-        Console.traceln(Level.FINE, "exuection max " + concurrentThreads + " at the same time");
+        LOGGER.info("exuection max " + concurrentThreads + " at the same time");
         final ExecutorService threadPool = Executors.newFixedThreadPool(concurrentThreads);
         for (String arg : args) {
             File file = new File(arg);
@@ -84,14 +117,13 @@ public class Runner {
             config = new ExperimentConfiguration(configFile);
         }
         catch (Exception e) {
-            Console
-                .printerrln("Failure initializing the experiment configuration for configuration file " +
+        	LOGGER.error("Failure initializing the experiment configuration for configuration file " +
                     configFile);
             e.printStackTrace();
         }
 
         if (config != null) {
-            Console.trace(Level.FINEST, config.toString());
+        	LOGGER.debug(config.toString());
             // Instantiate the class like it was given as parameter in the config file and cast it
             // to the interface
             try {
@@ -111,35 +143,35 @@ public class Runner {
                 threadPool.execute(experiment);
             }
             catch (NoSuchMethodException e) {
-                Console.printerrln("Class \"" + config.getExecutionStrategy() +
+            	LOGGER.error("Class \"" + config.getExecutionStrategy() +
                     "\" does not have the right Constructor");
                 e.printStackTrace();
             }
             catch (SecurityException e) {
-                Console.printerrln("Security manager prevents reflection");
+            	LOGGER.error("Security manager prevents reflection");
                 e.printStackTrace();
             }
             catch (IllegalArgumentException e) {
-                Console.printerrln("Class \"" + config.getExecutionStrategy() +
+            	LOGGER.error("Class \"" + config.getExecutionStrategy() +
                     "\" does not have a Constructor, which" + "matches the given arguments");
                 e.printStackTrace();
             }
             catch (InvocationTargetException e) {
-                Console.printerrln("Constructor in Class \"" + config.getExecutionStrategy() +
+            	LOGGER.error("Constructor in Class \"" + config.getExecutionStrategy() +
                     "\" is not public");
                 e.printStackTrace();
             }
             catch (InstantiationException e) {
-                Console.printerrln("Cannot instantiate Class \"" + config.getExecutionStrategy() +
+            	LOGGER.error("Cannot instantiate Class \"" + config.getExecutionStrategy() +
                     "\"");
                 e.printStackTrace();
             }
             catch (IllegalAccessException e) {
-                Console.printerrln("Cannot access Class \"" + config.getExecutionStrategy() + "\"");
+            	LOGGER.error("Cannot access Class \"" + config.getExecutionStrategy() + "\"");
                 e.printStackTrace();
             }
             catch (ClassNotFoundException e) {
-                Console.printerrln("Class \"" + config.getExecutionStrategy() + "\" was not found");
+            	LOGGER.error("Class \"" + config.getExecutionStrategy() + "\" was not found");
                 e.printStackTrace();
             }
 

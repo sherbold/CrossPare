@@ -19,9 +19,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
-import de.ugoe.cs.util.console.Console;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -35,6 +36,11 @@ import weka.core.converters.CSVLoader;
  * @author Steffen Herbold
  */
 public class NetgeneLoader implements SingleVersionLoader {
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /*
      * (non-Javadoc)
@@ -193,7 +199,7 @@ public class NetgeneLoader implements SingleVersionLoader {
             }
         }
         catch (IOException e) {
-            Console.traceln(Level.SEVERE, "failure reading file: " + e.getMessage());
+            LOGGER.error("failure reading file: " + e.getMessage());
             metricsData = null;
         }
         return metricsData;

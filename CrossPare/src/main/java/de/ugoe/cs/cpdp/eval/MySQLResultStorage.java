@@ -22,11 +22,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-
-import de.ugoe.cs.util.console.Console;
 
 /**
  * <p>
@@ -37,6 +37,11 @@ import de.ugoe.cs.util.console.Console;
  */
 public class MySQLResultStorage implements IResultStorage {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * Name of the table where the results are stored.
      */
@@ -83,11 +88,9 @@ public class MySQLResultStorage implements IResultStorage {
             dbProperties.load(is);
         }
         catch (IOException e) {
-            Console.printerr("Could not load mysql.cred file: " + e.getMessage());
-            Console.printerr("Must be a properties file located in working directory.");
-            Console
-                .traceln(Level.WARNING,
-                         "Using default DB configuration since mysql.cred file could not be loaded");
+            LOGGER.error("Could not load mysql.cred file: " + e.getMessage());
+            LOGGER.error("Must be a properties file located in working directory.");
+            LOGGER.warn("Using default DB configuration since mysql.cred file could not be loaded");
         }
         String dbHost = dbProperties.getProperty("db.host", "localhost");
         String dbPort = dbProperties.getProperty("db.port", "3306");
@@ -212,14 +215,14 @@ public class MySQLResultStorage implements IResultStorage {
 
             int qryResult = stmt.executeUpdate();
             if (qryResult < 1) {
-                Console.printerr("Insert failed.");
+            	LOGGER.error("Insert failed.");
             }
         }
         catch (SQLException e) {
-            Console.printerr("Problem with MySQL connection: ");
-            Console.printerr("SQLException: " + e.getMessage());
-            Console.printerr("SQLState: " + e.getSQLState());
-            Console.printerr("VendorError: " + e.getErrorCode());
+        	LOGGER.error("Problem with MySQL connection: ");
+        	LOGGER.error("SQLException: " + e.getMessage());
+        	LOGGER.error("SQLState: " + e.getSQLState());
+        	LOGGER.error("VendorError: " + e.getErrorCode());
             return;
         }
     }
@@ -243,10 +246,10 @@ public class MySQLResultStorage implements IResultStorage {
             }
         }
         catch (SQLException e) {
-            Console.printerr("Problem with MySQL connection: \n");
-            Console.printerr("SQLException: " + e.getMessage() + "\n");
-            Console.printerr("SQLState: " + e.getSQLState() + "\n");
-            Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+        	LOGGER.error("Problem with MySQL connection: \n");
+        	LOGGER.error("SQLException: " + e.getMessage() + "\n");
+        	LOGGER.error("SQLState: " + e.getSQLState() + "\n");
+        	LOGGER.error("VendorError: " + e.getErrorCode() + "\n");
             return 0;
         }
     }
@@ -267,10 +270,10 @@ public class MySQLResultStorage implements IResultStorage {
             }
         }
         catch (SQLException e) {
-            Console.printerr("Problem with MySQL connection: \n");
-            Console.printerr("SQLException: " + e.getMessage() + "\n");
-            Console.printerr("SQLState: " + e.getSQLState() + "\n");
-            Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+        	LOGGER.error("Problem with MySQL connection: \n");
+        	LOGGER.error("SQLException: " + e.getMessage() + "\n");
+        	LOGGER.error("SQLState: " + e.getSQLState() + "\n");
+        	LOGGER.error("VendorError: " + e.getErrorCode() + "\n");
         }
         return exists;
     }
@@ -303,13 +306,13 @@ public class MySQLResultStorage implements IResultStorage {
             ") ENGINE=InnoDB AUTO_INCREMENT=77777 DEFAULT CHARSET=utf8;";
         try(Statement stmt = this.connectionPool.getConnection().createStatement();) { 
             stmt.execute(sql);
-            Console.traceln(Level.FINE, "Created new table " + this.resultsTableName);
+            LOGGER.info("Created new table " + this.resultsTableName);
         }
         catch (SQLException e) {
-            Console.printerr("Problem with MySQL connection: \n");
-            Console.printerr("SQLException: " + e.getMessage() + "\n");
-            Console.printerr("SQLState: " + e.getSQLState() + "\n");
-            Console.printerr("VendorError: " + e.getErrorCode() + "\n");
+        	LOGGER.error("Problem with MySQL connection: \n");
+        	LOGGER.error("SQLException: " + e.getMessage() + "\n");
+        	LOGGER.error("SQLState: " + e.getSQLState() + "\n");
+        	LOGGER.error("VendorError: " + e.getErrorCode() + "\n");
         }
     }
 

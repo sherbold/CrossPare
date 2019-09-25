@@ -19,10 +19,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.clusterers.EM;
@@ -52,6 +53,11 @@ import weka.filters.unsupervised.attribute.Remove;
  */
 public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * the classifier
      */
@@ -177,7 +183,7 @@ public class WekaLocalEMTraining extends WekaBaseTraining implements ITrainingSt
 
             }
             catch (Exception e) {
-                Console.traceln(Level.INFO, String.format("ERROR matching instance to cluster!"));
+            	LOGGER.info(String.format("ERROR matching instance to cluster!"));
                 throw new RuntimeException(e);
             }
             return ret;

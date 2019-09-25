@@ -16,16 +16,16 @@ package de.ugoe.cs.cpdp.dataselection;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.commons.collections4.list.SetUniqueList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import weka.clusterers.EM;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.AddCluster;
 import weka.filters.unsupervised.attribute.Remove;
-import de.ugoe.cs.util.console.Console;
 
 /**
  * Use in Config:
@@ -41,6 +41,11 @@ import de.ugoe.cs.util.console.Console;
  */
 public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * paramters passed to the selection
      */
@@ -83,7 +88,7 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
             filter.setInputFormat(train);
             train = Filter.useFilter(train, filter);
 
-            Console.traceln(Level.INFO, String.format("starting clustering"));
+            LOGGER.debug(String.format("starting clustering"));
 
             // 3. cluster data
             EM clusterer = new EM();
@@ -91,10 +96,10 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
             clusterer.buildClusterer(train);
             int numClusters = clusterer.getNumClusters();
             if (numClusters == -1) {
-                Console.traceln(Level.INFO, String.format("we have unlimited clusters"));
+            	LOGGER.debug(String.format("we have unlimited clusters"));
             }
             else {
-                Console.traceln(Level.INFO, String.format("we have: " + numClusters + " clusters"));
+            	LOGGER.debug(String.format("we have: " + numClusters + " clusters"));
             }
 
             // 4. classify testdata, save cluster int
@@ -116,8 +121,7 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
                 }
             }
 
-            Console.traceln(Level.INFO, String
-                .format("our testdata is in: " + selectedCluster.size() + " different clusters"));
+            LOGGER.debug(String.format("our testdata is in: " + selectedCluster.size() + " different clusters"));
 
             // 5. get cluster membership of our traindata
             AddCluster cfilter = new AddCluster();
@@ -145,17 +149,16 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
                     // check for differences, just one attribute, we are pretty sure the index does
                     // not change
                     if (traindata.get(j).value(3) != ctrain.get(j).value(3)) {
-                        Console.traceln(Level.WARNING, String
+                    	LOGGER.warn(String
                             .format("we have a difference between train an ctrain!"));
                     }
                 }
             }
 
-            Console.traceln(Level.INFO, String.format("that leaves us with: " +
+            LOGGER.debug(String.format("that leaves us with: " +
                 selected.numInstances() + " traindata instances from " + traindata.numInstances()));
         }
         catch (Exception e) {
-            Console.traceln(Level.WARNING, String.format("ERROR"));
             throw new RuntimeException("error in pointwise em", e);
         }
 

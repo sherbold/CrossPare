@@ -16,8 +16,9 @@ package de.ugoe.cs.cpdp.wekaclassifier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.operator.CrossoverOperator;
@@ -37,7 +38,6 @@ import org.uma.jmetal.util.solutionattribute.impl.NumberOfViolatedConstraints;
 import org.uma.jmetal.util.solutionattribute.impl.OverallConstraintViolation;
 
 import de.ugoe.cs.cpdp.loader.AbstractFolderLoader;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -62,6 +62,11 @@ public class MODEPClassifier extends AbstractClassifier {
     /** Default serial ID */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+    
     /**
      * Coefficients of the calculated solution
      */
@@ -121,8 +126,7 @@ public class MODEPClassifier extends AbstractClassifier {
         }
 
         if (bestSolution == null) {
-            Console.trace(Level.WARNING,
-                          "no solution with desired recall found, pick best recall instead");
+        	LOGGER.warn("no solution with desired recall found, pick best recall instead");
             for (DoubleSolution solution : solutions) {
                 if (bestSolution == null) {
                     bestSolution = solution;
@@ -283,8 +287,7 @@ public class MODEPClassifier extends AbstractClassifier {
         public List<DoubleSolution> run() {
             AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor(this.algorithm).execute();
             List<DoubleSolution> population = this.algorithm.getResult();
-            Console.traceln(Level.FINEST,
-                            "genetic algorithm run time: " + algorithmRunner.getComputingTime());
+            LOGGER.debug("genetic algorithm run time: " + algorithmRunner.getComputingTime());
             return population;
         }
     }

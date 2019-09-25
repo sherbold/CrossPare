@@ -19,19 +19,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Sets;
 
 import de.ugoe.cs.cpdp.util.SortUtils;
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
@@ -47,6 +47,11 @@ import weka.core.Instances;
  */
 public class TopMetricFilter implements ISetWiseProcessingStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * Internally used correlation threshold.
      */
@@ -70,7 +75,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
             determineTopKAttributes(testdata, traindataSet);
         }
         catch (Exception e) {
-            Console.printerr("Failure during metric selection: " + e.getMessage());
+            LOGGER.error("Failure during metric selection: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -153,9 +158,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
                     else {
                         traindataCopy = WekaUtils.upscaleAttribute(traindata, attrIndex);
                     }
-                    Console
-                        .traceln(Level.FINE,
-                                 "upscaled attribute " + attributeName + "; restarting training");
+                    LOGGER.info("upscaled attribute " + attributeName + "; restarting training");
                     secondAttempt = true;
                     continue;
                 }
@@ -228,9 +231,9 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         for (Integer index : opttopkSetIndexSet) {
             opttopkIndex.add(topkIndex[index]);
         }
-        Console.traceln(Level.FINE, "selected the following metrics:");
+        LOGGER.debug("selected the following metrics:");
         for (Integer index : opttopkIndex) {
-            Console.traceln(Level.FINE, traindataSet.get(0).attribute(index).name());
+            LOGGER.debug(traindataSet.get(0).attribute(index).name());
         }
         // finally remove attributes
         for (int j = testdata.numAttributes() - 1; j >= 0; j--) {

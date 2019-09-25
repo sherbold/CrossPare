@@ -15,11 +15,12 @@
 package de.ugoe.cs.cpdp.util;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
+
 
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.RBFNetwork;
 import weka.classifiers.meta.CVParameterSelection;
@@ -36,6 +37,11 @@ import weka.core.Instances;
  * @author Steffen Herbold
  */
 public class WekaUtils {
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * <p>
@@ -280,7 +286,7 @@ public class WekaUtils {
     public static Classifier buildClassifier(Classifier classifier, Instances traindata) {
         try {
             if (classifier == null) {
-                Console.traceln(Level.WARNING, String.format("classifier null!"));
+                LOGGER.warn(String.format("classifier null!"));
             }
             classifier.buildClassifier(traindata);
         }
@@ -288,25 +294,21 @@ public class WekaUtils {
             if (classifier instanceof CVParameterSelection) {
                 // in case of parameter selection, check if internal cross validation loop
                 // is the problem
-                Console.traceln(Level.WARNING, "error with CVParameterSelection training");
-                Console.traceln(Level.WARNING, "trying without parameter selection...");
+            	LOGGER.warn("error with CVParameterSelection training");
+            	LOGGER.warn("trying without parameter selection...");
                 Classifier internalClassifier = ((CVParameterSelection) classifier).getClassifier();
                 classifier = buildClassifier(internalClassifier, traindata);
-                Console.traceln(Level.WARNING, "...success");
+                LOGGER.warn("...success");
             }
             else if (classifier instanceof RBFNetwork) {
-                Console
-                    .traceln(Level.WARNING,
-                             "Failure in RBFNetwork training. Checking if this is due to skewed training data with less than two instances in the minority class.");
+            	LOGGER.warn("Failure in RBFNetwork training. Checking if this is due to skewed training data with less than two instances in the minority class.");
                 int countNoBug = traindata.attributeStats(traindata.classIndex()).nominalCounts[0];
                 int countBug = traindata.attributeStats(traindata.classIndex()).nominalCounts[1];
-                Console.traceln(Level.WARNING, "trainsize: " + traindata.size() + "; numNoBug: " +
+                LOGGER.warn("trainsize: " + traindata.size() + "; numNoBug: " +
                     countNoBug + "; numBug: " + countBug);
                 if (countNoBug <= 1 || countBug <= 1) {
-                    Console
-                        .traceln(Level.WARNING,
-                                 "less than two instances in minority class");
-                    Console.traceln(Level.WARNING, "using ZeroR instead");
+                	LOGGER.warn("less than two instances in minority class");
+                	LOGGER.warn("using ZeroR instead");
                     classifier = new ZeroR();
                     classifier = buildClassifier(classifier, traindata);
                 }
@@ -319,9 +321,8 @@ public class WekaUtils {
             if (e.getMessage() != null &&
                 e.getMessage().contains("Not enough training instances with class labels"))
             {
-                Console.traceln(Level.SEVERE,
-                                "failure due to lack of instances: " + e.getMessage());
-                Console.traceln(Level.SEVERE, "training ZeroR classifier instead");
+            	LOGGER.warn("failure due to lack of instances: " + e.getMessage());
+            	LOGGER.warn("training ZeroR classifier instead");
                 classifier = new ZeroR();
                 try {
                     classifier.buildClassifier(traindata);
@@ -378,7 +379,7 @@ public class WekaUtils {
      */
     public static void makeClassNumeric(Instances data) {
         if (data.classAttribute().isNominal()) {
-            Console.traceln(Level.WARNING, "data only binary, i.e., numeric attribute will not be real counts, but still just 0, 1");
+        	LOGGER.warn("data only binary, i.e., numeric attribute will not be real counts, but still just 0, 1");
             // create new numeric attribute
             data.insertAttributeAt(new Attribute(data.classAttribute().name()+"Num"), data.numAttributes());
             for (Instance instance : data) {

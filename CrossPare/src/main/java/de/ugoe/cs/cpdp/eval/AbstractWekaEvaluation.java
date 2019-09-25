@@ -23,7 +23,6 @@ import java.util.List;
 
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
-import de.ugoe.cs.util.StringTools;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
@@ -141,7 +140,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",tn_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",fp_" + ((IWekaCompatibleTrainer) trainer).getName());
             }
-            this.output.append(StringTools.ENDLINE);
+            this.output.append(System.lineSeparator());
         }
 
         this.output.append(productName);
@@ -232,7 +231,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
         }
 
-        this.output.append(StringTools.ENDLINE);
+        this.output.append(System.lineSeparator());
         this.output.flush();
     }
 

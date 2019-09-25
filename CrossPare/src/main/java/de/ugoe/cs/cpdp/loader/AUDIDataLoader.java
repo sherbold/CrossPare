@@ -16,12 +16,13 @@ package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
-import de.ugoe.cs.util.FileTools;
 
 /**
  * Loads data from the automative defect data set from Audi Electronic Ventures donated by Altinger
@@ -45,7 +46,8 @@ class AUDIDataLoader implements SingleVersionLoader {
         }
         final String[] lines;
         try {
-            lines = FileTools.getLinesFromFile(file.getAbsolutePath());
+            List<String> stringList = Files.readAllLines(file.toPath());
+			lines = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -56,7 +58,8 @@ class AUDIDataLoader implements SingleVersionLoader {
         path = path.substring(0, path.length() - 14) + "repro.csv";
         final String[] linesBug;
         try {
-            linesBug = FileTools.getLinesFromFile(path);
+            List<String> stringList = Files.readAllLines(file.toPath());
+			linesBug = stringList.toArray(new String[] {});
         }
         catch (IOException e) {
             throw new RuntimeException(e);

@@ -28,6 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -44,7 +46,6 @@ import de.ugoe.cs.cpdp.decentApp.models.arffx.Model;
 import de.ugoe.cs.cpdp.decentApp.models.arffx.Value;
 import de.ugoe.cs.cpdp.decentApp.ARFFxResourceTool;
 import de.ugoe.cs.cpdp.decentApp.DECENTEpsilonModelHandler;
-import de.ugoe.cs.util.console.Console;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -59,6 +60,11 @@ import weka.core.converters.ArffSaver;
  */
 public class DecentDataLoader implements SingleVersionLoader {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     // Model Handler for Decent Models
     private DECENTEpsilonModelHandler modelHandler = new DECENTEpsilonModelHandler();
 
@@ -117,7 +123,7 @@ public class DecentDataLoader implements SingleVersionLoader {
             saver.writeBatch();
         }
         catch (IOException e) {
-            Console.printerrln("Cannot save the file to path: " + arffLocation);
+            LOGGER.error("Cannot save the file to path: " + arffLocation);
             e.printStackTrace();
         }
     }
@@ -142,7 +148,7 @@ public class DecentDataLoader implements SingleVersionLoader {
             registerMetaModels();
         }
         catch (Exception e1) {
-            Console.printerrln("Metamodels cannot be registered!");
+        	LOGGER.error("Metamodels cannot be registered!");
             e1.printStackTrace();
         }
 
@@ -162,11 +168,11 @@ public class DecentDataLoader implements SingleVersionLoader {
                 data = new Instances(reader);
             }
             catch (FileNotFoundException e) {
-                Console.printerrln("File with path: " + arffLocation + " was not found.");
+            	LOGGER.error("File with path: " + arffLocation + " was not found.");
                 throw new RuntimeException(e);
             }
             catch (IOException e) {
-                Console.printerrln("File with path: " + arffLocation + " cannot be read.");
+            	LOGGER.error("File with path: " + arffLocation + " cannot be read.");
                 throw new RuntimeException(e);
             }
 
@@ -207,7 +213,7 @@ public class DecentDataLoader implements SingleVersionLoader {
             preProcessModule.reset();
         }
         catch (URISyntaxException e) {
-            Console.printerrln("URI Syntax for decent or arffx model is wrong.");
+        	LOGGER.error("URI Syntax for decent or arffx model is wrong.");
             e.printStackTrace();
         }
         catch (Exception e) {
@@ -226,7 +232,7 @@ public class DecentDataLoader implements SingleVersionLoader {
             arffxToArffModule.reset();
         }
         catch (URISyntaxException e) {
-            Console.printerrln("URI Syntax for arffx model is wrong.");
+        	LOGGER.error("URI Syntax for arffx model is wrong.");
             e.printStackTrace();
         }
         catch (Exception e) {
@@ -448,17 +454,16 @@ public class DecentDataLoader implements SingleVersionLoader {
             module = new EolModule();
         }
         else {
-            Console
-                .printerrln("Could not determine model type, file should end with either .etl or .eol");
+        	LOGGER.error("Could not determine model type, file should end with either .etl or .eol");
             return null;
         }
 
         module.parse(new File(source));
 
         if (module.getParseProblems().size() > 0) {
-            Console.printerrln("Parse error occured...");
+        	LOGGER.error("Parse error occured...");
             for (ParseProblem problem : module.getParseProblems()) {
-                Console.printerrln(problem.toString());
+            	LOGGER.error(problem.toString());
             }
             // System.exit(-1);
         }

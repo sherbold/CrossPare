@@ -5,9 +5,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+
 
 import org.apache.commons.collections4.list.SetUniqueList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
@@ -25,7 +27,6 @@ import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
 
 /**
@@ -37,6 +38,11 @@ import weka.core.Instances;
  */
 public class HeterogeneousExperiment implements IExecutionStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * configuration of the experiment
      */
@@ -151,8 +157,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                                                    // are the same
                                                                                    // dataset
 
-                                Console.traceln(Level.INFO,
-                                                String.format("[%s] [%02d/%02d] %s:%s starting",
+                                LOGGER.info(String.format("[%s] [%02d/%02d] %s:%s starting",
                                                               this.config.getExperimentName(),
                                                               versionCount, testVersionCount,
                                                               testVersion.getVersion(),
@@ -160,7 +165,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 int numResultsAvailable =
                                     resultsAvailable(testVersion, trainingVersion);
                                 if (numResultsAvailable >= this.config.getRepetitions()) {
-                                    Console.traceln(Level.INFO, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s:%s results already available; skipped",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -183,7 +188,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (ISetWiseProcessingStrategy processor : this.config
                                     .getSetWisePreprocessors())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s:%s applying setwise preprocessor %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -194,7 +199,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (ISetWiseDataselectionStrategy dataselector : this.config
                                     .getSetWiseSelectors())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying setwise selection %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -204,7 +209,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (ISetWiseProcessingStrategy processor : this.config
                                     .getSetWisePostprocessors())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -214,7 +219,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (ISetWiseTrainingStrategy setwiseTrainer : this.config
                                     .getSetWiseTrainers())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying setwise trainer %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -224,7 +229,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
                                     .getSetWiseTestdataAwareTrainers())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s:%s applying testdata aware setwise trainer %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -238,7 +243,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (IProcessesingStrategy processor : this.config
                                     .getPreProcessors())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -248,7 +253,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (IPointWiseDataselectionStrategy dataselector : this.config
                                     .getPointWiseSelectors())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -258,7 +263,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (IProcessesingStrategy processor : this.config
                                     .getPostProcessors())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -266,7 +271,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                     processor.apply(testdata, traindata);
                                 }
                                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -276,7 +281,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 for (ITestAwareTrainingStrategy trainer : this.config
                                     .getTestAwareTrainers())
                                 {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -288,7 +293,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                     resultsDir.mkdir();
                                 }
                                 for (IEvaluationStrategy evaluator : this.config.getEvaluators()) {
-                                    Console.traceln(Level.FINE, String
+                                	LOGGER.info(String
                                         .format("[%s] [%02d/%02d] %s:%s applying evaluator %s",
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
@@ -322,8 +327,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                     this.config.getResultStorages());
                                     writeHeader = false;
                                 }
-                                Console.traceln(Level.INFO,
-                                                String.format("[%s] [%02d/%02d] %s: finished",
+                                LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",
                                                               this.config.getExperimentName(),
                                                               versionCount, testVersionCount,
                                                               testVersion.getVersion()));

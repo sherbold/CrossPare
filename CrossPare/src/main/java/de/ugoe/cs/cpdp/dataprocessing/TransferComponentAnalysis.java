@@ -15,17 +15,17 @@
 package de.ugoe.cs.cpdp.dataprocessing;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import org.ojalgo.matrix.PrimitiveMatrix;
 import org.ojalgo.matrix.jama.JamaEigenvalue;
 import org.ojalgo.matrix.jama.JamaEigenvalue.General;
 import org.ojalgo.scalar.ComplexNumber;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ojalgo.access.Access2D.Builder;
 import org.ojalgo.array.Array1D;
 
 import de.ugoe.cs.cpdp.util.SortUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -40,6 +40,11 @@ import weka.core.Instances;
  */
 public class TransferComponentAnalysis implements IProcessesingStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * Dimension of the reduced data.
      */
@@ -111,16 +116,14 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
         final PrimitiveMatrix muMatrix = buildMuMatrix(sizeTest, sizeTrain, mu);
         PrimitiveMatrix.FACTORY.makeEye(sizeTest + sizeTrain, sizeTest + sizeTrain);
 
-        Console.traceln(Level.FINEST,
-                        "creating optimization matrix (dimension " + (sizeTest + sizeTrain) + ")");
+        LOGGER.debug("creating optimization matrix (dimension " + (sizeTest + sizeTrain) + ")");
         final PrimitiveMatrix optimizationProblem = kernelMatrix.multiplyRight(kernelNormMatrix)
             .multiplyRight(kernelMatrix).add(muMatrix).invert().multiplyRight(kernelMatrix)
             .multiplyRight(centerMatrix).multiplyRight(kernelMatrix);
-        Console.traceln(Level.FINEST,
-                        "optimization matrix created, now solving eigenvalue problem");
+        LOGGER.debug("optimization matrix created, now solving eigenvalue problem");
         General eigenvalueDecomposition = new JamaEigenvalue.General();
         eigenvalueDecomposition.compute(optimizationProblem);
-        Console.traceln(Level.FINEST, "eigenvalue problem solved");
+        LOGGER.debug("eigenvalue problem solved");
 
         Array1D<ComplexNumber> eigenvaluesArray = eigenvalueDecomposition.getEigenvalues();
         System.out.println(eigenvaluesArray.length);

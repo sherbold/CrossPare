@@ -14,17 +14,16 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
-import java.util.logging.Level;
-
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
 
 /**
@@ -38,6 +37,11 @@ import weka.core.Instances;
 public class MahalanobisOutlierRemoval
     implements IPointWiseDataselectionStrategy, ISetWiseDataselectionStrategy
 {
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * Distance outside which entities are removed as outliers.
@@ -101,9 +105,7 @@ public class MahalanobisOutlierRemoval
                 .getSolver().getInverse();
         }
         catch (@SuppressWarnings("unused") SingularMatrixException e) {
-            Console
-                .traceln(Level.WARNING,
-                         "could not perform Mahalanobis outlier removal due to singular covariance matrix");
+            LOGGER.warn("could not perform Mahalanobis outlier removal due to singular covariance matrix");
             return;
         }
         // create mean vector

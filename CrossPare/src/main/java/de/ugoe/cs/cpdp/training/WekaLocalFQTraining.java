@@ -20,11 +20,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.training.QuadTree;
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.DenseInstance;
@@ -61,6 +62,11 @@ import weka.filters.unsupervised.attribute.Remove;
  * </p>
  */
 public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingStrategy {
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * the classifier
@@ -380,8 +386,6 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 // instance we want to classify
                 // if we still have not found a cluster we exit because something is really wrong
                 if (found_cnumber == -1) {
-                    Console.traceln(Level.INFO, String
-                        .format("ERROR matching instance to cluster with full search!"));
                     throw new RuntimeException("cluster not found with full search");
                 }
 
@@ -390,7 +394,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
 
             }
             catch (Exception e) {
-                Console.traceln(Level.INFO, String.format("ERROR matching instance to cluster!"));
+                LOGGER.error(String.format("ERROR matching instance to cluster!"));
                 throw new RuntimeException(e);
             }
             return ret;
@@ -521,8 +525,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                     }
                 }
                 else {
-                    Console.traceln(Level.INFO, String
-                        .format("drop cluster, only: " + current.size() + " instances"));
+                    LOGGER.info(String.format("drop cluster, only: " + current.size() + " instances"));
                 }
             }
 

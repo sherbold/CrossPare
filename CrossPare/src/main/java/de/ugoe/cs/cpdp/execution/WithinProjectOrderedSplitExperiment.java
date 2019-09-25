@@ -18,7 +18,9 @@ import java.io.File;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
@@ -34,7 +36,6 @@ import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import de.ugoe.cs.util.console.Console;
 import weka.core.Instances;
 
 /**
@@ -49,6 +50,11 @@ import weka.core.Instances;
  */
 public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
 
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
+	
     /**
      * configuration of the experiment
      */
@@ -103,14 +109,12 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
 
         for (SoftwareVersion testVersion : versions) {
             if (isVersion(testVersion, this.config.getTestVersionFilters())) {
-                Console.traceln(Level.INFO,
-                                String.format("[%s] [%02d/%02d] %s: starting",
+                LOGGER.info(String.format("[%s] [%02d/%02d] %s: starting",
                                               this.config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
                 int numResultsAvailable = resultsAvailable(testVersion);
                 if (numResultsAvailable >= numTrainers * this.config.getRepetitions()) {
-                    Console.traceln(Level.INFO, String
-                        .format("[%s] [%02d/%02d] %s: results already available; skipped",
+                	LOGGER.info(String.format("[%s] [%02d/%02d] %s: results already available; skipped",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion()));
                     versionCount++;
@@ -152,8 +156,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                 }
 
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
-                    Console.traceln(Level.FINE,
-                                    String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
+                	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
@@ -162,30 +165,26 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                 for (IPointWiseDataselectionStrategy dataselector : this.config
                     .getPointWiseSelectors())
                 {
-                    Console.traceln(Level.FINE, String
-                        .format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
+                    LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), dataselector.getClass().getName()));
                     traindata = dataselector.apply(testdata, traindata);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
-                    Console.traceln(Level.FINE, String
-                        .format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
+                	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
                     processor.apply(testdata, traindata);
                 }
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
-                    Console.traceln(Level.FINE,
-                                    String.format("[%s] [%02d/%02d] %s: applying trainer %s",
+                	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
                     trainer.apply(traindata);
                 }
                 for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
-                    Console.traceln(Level.FINE,
-                                    String.format("[%s] [%02d/%02d] %s: applying trainer %s",
+                	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
@@ -196,8 +195,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                     resultsDir.mkdir();
                 }
                 for (IEvaluationStrategy evaluator : this.config.getEvaluators()) {
-                    Console.traceln(Level.FINE,
-                                    String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
+                	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying evaluator %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   evaluator.getClass().getName()));
@@ -216,8 +214,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                                     this.config.getResultStorages());
                     writeHeader = false;
                 }
-                Console.traceln(Level.INFO,
-                                String.format("[%s] [%02d/%02d] %s: finished",
+                LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",
                                               this.config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
                 versionCount++;

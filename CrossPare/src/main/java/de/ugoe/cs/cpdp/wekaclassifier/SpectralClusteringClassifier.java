@@ -2,9 +2,11 @@
 package de.ugoe.cs.cpdp.wekaclassifier;
 
 import java.util.Arrays;
-import java.util.logging.Level;
+
 
 import org.apache.commons.math3.util.MathArrays;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ojalgo.access.Access2D.Builder;
 import org.ojalgo.matrix.PrimitiveMatrix;
 import org.ojalgo.matrix.jama.JamaEigenvalue;
@@ -12,7 +14,6 @@ import org.ojalgo.matrix.jama.JamaEigenvalue.General;
 import org.ojalgo.matrix.jama.JamaMatrix;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import de.ugoe.cs.util.console.Console;
 import weka.classifiers.AbstractClassifier;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -28,6 +29,11 @@ public class SpectralClusteringClassifier extends AbstractClassifier {
 
     /**  */
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * Transformed values used for classification
@@ -63,7 +69,7 @@ public class SpectralClusteringClassifier extends AbstractClassifier {
 
         General eigenvalueDecomposition = new JamaEigenvalue.General();
         eigenvalueDecomposition.compute(symmetricLaplaceMatrix);
-        Console.traceln(Level.FINE, "eigenvalue problem solved");
+        LOGGER.debug("eigenvalue problem solved");
 
         JamaMatrix eigenvectors = eigenvalueDecomposition.getV();
 
@@ -129,8 +135,7 @@ public class SpectralClusteringClassifier extends AbstractClassifier {
             }
         }
         if (index == -1) {
-            Console
-                .printerrln("SpectralClusteringClassifier only work with test data as training data");
+            LOGGER.error("SpectralClusteringClassifier only work with test data as training data");
         }
 
         double classification;

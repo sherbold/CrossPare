@@ -23,12 +23,14 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -46,8 +48,6 @@ import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
-import de.ugoe.cs.util.StringTools;
-import de.ugoe.cs.util.console.Console;
 
 /**
  * Class that contains all meta information about an experiment, i.e., its configuration. The
@@ -59,6 +59,11 @@ import de.ugoe.cs.util.console.Console;
  * @author Steffen Herbold
  */
 public class ExperimentConfiguration extends DefaultHandler {
+	
+	/**
+     * Reference to the logger
+     */
+    private static final Logger LOGGER = LogManager.getLogger("main");
 
     /**
      * handle of the file that contains the configuration
@@ -628,7 +633,7 @@ public class ExperimentConfiguration extends DefaultHandler {
                 }
             }
             else {
-                Console.traceln(Level.WARNING, "element in config-file " + this.configFile.getName() +
+                LOGGER.warn("element in config-file " + this.configFile.getName() +
                     " ignored: " + qName);
             }
         }
@@ -695,32 +700,32 @@ public class ExperimentConfiguration extends DefaultHandler {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("Experiment name: " + this.experimentName + StringTools.ENDLINE);
-        builder.append("Loaders: " + this.loaders + StringTools.ENDLINE);
-        builder.append("Results path: " + this.resultsPath + StringTools.ENDLINE);
-        builder.append("Version filters: " + this.versionFilters.toString() + StringTools.ENDLINE);
+        builder.append("Experiment name: " + this.experimentName + System.lineSeparator());
+        builder.append("Loaders: " + this.loaders + System.lineSeparator());
+        builder.append("Results path: " + this.resultsPath + System.lineSeparator());
+        builder.append("Version filters: " + this.versionFilters.toString() + System.lineSeparator());
         builder
-            .append("Test version filters: " + this.testVersionFilters.toString() + StringTools.ENDLINE);
+            .append("Test version filters: " + this.testVersionFilters.toString() + System.lineSeparator());
         builder.append("Training version filters: " + this.trainingVersionFilters.toString() +
-            StringTools.ENDLINE);
+        		System.lineSeparator());
         builder.append("Setwise preprocessors: " + this.setwisepreprocessors.toString() +
-            StringTools.ENDLINE);
-        builder.append("Setwise selectors: " + this.setwiseselectors.toString() + StringTools.ENDLINE);
+        		System.lineSeparator());
+        builder.append("Setwise selectors: " + this.setwiseselectors.toString() + System.lineSeparator());
         builder.append("Setwise postprocessors: " + this.setwisepostprocessors.toString() +
-            StringTools.ENDLINE);
-        builder.append("Setwise trainers: " + this.setwiseTrainers.toString() + StringTools.ENDLINE);
+        		System.lineSeparator());
+        builder.append("Setwise trainers: " + this.setwiseTrainers.toString() + System.lineSeparator());
         builder.append("Setwise Testdata Aware trainers: " +
-            this.setwiseTestdataAwareTrainers.toString() + StringTools.ENDLINE);
+            this.setwiseTestdataAwareTrainers.toString() + System.lineSeparator());
         builder
-            .append("Pointwise preprocessors: " + this.preprocessors.toString() + StringTools.ENDLINE);
+            .append("Pointwise preprocessors: " + this.preprocessors.toString() + System.lineSeparator());
         builder
-            .append("Pointwise selectors: " + this.pointwiseselectors.toString() + StringTools.ENDLINE);
+            .append("Pointwise selectors: " + this.pointwiseselectors.toString() + System.lineSeparator());
         builder
-            .append("Pointwise postprocessors: " + this.postprocessors.toString() + StringTools.ENDLINE);
-        builder.append("Pointwise trainers: " + this.trainers.toString() + StringTools.ENDLINE);
-        builder.append("Evaluators: " + this.evaluators.toString() + StringTools.ENDLINE);
-        builder.append("Save Classifier?: " + this.saveClassifier + StringTools.ENDLINE);
-        builder.append("Execution Strategy: " + this.executionStrategy + StringTools.ENDLINE);
+            .append("Pointwise postprocessors: " + this.postprocessors.toString() + System.lineSeparator());
+        builder.append("Pointwise trainers: " + this.trainers.toString() + System.lineSeparator());
+        builder.append("Evaluators: " + this.evaluators.toString() + System.lineSeparator());
+        builder.append("Save Classifier?: " + this.saveClassifier + System.lineSeparator());
+        builder.append("Execution Strategy: " + this.executionStrategy + System.lineSeparator());
 
         return builder.toString();
     }
