@@ -115,7 +115,8 @@ public abstract class WekaBaseTraining implements IWekaCompatibleTrainer {
         try {
             @SuppressWarnings("rawtypes")
             Class c = Class.forName(this.classifierClassName);
-            Classifier obj = (Classifier) c.newInstance();
+            @SuppressWarnings("unchecked")
+			Classifier obj = (Classifier) c.getDeclaredConstructor().newInstance();
 
             // Filter out -CVPARAM, these are special because they do not belong to the Weka
             // classifier class as parameters

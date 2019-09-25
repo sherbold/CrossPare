@@ -472,7 +472,7 @@ public class ExperimentConfiguration extends DefaultHandler {
             }
             else if (qName.equals("loader")) {
                 final IVersionLoader loader = (IVersionLoader) Class
-                    .forName("de.ugoe.cs.cpdp.loader." + attributes.getValue("name")).newInstance();
+                    .forName("de.ugoe.cs.cpdp.loader." + attributes.getValue("name")).getDeclaredConstructor().newInstance();
                 loader.setLocation(attributes.getValue("datalocation"));
                 String classType = attributes.getValue("classtype");
                 if( classType!=null ) {
@@ -487,28 +487,28 @@ public class ExperimentConfiguration extends DefaultHandler {
             }
             else if (qName.equals("versionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
-                    .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
                 this.versionFilters.add(filter);
             }
             else if (qName.equals("testVersionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
-                    .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
                 this.testVersionFilters.add(filter);
             }
             else if (qName.equals("trainVersionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
-                    .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
                 this.trainingVersionFilters.add(filter);
             }
             else if (qName.equals("setwisepreprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.setwisepreprocessors.add(processor);
@@ -516,21 +516,21 @@ public class ExperimentConfiguration extends DefaultHandler {
             else if (qName.equals("setwiseselector")) {
                 final ISetWiseDataselectionStrategy selection =
                     (ISetWiseDataselectionStrategy) Class
-                        .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name"))
+                        .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name")).getDeclaredConstructor()
                         .newInstance();
                 selection.setParameter(attributes.getValue("param"));
                 this.setwiseselectors.add(selection);
             }
             else if (qName.equals("setwisepostprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.setwisepostprocessors.add(processor);
             }
             else if (qName.equals("setwisetrainer")) {
                 final ISetWiseTrainingStrategy trainer = (ISetWiseTrainingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 this.setwiseTrainers.add(trainer);
@@ -538,7 +538,7 @@ public class ExperimentConfiguration extends DefaultHandler {
             else if (qName.equals("setwisetestdataawaretrainer")) {
                 final ISetWiseTestdataAwareTrainingStrategy trainer =
                     (ISetWiseTestdataAwareTrainingStrategy) Class
-                        .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
+                        .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                         .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 trainer.setMethod(attributes.getValue("method"));
@@ -547,7 +547,7 @@ public class ExperimentConfiguration extends DefaultHandler {
             }
             else if (qName.equals("preprocessor")) {
                 final IProcessesingStrategy processor = (IProcessesingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.preprocessors.add(processor);
@@ -555,35 +555,35 @@ public class ExperimentConfiguration extends DefaultHandler {
             else if (qName.equals("pointwiseselector")) {
                 final IPointWiseDataselectionStrategy selection =
                     (IPointWiseDataselectionStrategy) Class
-                        .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name"))
+                        .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name")).getDeclaredConstructor()
                         .newInstance();
                 selection.setParameter(attributes.getValue("param"));
                 this.pointwiseselectors.add(selection);
             }
             else if (qName.equals("postprocessor")) {
                 final IProcessesingStrategy processor = (IProcessesingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.postprocessors.add(processor);
             }
             else if (qName.equals("trainer")) {
                 final ITrainingStrategy trainer = (ITrainingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 this.trainers.add(trainer);
             }
             else if (qName.equals("testawaretrainer")) {
                 final ITestAwareTrainingStrategy trainer = (ITestAwareTrainingStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name"))
+                    .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 this.testAwareTrainers.add(trainer);
             }
             else if (qName.equals("eval")) {
                 final IEvaluationStrategy evaluator = (IEvaluationStrategy) Class
-                    .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).newInstance();
+                    .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).getDeclaredConstructor().newInstance();
                 this.evaluators.add(evaluator);
             }
             else if (qName.equals("storage")) {
@@ -598,7 +598,7 @@ public class ExperimentConfiguration extends DefaultHandler {
                 else {
                     // use default contructor
                     resultStorage = (IResultStorage) Class
-                        .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name"))
+                        .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).getDeclaredConstructor()
                         .newInstance();
                 }
                 this.resultStorages.add(resultStorage);

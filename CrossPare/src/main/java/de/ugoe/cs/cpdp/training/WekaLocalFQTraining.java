@@ -71,7 +71,8 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
     /**
      * the classifier
      */
-    private final TraindatasetCluster classifier = new TraindatasetCluster();
+    @SuppressWarnings("hiding")
+	private final TraindatasetCluster classifier = new TraindatasetCluster();
 
     /*
      * (non-Javadoc)

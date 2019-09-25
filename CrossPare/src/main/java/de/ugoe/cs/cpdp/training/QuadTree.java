@@ -591,7 +591,7 @@ public class QuadTree {
         // 5. add sizes of our current (biggest) this adds a number of sizes (all QuadTree Instances
         // belonging to this cluster)
         // we need that to classify test instances to a cluster later
-        Integer cnumber = new Integer(QuadTree.ccluster.size() - 1);
+        Integer cnumber = QuadTree.ccluster.size() - 1;
         if (QuadTree.csize.containsKey(cnumber) == false) {
             QuadTree.csize.put(cnumber, tmpSize);
         }

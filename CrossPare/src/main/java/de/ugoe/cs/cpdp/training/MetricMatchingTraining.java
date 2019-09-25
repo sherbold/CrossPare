@@ -57,6 +57,7 @@ import weka.core.Instances;
  * http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/stat/inference/
  * ChiSquareTest.html use chiSquareTestDataSetsComparison
  */
+@SuppressWarnings("hiding")
 public class MetricMatchingTraining extends WekaBaseTraining
     implements ISetWiseTestdataAwareTrainingStrategy
 {
@@ -1027,7 +1028,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
                     for (int i = 0; i < this.n; i++) {
                         if (this.sMatches[i] == -1) {
                             this.sLabels[i] = EMPTY_LABEL;
-                            this.eligibleS.add(new Integer(i));
+                            this.eligibleS.add(i);
                         }
                     }
 
@@ -1092,7 +1093,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
                                 this.tLabels[j] = i;
                                 this.pi[j] = diff;
                                 if (this.pi[j] < TOL) {
-                                    this.eligibleT.add(new Integer(j));
+                                    this.eligibleT.add(j);
                                 }
                             }
                         }
@@ -1107,7 +1108,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
 
                     int i = this.tMatches[j];
                     this.sLabels[i] = j;
-                    this.eligibleS.add(new Integer(i)); // ok to add twice
+                    this.eligibleS.add(i); // ok to add twice
                 }
             }
 
@@ -1153,7 +1154,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
                 else if (this.tLabels[j] != NO_LABEL) {
                     this.pi[j] -= delta;
                     if (this.pi[j] < TOL) {
-                        this.eligibleT.add(new Integer(j));
+                        this.eligibleT.add(j);
                     }
                 }
             }

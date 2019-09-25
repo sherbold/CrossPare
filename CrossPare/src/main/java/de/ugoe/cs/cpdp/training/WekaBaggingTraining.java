@@ -53,7 +53,8 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
     /**
      * the classifier
      */
-    private final TraindatasetBagging classifier = new TraindatasetBagging();
+    @SuppressWarnings("hiding")
+	private final TraindatasetBagging classifier = new TraindatasetBagging();
 
     /*
      * (non-Javadoc)

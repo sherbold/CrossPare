@@ -55,6 +55,7 @@ import org.jgap.util.CloneException;
  * 
  * @author Alexander Trautsch
  */
+@SuppressWarnings("hiding")
 public class GPTraining implements ISetWiseTrainingStrategy, IWekaCompatibleTrainer {
 
     /**
