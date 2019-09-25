@@ -8,7 +8,6 @@
 			
 	<!-- Properties for main build -->
 	<property name="main.source.location" value="src/main/java" />
-	<property name="main.generated.location" value="src/main/generated-java" />
 	<property name="main.build.location" value="build/main" />
 	<property name="main.dependencies.location" value="lib" />
 	
@@ -28,7 +27,6 @@
 	<!-- Define classpaths -->
 	<path id="main.src.path">
 		<pathelement location="${main.source.location}" />
-		<pathelement location="${main.generated.location}" />
 	</path>
 	
 	<path id="main.classpath">
