@@ -14,13 +14,15 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import java.util.List;
+
 /**
  * Applies to small data sets. All data sets that do not have the required minimal number of
  * instances are removed.
  * 
  * @author Steffen Herbold
  */
-public class MinInstanceNumberFilter extends AbstractVersionFilter {
+public class MinInstanceNumberFilter implements IVersionFilter {
 
     /**
      * minimal number of instances required
@@ -31,7 +33,7 @@ public class MinInstanceNumberFilter extends AbstractVersionFilter {
      * @see de.ugoe.cs.cpdp.versions.IVersionFilter#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public boolean apply(SoftwareVersion version) {
+    public boolean apply(SoftwareVersion version, List<SoftwareVersion> allVersions) {
         return version.getInstances().numInstances() < this.minInstances;
     }
 

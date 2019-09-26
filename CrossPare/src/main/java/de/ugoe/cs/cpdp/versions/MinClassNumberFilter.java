@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import java.util.List;
+
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -23,7 +25,7 @@ import weka.core.Instances;
  * 
  * @author Steffen Herbold
  */
-public class MinClassNumberFilter extends AbstractVersionFilter {
+public class MinClassNumberFilter implements IVersionFilter {
 
     /**
      * minimal number of instances required
@@ -34,7 +36,7 @@ public class MinClassNumberFilter extends AbstractVersionFilter {
      * @see de.ugoe.cs.cpdp.versions.IVersionFilter#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public boolean apply(SoftwareVersion version) {
+    public boolean apply(SoftwareVersion version, List<SoftwareVersion> allVersions) {
         Instances instances = version.getInstances();
         int[] counts;
         if (instances.classAttribute().isNominal()) {

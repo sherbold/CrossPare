@@ -25,7 +25,7 @@ import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
-import de.ugoe.cs.cpdp.versions.IVersionFilter;
+import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
@@ -57,17 +57,6 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
     @SuppressWarnings("hiding")
     public HeterogeneousExperiment(ExperimentConfiguration config) {
         this.config = config;
-    }
-
-    /**
-     * DUBLICATE FROM AbstractCrossProjectExperiment
-     */
-    private static boolean isVersion(SoftwareVersion version, List<IVersionFilter> filters) {
-        boolean result = true;
-        for (IVersionFilter filter : filters) {
-            result &= !filter.apply(version);
-        }
-        return result;
     }
 
     /**
@@ -123,18 +112,17 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
             versions.addAll(loader.load());
         }
 
-        for (IVersionFilter filter : this.config.getVersionFilters()) {
-            filter.apply(versions);
-        }
+        CrosspareUtils.filterVersions(versions, this.config.getVersionFilters());
+        
         boolean writeHeader = true;
         int versionCount = 1;
         int testVersionCount = 0;
 
         // changed
         for (SoftwareVersion testVersion : versions) {
-            if (isVersion(testVersion, this.config.getTestVersionFilters())) {
+            if (CrosspareUtils.isVersion(testVersion, versions, this.config.getTestVersionFilters())) {
                 for (SoftwareVersion trainingVersion : versions) {
-                    if (isVersion(trainingVersion, this.config.getTrainingVersionFilters())) {
+                    if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
                         testVersionCount++;
                     }
                 }
@@ -147,11 +135,11 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
         // todo: test version check problematic
         //
         for (SoftwareVersion testVersion : versions) {
-            if (isVersion(testVersion, this.config.getTestVersionFilters())) {
+            if (CrosspareUtils.isVersion(testVersion, versions, this.config.getTestVersionFilters())) {
 
                 // now iterate trainVersions
                 for (SoftwareVersion trainingVersion : versions) {
-                    if (isVersion(trainingVersion, this.config.getTrainingVersionFilters())) {
+                    if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
                             if (isTrainingVersion(trainingVersion, testVersion)) { // checks if they
                                                                                    // are the same

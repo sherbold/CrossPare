@@ -14,13 +14,15 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import java.util.List;
+
 /**
  * Applies to large data sets. All data sets that have more than the required maximum number of
  * instances are removed.
  * 
  * @author Steffen Herbold
  */
-public class MaxInstanceNumberFilter extends AbstractVersionFilter {
+public class MaxInstanceNumberFilter implements IVersionFilter {
 
     /**
      * maximum number of instances required
@@ -31,7 +33,7 @@ public class MaxInstanceNumberFilter extends AbstractVersionFilter {
      * @see de.ugoe.cs.cpdp.versions.IVersionFilter#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public boolean apply(SoftwareVersion version) {
+    public boolean apply(SoftwareVersion version, List<SoftwareVersion> allVersions) {
         return version.getInstances().numInstances() > this.maxInstances;
     }
 

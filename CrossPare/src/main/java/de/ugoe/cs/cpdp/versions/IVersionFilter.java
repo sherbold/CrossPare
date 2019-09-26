@@ -30,17 +30,9 @@ public interface IVersionFilter extends IParameterizable {
      * 
      * @param version
      *            the version
+     * @param allVersions
+     *            a list of all versions that may be used a reference, e.g., to get the ten largest
      * @return true if filter applies to version, false otherwise
      */
-    boolean apply(SoftwareVersion version);
-
-    /**
-     * Applies the filter a a list of versions. Versions were the filter applies are automatically
-     * removed from the list.
-     * 
-     * @param versions
-     *            list of versions
-     * @return number of removed versions
-     */
-    int apply(List<SoftwareVersion> versions);
+    boolean apply(SoftwareVersion version, List<SoftwareVersion> allVersions);
 }

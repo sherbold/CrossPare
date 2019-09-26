@@ -36,7 +36,7 @@ import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
-import de.ugoe.cs.cpdp.versions.IVersionFilter;
+import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
@@ -134,16 +134,15 @@ public class CrossValidationExperiment implements IExecutionStrategy {
             versions.addAll(loader.load());
         }
 
-        for (IVersionFilter filter : this.config.getVersionFilters()) {
-            filter.apply(versions);
-        }
+        CrosspareUtils.filterVersions(versions, this.config.getVersionFilters());
+
         boolean writeHeader = true;
         int versionCount = 1;
         int testVersionCount = 0;
         int numTrainers = 0;
 
         for (SoftwareVersion testVersion : versions) {
-            if (isVersion(testVersion, this.config.getTestVersionFilters())) {
+            if (CrosspareUtils.isVersion(testVersion, versions, this.config.getTestVersionFilters())) {
                 testVersionCount++;
             }
         }
@@ -157,7 +156,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
         Collections.sort(versions);
 
         for (SoftwareVersion testVersion : versions) {
-            if (isVersion(testVersion, this.config.getTestVersionFilters())) {
+            if (CrosspareUtils.isVersion(testVersion, versions, this.config.getTestVersionFilters())) {
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: starting",
                                               this.config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
@@ -177,7 +176,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 SetUniqueList<Instances> traindataSet =
                     SetUniqueList.setUniqueList(new LinkedList<Instances>());
                 for (SoftwareVersion trainingVersion : versions) {
-                    if (isVersion(trainingVersion, this.config.getTrainingVersionFilters())) {
+                    if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
                             traindataSet.add(trainingVersion.getInstances());
                         }
@@ -263,23 +262,6 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 versionCount++;
             }
         }
-    }
-
-    /**
-     * Helper method that checks if a version passes all filters.
-     * 
-     * @param version
-     *            version that is checked
-     * @param filters
-     *            list of the filters
-     * @return true, if the version passes all filters, false otherwise
-     */
-    private static boolean isVersion(SoftwareVersion version, List<IVersionFilter> filters) {
-        boolean result = true;
-        for (IVersionFilter filter : filters) {
-            result &= !filter.apply(version);
-        }
-        return result;
     }
 
     /**

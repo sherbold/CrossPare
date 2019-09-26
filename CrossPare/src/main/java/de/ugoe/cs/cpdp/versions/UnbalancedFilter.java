@@ -14,6 +14,8 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import java.util.List;
+
 import weka.core.Instances;
 
 /**
@@ -22,7 +24,7 @@ import weka.core.Instances;
  * 
  * @author Steffen Herbold
  */
-public class UnbalancedFilter extends AbstractVersionFilter {
+public class UnbalancedFilter implements IVersionFilter {
 
     /**
      * quantil where outside lying versions are removed
@@ -44,7 +46,7 @@ public class UnbalancedFilter extends AbstractVersionFilter {
      * @see de.ugoe.cs.cpdp.versions.IVersionFilter#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public boolean apply(SoftwareVersion version) {
+    public boolean apply(SoftwareVersion version, List<SoftwareVersion> allVersions) {
         final Instances instances = version.getInstances();
 
         final int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
