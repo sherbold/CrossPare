@@ -5,4 +5,5 @@ jdk:
   
 script:
   - cd CrossPare
+  - ls
   - ./gradew build -x test
