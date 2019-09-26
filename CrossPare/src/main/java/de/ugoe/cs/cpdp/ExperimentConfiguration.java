@@ -467,10 +467,10 @@ public class ExperimentConfiguration extends DefaultHandler {
         throws SAXException
     {
         try {
-            if (qName.equals("config")) {
+            if (qName.equalsIgnoreCase("config")) {
                 // ingore
             }
-            else if (qName.equals("loader")) {
+            else if (qName.equalsIgnoreCase("loader")) {
                 final IVersionLoader loader = (IVersionLoader) Class
                     .forName("de.ugoe.cs.cpdp.loader." + attributes.getValue("name")).getDeclaredConstructor().newInstance();
                 loader.setLocation(attributes.getValue("datalocation"));
@@ -482,38 +482,38 @@ public class ExperimentConfiguration extends DefaultHandler {
 
                 // TODO location as relative
             }
-            else if (qName.equals("resultspath")) {
+            else if (qName.equalsIgnoreCase("resultspath")) {
                 this.resultsPath = attributes.getValue("path");
             }
-            else if (qName.equals("versionfilter")) {
+            else if (qName.equalsIgnoreCase("versionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
                     .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
                 this.versionFilters.add(filter);
             }
-            else if (qName.equals("testVersionfilter")) {
+            else if (qName.equalsIgnoreCase("testVersionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
                     .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
                 this.testVersionFilters.add(filter);
             }
-            else if (qName.equals("trainVersionfilter")) {
+            else if (qName.equalsIgnoreCase("trainVersionfilter")) {
                 final IVersionFilter filter = (IVersionFilter) Class
                     .forName("de.ugoe.cs.cpdp.versions." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 filter.setParameter(attributes.getValue("param"));
                 this.trainingVersionFilters.add(filter);
             }
-            else if (qName.equals("setwisepreprocessor")) {
+            else if (qName.equalsIgnoreCase("setwisepreprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.setwisepreprocessors.add(processor);
             }
-            else if (qName.equals("setwiseselector")) {
+            else if (qName.equalsIgnoreCase("setwiseselector")) {
                 final ISetWiseDataselectionStrategy selection =
                     (ISetWiseDataselectionStrategy) Class
                         .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name")).getDeclaredConstructor()
@@ -521,21 +521,21 @@ public class ExperimentConfiguration extends DefaultHandler {
                 selection.setParameter(attributes.getValue("param"));
                 this.setwiseselectors.add(selection);
             }
-            else if (qName.equals("setwisepostprocessor")) {
+            else if (qName.equalsIgnoreCase("setwisepostprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.setwisepostprocessors.add(processor);
             }
-            else if (qName.equals("setwisetrainer")) {
+            else if (qName.equalsIgnoreCase("setwisetrainer")) {
                 final ISetWiseTrainingStrategy trainer = (ISetWiseTrainingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 this.setwiseTrainers.add(trainer);
             }
-            else if (qName.equals("setwisetestdataawaretrainer")) {
+            else if (qName.equalsIgnoreCase("setwisetestdataawaretrainer")) {
                 final ISetWiseTestdataAwareTrainingStrategy trainer =
                     (ISetWiseTestdataAwareTrainingStrategy) Class
                         .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
@@ -545,14 +545,14 @@ public class ExperimentConfiguration extends DefaultHandler {
                 trainer.setThreshold(attributes.getValue("threshold"));
                 this.setwiseTestdataAwareTrainers.add(trainer);
             }
-            else if (qName.equals("preprocessor")) {
+            else if (qName.equalsIgnoreCase("preprocessor")) {
                 final IProcessesingStrategy processor = (IProcessesingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.preprocessors.add(processor);
             }
-            else if (qName.equals("pointwiseselector")) {
+            else if (qName.equalsIgnoreCase("pointwiseselector")) {
                 final IPointWiseDataselectionStrategy selection =
                     (IPointWiseDataselectionStrategy) Class
                         .forName("de.ugoe.cs.cpdp.dataselection." + attributes.getValue("name")).getDeclaredConstructor()
@@ -560,33 +560,33 @@ public class ExperimentConfiguration extends DefaultHandler {
                 selection.setParameter(attributes.getValue("param"));
                 this.pointwiseselectors.add(selection);
             }
-            else if (qName.equals("postprocessor")) {
+            else if (qName.equalsIgnoreCase("postprocessor")) {
                 final IProcessesingStrategy processor = (IProcessesingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 processor.setParameter(attributes.getValue("param"));
                 this.postprocessors.add(processor);
             }
-            else if (qName.equals("trainer")) {
+            else if (qName.equalsIgnoreCase("trainer")) {
                 final ITrainingStrategy trainer = (ITrainingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 this.trainers.add(trainer);
             }
-            else if (qName.equals("testawaretrainer")) {
+            else if (qName.equalsIgnoreCase("testawaretrainer")) {
                 final ITestAwareTrainingStrategy trainer = (ITestAwareTrainingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.training." + attributes.getValue("name")).getDeclaredConstructor()
                     .newInstance();
                 trainer.setParameter(attributes.getValue("param"));
                 this.testAwareTrainers.add(trainer);
             }
-            else if (qName.equals("eval")) {
+            else if (qName.equalsIgnoreCase("eval")) {
                 final IEvaluationStrategy evaluator = (IEvaluationStrategy) Class
                     .forName("de.ugoe.cs.cpdp.eval." + attributes.getValue("name")).getDeclaredConstructor().newInstance();
                 this.evaluators.add(evaluator);
             }
-            else if (qName.equals("storage")) {
+            else if (qName.equalsIgnoreCase("storage")) {
                 IResultStorage resultStorage;
                 String param = attributes.getValue("param");
                 if (param != null && !param.isEmpty()) {
@@ -605,17 +605,17 @@ public class ExperimentConfiguration extends DefaultHandler {
 
                 // <storage name="MySQLResultStorage" param="" />
             }
-            else if (qName.equals("saveClassifier")) {
+            else if (qName.equalsIgnoreCase("saveClassifier")) {
                 this.saveClassifier = Boolean.TRUE;
             }
-            else if (qName.equals("repetitions")) {
+            else if (qName.equalsIgnoreCase("repetitions")) {
                 this.repetitions = Integer.parseInt(attributes.getValue("number"));
             }
-            else if (qName.equals("executionStrategy")) {
+            else if (qName.equalsIgnoreCase("executionStrategy")) {
                 this.executionStrategy = attributes.getValue("name");
                 this.executionStrategyParameters = attributes.getValue("param");
             }
-            else if (qName.equals("partialconfig")) {
+            else if (qName.equalsIgnoreCase("partialconfig")) {
                 String path = attributes.getValue("path");
                 try {
                     boolean relative = true;
