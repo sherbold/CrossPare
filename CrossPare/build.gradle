@@ -1,0 +1,48 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'de.ugoe.cs.cpdp.Runner'
+jar {
+    baseName = 'crosspare.jar'
+    version = '0.1.0'
+//    from {
+//        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+//    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility  = 11
+targetCompatibility  = 11
+
+dependencies {
+/*
+	compile group: 'org.apache.commons', name: 'commons-math3', version: '3.5.0'
+	compile group: 'commons-io', name: 'commons-io', version: '2.4'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+	compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
+	
+	compile group: 'nz.ac.waikato.cms.weka', name: 'alternatingDecisionTrees', version: '1.0.5'
+	compile group: 'com.google.guava', name: 'guava', version: '19.0'
+	compile group: 'org.renjin.cran', name: 'JavaGD', version: '0.6-1-b221'
+	
+	compile group: 'org.uma.jmetal', name: 'jmetal-core', version: '5.0'
+	compile group: 'org.uma.jmetal', name: 'jmetal-exec', version: '5.0'
+	compile group: 'org.uma.jmetal', name: 'jmetal-algorithm', version: '5.0'
+	
+	compile group: 'org.json', name: 'json', version: '20160810'
+	
+	
+	// todo unsure
+	compile group: 'net.sf.jgap', name: 'jgap', version: '3.4.4'
+	compile group: 'org.rosuda', name: 'jri', version: '0.8-8'
+	compile group: 'RoSuDA', name: 'JRIEngine', version: '0.5-0'
+*/
+    compile fileTree(include: ['*.jar'], dir: 'lib')
+	// Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}
+
