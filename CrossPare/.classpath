@@ -1,45 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/test/java"/>
-	<classpathentry kind="src" path="src/main/resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+	<classpathentry kind="src" output="bin/main" path="src/main/java">
 		<attributes>
-			<attribute name="module" value="true"/>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/commons-collections4-4.0-alpha1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="lib/RBFNetwork.jar"/>
-	<classpathentry kind="lib" path="lib/commons-math3-3.5.jar"/>
-	<classpathentry kind="lib" path="lib/probabilisticSignificanceAE-1.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/alternatingDecisionTrees.jar"/>
-	<classpathentry kind="lib" path="lib/elki-bundle-0.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
-	<classpathentry kind="lib" path="lib/ojalgo-37.1.jar"/>
-	<classpathentry kind="lib" path="lib/jmetal-algorithm-5.0-jar-with-dependencies.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.38-bin.jar"/>
-	<classpathentry kind="lib" path="lib/jmetal-exec-5.0-jar-with-dependencies.jar"/>
-	<classpathentry kind="lib" path="lib/jmetal-core-5.0-jar-with-dependencies.jar"/>
-	<classpathentry kind="lib" path="lib/jgap.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-iostreams-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/json-20160810.jar"/>
-	<classpathentry kind="lib" path="lib/weka-monolithic.jar"/>
-	<classpathentry kind="lib" path="lib/javagd-0.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/JRI.jar"/>
-	<classpathentry kind="lib" path="lib/JRIEngine.jar"/>
-	<classpathentry kind="lib" path="lib/kxml2-min-2.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/REngine-0.6-8.1.jar"/>
-	<classpathentry kind="lib" path="lib/xmlpull-1.1.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/xpp3_min-1.1.4c.jar"/>
-	<classpathentry kind="lib" path="lib/xstream-1.4.2.jar"/>
-	<classpathentry kind="lib" path="lib/pdm-RPlugin-ce-TRUNK-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/rengine-weka-inject-classes.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" output="bin/test" path="src/test/java">
+		<attributes>
+			<attribute name="gradle_scope" value="test"/>
+			<attribute name="gradle_used_by_scope" value="test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="bin/main" path="src/main/resources">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
+	<classpathentry kind="output" path="bin/default"/>
 </classpath>
