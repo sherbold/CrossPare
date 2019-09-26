@@ -17,14 +17,14 @@ targetCompatibility  = 1.8
 dependencies {
 /*
 	// todo unsure
-	compile group: 'net.sf.jgap', name: 'jgap', version: '3.4.4'
+	
 	compile group: 'org.renjin.cran', name: 'JavaGD', version: '0.6-1-b221'
 	compile group: 'org.rosuda', name: 'jri', version: '0.8-8'
 	compile group: 'RoSuDA', name: 'JRIEngine', version: '0.5-0'
 */
        
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.5'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.5'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.5'
     compile group: 'org.apache.logging.log4j', name: 'log4j-iostreams', version: '2.5'
     
     compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.8.3'
@@ -51,6 +51,8 @@ dependencies {
 	compile group: 'de.lmu.ifi.dbs.elki', name: 'elki', version: '0.7.5'
 	
 	compile group: 'org.json', name: 'json', version: '20160810'
+	
+	compile group: 'net.sf.jgap', name: 'jgap', version: '3.4.4'
 
     compile fileTree(include: ['*.jar'], dir: 'lib')
 	// Use JUnit test framework
