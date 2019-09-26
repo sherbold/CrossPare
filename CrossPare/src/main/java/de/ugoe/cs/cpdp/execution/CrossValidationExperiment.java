@@ -28,14 +28,12 @@ import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
 import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
-import de.ugoe.cs.cpdp.eval.IResultStorage;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
 import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
-import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
@@ -160,7 +158,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: starting",
                                               this.config.getExperimentName(), versionCount,
                                               testVersionCount, testVersion.getVersion()));
-                int numResultsAvailable = resultsAvailable(testVersion);
+                int numResultsAvailable = CrosspareUtils.resultsAvailable(testVersion, this.config);
                 if (numResultsAvailable >= numTrainers * this.config.getRepetitions()) {
                     LOGGER.info(String.format("[%s] [%02d/%02d] %s: results already available; skipped",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
@@ -262,47 +260,5 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 versionCount++;
             }
         }
-    }
-
-    /**
-     * <p>
-     * helper function that checks if the results are already in the data store
-     * </p>
-     *
-     * @param version
-     *            version for which the results are checked
-     * @return
-     */
-    private int resultsAvailable(SoftwareVersion version) {
-        if (this.config.getResultStorages().isEmpty()) {
-            return 0;
-        }
-
-        List<ITrainer> allTrainers = new LinkedList<>();
-        for (ISetWiseTrainingStrategy setwiseTrainer : this.config.getSetWiseTrainers()) {
-            allTrainers.add(setwiseTrainer);
-        }
-        for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
-            .getSetWiseTestdataAwareTrainers())
-        {
-            allTrainers.add(setwiseTestdataAwareTrainer);
-        }
-        for (ITrainingStrategy trainer : this.config.getTrainers()) {
-            allTrainers.add(trainer);
-        }
-        for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
-            allTrainers.add(trainer);
-        }
-
-        int available = Integer.MAX_VALUE;
-        for (IResultStorage storage : this.config.getResultStorages()) {
-            String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
-            int curAvailable = storage.containsResult(this.config.getExperimentName(),
-                                                      version.getVersion(), classifierName);
-            if (curAvailable < available) {
-                available = curAvailable;
-            }
-        }
-        return available;
     }
 }

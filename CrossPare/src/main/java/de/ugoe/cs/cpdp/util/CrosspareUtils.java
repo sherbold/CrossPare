@@ -3,6 +3,14 @@ package de.ugoe.cs.cpdp.util;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.ugoe.cs.cpdp.ExperimentConfiguration;
+import de.ugoe.cs.cpdp.eval.IResultStorage;
+import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
+import de.ugoe.cs.cpdp.training.ISetWiseTrainingStrategy;
+import de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy;
+import de.ugoe.cs.cpdp.training.ITrainer;
+import de.ugoe.cs.cpdp.training.ITrainingStrategy;
+import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
 import de.ugoe.cs.cpdp.versions.IVersionFilter;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
@@ -52,4 +60,47 @@ public class CrosspareUtils {
 		}
 		return removeIndex.size();
 	}
+	
+	/**
+     * <p>
+     * helper function that checks if the results are already in the data store
+     * </p>
+     *
+     * @param version
+     *            version for which the results are checked
+     * @return
+     *            number of already available results.
+     */
+    public static int resultsAvailable(SoftwareVersion version, ExperimentConfiguration config) {
+        if (config.getResultStorages().isEmpty()) {
+            return 0;
+        }
+
+        List<ITrainer> allTrainers = new LinkedList<>();
+        for (ISetWiseTrainingStrategy setwiseTrainer : config.getSetWiseTrainers()) {
+            allTrainers.add(setwiseTrainer);
+        }
+        for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : config
+            .getSetWiseTestdataAwareTrainers())
+        {
+            allTrainers.add(setwiseTestdataAwareTrainer);
+        }
+        for (ITrainingStrategy trainer : config.getTrainers()) {
+            allTrainers.add(trainer);
+        }
+        for (ITestAwareTrainingStrategy trainer : config.getTestAwareTrainers()) {
+            allTrainers.add(trainer);
+        }
+
+        int available = Integer.MAX_VALUE;
+        for (IResultStorage storage : config.getResultStorages()) {
+            String classifierName = ((IWekaCompatibleTrainer) allTrainers.get(0)).getName();
+            int curAvailable = storage.containsResult(config.getExperimentName(),
+                                                      version.getVersion(), classifierName);
+            if (curAvailable < available) {
+                available = curAvailable;
+            }
+        }
+        return available;
+    }
 }
