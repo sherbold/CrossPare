@@ -6,4 +6,4 @@ jdk:
 script:
   - cd CrossPare
   - ls
-  - ./gradew build -x test
+  - ./gradlew build -x test
