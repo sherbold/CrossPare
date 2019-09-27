@@ -89,50 +89,62 @@ public class CostBoundaryCalculator {
 	}
 
 	public double getLowerConst1to1() {
-		return (eval.numTruePositives(1)+eval.numFalsePositives(1))/(eval.numTruePositives(1)*(1.0-probQAFailure));
+		double val = (eval.numTruePositives(1)+eval.numFalsePositives(1))/(eval.numTruePositives(1)*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getUpperConst1to1() {
-		return (eval.numTrueNegatives(1)+eval.numFalseNegatives(1))/(eval.numFalseNegatives(1)*(1.0-probQAFailure));
+		double val = (eval.numTrueNegatives(1)+eval.numFalseNegatives(1))/(eval.numFalseNegatives(1)*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getLowerSize1to1() {
-		return effortTrue/(eval.numTruePositives(1)*(1.0-probQAFailure));
+		double val = effortTrue/(eval.numTruePositives(1)*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getUpperSize1to1() {
-		return effortFalse/(eval.numFalseNegatives(1)*(1.0-probQAFailure));
+		double val = effortFalse/(eval.numFalseNegatives(1)*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getLowerConst1toM() {
-		return (eval.numTruePositives(1)+eval.numFalsePositives(1))/(bugCountTrue*(1.0-probQAFailure));
+		double val = (eval.numTruePositives(1)+eval.numFalsePositives(1))/(bugCountTrue*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getUpperConst1toM() {
-		return (eval.numTrueNegatives(1)+eval.numFalseNegatives(1))/(bugCountFalse*(1.0-probQAFailure));
+		double val = (eval.numTrueNegatives(1)+eval.numFalseNegatives(1))/(bugCountFalse*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getLowerSize1toM() {
-		return effortTrue/(bugCountTrue*(1.0-probQAFailure));
+		double val = effortTrue/(bugCountTrue*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getUpperSize1toM() {
-		return effortFalse/(bugCountFalse*(1.0-probQAFailure));
+		double val = effortFalse/(bugCountFalse*(1.0-probQAFailure));
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getLowerConstNtoM() {
-		return (eval.numTruePositives(1)+eval.numFalsePositives(1))/bugFound;
+		double val = (eval.numTruePositives(1)+eval.numFalsePositives(1))/bugFound;
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getUpperConstNtoM() {
-		return (eval.numTrueNegatives(1)+eval.numFalseNegatives(1))/bugMiss;
+		double val = (eval.numTrueNegatives(1)+eval.numFalseNegatives(1))/bugMiss;
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getLowerSizeNtoM() {
-		return effortTrue/bugFound;
+		double val = effortTrue/bugFound;
+		return Double.isFinite(val)  ? val : -1;
 	}
 	
 	public double getUpperSizeNtoM() {
-		return effortFalse/bugMiss;
+		double val = effortFalse/bugMiss;
+		return Double.isFinite(val)  ? val : -1;
 	}
 }

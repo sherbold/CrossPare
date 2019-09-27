@@ -874,7 +874,11 @@ public class ExperimentResult {
      */
     @SuppressWarnings("hiding")
     public void setPrecision(double precision) {
-        this.precision = precision;
+    	if( Double.isFinite(precision) ) {
+    		this.precision = precision;
+    	} else {
+    		this.precision = -1;
+    	}
     }
 
     /**
@@ -898,7 +902,11 @@ public class ExperimentResult {
      */
     @SuppressWarnings("hiding")
     public void setFscore(double fscore) {
-        this.fscore = fscore;
+    	if( Double.isFinite(fscore) ) {
+    		this.fscore = fscore;
+    	} else {
+    		this.fscore = -1;
+    	}
     }
 
     /**
@@ -946,7 +954,11 @@ public class ExperimentResult {
      */
     @SuppressWarnings("hiding")
     public void setMcc(double mcc) {
-        this.mcc = mcc;
+    	if( Double.isFinite(mcc) ) {
+    		this.mcc = mcc;
+    	} else {
+    		this.mcc = -2;
+    	}
     }
 
     /**
