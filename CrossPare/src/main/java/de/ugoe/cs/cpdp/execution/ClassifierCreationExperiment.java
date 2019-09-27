@@ -110,6 +110,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             Instances traindata = new Instances(testdata);
             List<Double> efforts = testVersion.getEfforts();
             List<Double> numBugs = testVersion.getNumBugs();
+            Instances bugMatrix = testVersion.getBugMatrix();
 
             // Give the dataset a new name
             testdata.setRelationName(testVersion.getProject());
@@ -178,7 +179,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     evaluator.setParameter(this.config.getResultsPath() + "/" +
                         this.config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, writeHeader,
+                evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
                                 this.config.getResultStorages());
                 writeHeader = false;
             }

@@ -138,6 +138,9 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return bug matrix
      */
     public Instances getBugMatrix() {
+    	if( this.bugMatrix==null ) {
+    		return null;
+    	}
     	return new Instances(this.bugMatrix);
     }
 

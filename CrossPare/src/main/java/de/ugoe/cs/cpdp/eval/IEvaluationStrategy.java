@@ -41,6 +41,9 @@ public interface IEvaluationStrategy extends IParameterizable {
      *            list with review efforts for each instance
      * @param numBugs
      *            list with the number of bugs for each instance
+     * @param bugMatrix
+     *            A matrix with the bugs of the software. The instances are the same as for the
+     *            test data, the columns each represent a single defect.
      * @param writeHeader
      *            if true, a header line for the results file is written (may not be applicable)
      * @param storages
@@ -51,6 +54,7 @@ public interface IEvaluationStrategy extends IParameterizable {
                List<ITrainer> trainers,
                List<Double> efforts,
                List<Double> numBugs,
+               Instances bugMatrix,
                boolean writeHeader,
                List<IResultStorage> storages);
 }

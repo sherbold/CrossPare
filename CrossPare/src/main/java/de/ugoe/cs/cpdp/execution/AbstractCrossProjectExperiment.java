@@ -184,6 +184,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
                 List<Double> numBugs = testVersion.getNumBugs();
+                Instances bugMatrix = testVersion.getBugMatrix();
                 SetUniqueList<Instances> traindataSet =
                     SetUniqueList.setUniqueList(new LinkedList<Instances>());
                 for (SoftwareVersion trainingVersion : versions) {
@@ -308,7 +309,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, writeHeader,
+                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
                                     this.config.getResultStorages());
                     writeHeader = false;
                 }

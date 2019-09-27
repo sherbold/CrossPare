@@ -166,6 +166,8 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 Instances testdata = testVersion.getInstances();
                                 List<Double> efforts = testVersion.getEfforts();
                                 List<Double> numBugs = testVersion.getNumBugs();
+                                Instances bugMatrix = testVersion.getBugMatrix();
+
                                 Instances traindata = trainingVersion.getInstances();
 
                                 // only one set
@@ -311,7 +313,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                             this.config.getExperimentName() + ".csv");
                                     }
                                     evaluator.apply(testdata, traindata, allTrainers, efforts,
-                                                    numBugs, writeHeader,
+                                                    numBugs, bugMatrix, writeHeader,
                                                     this.config.getResultStorages());
                                     writeHeader = false;
                                 }

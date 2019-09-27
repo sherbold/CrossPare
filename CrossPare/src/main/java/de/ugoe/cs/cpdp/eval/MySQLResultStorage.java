@@ -176,42 +176,192 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`tp`,");
         preparedSql.append("`fn`,");
         preparedSql.append("`tn`,");
-        preparedSql.append("`fp`) VALUES ");
-        preparedSql.append("(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        preparedSql.append("`fp`,");
+        preparedSql.append("`lowerConst1to1`,");
+        preparedSql.append("`upperConst1to1`,");
+        preparedSql.append("`lowerConst1toM`,");
+        preparedSql.append("`upperConst1toM`,");
+        preparedSql.append("`lowerConstNtoM`,");
+        preparedSql.append("`upperConstNtoM`,");
+        preparedSql.append("`lowerSize1to1`,");
+        preparedSql.append("`upperSize1to1`,");
+        preparedSql.append("`lowerSize1toM`,");
+        preparedSql.append("`upperSize1toM`,");
+        preparedSql.append("`lowerSizeNtoM`,");
+        preparedSql.append("`upperSizeNtoM`,");
+        preparedSql.append("`lowerConst1to1Imp10`,");
+        preparedSql.append("`upperConst1to1Imp10`,");
+        preparedSql.append("`lowerConst1toMImp10`,");
+        preparedSql.append("`upperConst1toMImp10`,");
+        preparedSql.append("`lowerConstNtoMImp10`,");
+        preparedSql.append("`upperConstNtoMImp10`,");
+        preparedSql.append("`lowerSize1to1Imp10`,");
+        preparedSql.append("`upperSize1to1Imp10`,");
+        preparedSql.append("`lowerSize1toMImp10`,");
+        preparedSql.append("`upperSize1toMImp10`,");
+        preparedSql.append("`lowerSizeNtoMImp10`,");
+        preparedSql.append("`upperSizeNtoMImp10`,");
+        preparedSql.append("`lowerConst1to1Imp20`,");
+        preparedSql.append("`upperConst1to1Imp20`,");
+        preparedSql.append("`lowerConst1toMImp20`,");
+        preparedSql.append("`upperConst1toMImp20`,");
+        preparedSql.append("`lowerConstNtoMImp20`,");
+        preparedSql.append("`upperConstNtoMImp20`,");
+        preparedSql.append("`lowerSize1to1Imp20`,");
+        preparedSql.append("`upperSize1to1Imp20`,");
+        preparedSql.append("`lowerSize1toMImp20`,");
+        preparedSql.append("`upperSize1toMImp20`,");
+        preparedSql.append("`lowerSizeNtoMImp20`,");
+        preparedSql.append("`upperSizeNtoMImp20`,");
+        preparedSql.append("`lowerConst1to1Imp30`,");
+        preparedSql.append("`upperConst1to1Imp30`,");
+        preparedSql.append("`lowerConst1toMImp30`,");
+        preparedSql.append("`upperConst1toMImp30`,");
+        preparedSql.append("`lowerConstNtoMImp30`,");
+        preparedSql.append("`upperConstNtoMImp30`,");
+        preparedSql.append("`lowerSize1to1Imp30`,");
+        preparedSql.append("`upperSize1to1Imp30`,");
+        preparedSql.append("`lowerSize1toMImp30`,");
+        preparedSql.append("`upperSize1toMImp30`,");
+        preparedSql.append("`lowerSizeNtoMImp30`,");
+        preparedSql.append("`upperSizeNtoMImp30`,");
+        preparedSql.append("`lowerConst1to1Imp40`,");
+        preparedSql.append("`upperConst1to1Imp40`,");
+        preparedSql.append("`lowerConst1toMImp40`,");
+        preparedSql.append("`upperConst1toMImp40`,");
+        preparedSql.append("`lowerConstNtoMImp40`,");
+        preparedSql.append("`upperConstNtoMImp40`,");
+        preparedSql.append("`lowerSize1to1Imp40`,");
+        preparedSql.append("`upperSize1to1Imp40`,");
+        preparedSql.append("`lowerSize1toMImp40`,");
+        preparedSql.append("`upperSize1toMImp40`,");
+        preparedSql.append("`lowerSizeNtoMImp40`,");
+        preparedSql.append("`upperSizeNtoMImp40`,");
+        preparedSql.append("`lowerConst1to1Imp50`,");
+        preparedSql.append("`upperConst1to1Imp50`,");
+        preparedSql.append("`lowerConst1toMImp50`,");
+        preparedSql.append("`upperConst1toMImp50`,");
+        preparedSql.append("`lowerConstNtoMImp50`,");
+        preparedSql.append("`upperConstNtoMImp50`,");
+        preparedSql.append("`lowerSize1to1Imp50`,");
+        preparedSql.append("`upperSize1to1Imp50`,");
+        preparedSql.append("`lowerSize1toMImp50`,");
+        preparedSql.append("`upperSize1toMImp50`,");
+        preparedSql.append("`lowerSizeNtoMImp50`,");
+        preparedSql.append("`upperSizeNtoMImp50`) VALUES ");
+        preparedSql.append("(");
+        for(int i=0; i<103; i++) {
+        	preparedSql.append("?,");
+        }
+        preparedSql.append("?)");
 
         try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql.toString());) {
-            stmt.setString(1, result.getConfigurationName());
-            stmt.setString(2, result.getProductName());
-            stmt.setString(3, result.getClassifier());
-            stmt.setInt(4, result.getSizeTestData());
-            stmt.setInt(5, result.getSizeTrainingData());
-            stmt.setDouble(6, result.getError());
-            stmt.setDouble(7, result.getRecall());
-            stmt.setDouble(8, result.getPrecision());
-            stmt.setDouble(9, result.getFscore());
-            stmt.setDouble(10, result.getGscore());
-            stmt.setDouble(11, result.getMcc());
-            stmt.setDouble(12, result.getAuc());
-            stmt.setDouble(13, result.getBalance());
-            stmt.setDouble(14, result.getAucec());
-            stmt.setDouble(15, result.getNofb20());
-            stmt.setDouble(16, result.getRelb20());
-            stmt.setDouble(17, result.getNofi80());
-            stmt.setDouble(18, result.getReli80());
-            stmt.setDouble(19, result.getRele80());
-            stmt.setDouble(20, result.getNecm15());
-            stmt.setDouble(21, result.getNecm20());
-            stmt.setDouble(22, result.getNecm25());
-            stmt.setDouble(23, result.getNofbPredicted());
-            stmt.setDouble(24, result.getNofbMissed());
-            stmt.setDouble(25, result.getTpr());
-            stmt.setDouble(26, result.getTnr());
-            stmt.setDouble(27, result.getFpr());
-            stmt.setDouble(28, result.getFnr());
-            stmt.setDouble(29, result.getTp());
-            stmt.setDouble(30, result.getFn());
-            stmt.setDouble(31, result.getTn());
-            stmt.setDouble(32, result.getFp());
+        	int i=1;
+            stmt.setString(i++, result.getConfigurationName());
+            stmt.setString(i++, result.getProductName());
+            stmt.setString(i++, result.getClassifier());
+            stmt.setInt(i++, result.getSizeTestData());
+            stmt.setInt(i++, result.getSizeTrainingData());
+            stmt.setDouble(i++, result.getError());
+            stmt.setDouble(i++, result.getRecall());
+            stmt.setDouble(i++, result.getPrecision());
+            stmt.setDouble(i++, result.getFscore());
+            stmt.setDouble(i++, result.getGscore());
+            stmt.setDouble(i++, result.getMcc());
+            stmt.setDouble(i++, result.getAuc());
+            stmt.setDouble(i++, result.getBalance());
+            stmt.setDouble(i++, result.getAucec());
+            stmt.setDouble(i++, result.getNofb20());
+            stmt.setDouble(i++, result.getRelb20());
+            stmt.setDouble(i++, result.getNofi80());
+            stmt.setDouble(i++, result.getReli80());
+            stmt.setDouble(i++, result.getRele80());
+            stmt.setDouble(i++, result.getNecm15());
+            stmt.setDouble(i++, result.getNecm20());
+            stmt.setDouble(i++, result.getNecm25());
+            stmt.setDouble(i++, result.getNofbPredicted());
+            stmt.setDouble(i++, result.getNofbMissed());
+            stmt.setDouble(i++, result.getTpr());
+            stmt.setDouble(i++, result.getTnr());
+            stmt.setDouble(i++, result.getFpr());
+            stmt.setDouble(i++, result.getFnr());
+            stmt.setDouble(i++, result.getTp());
+            stmt.setDouble(i++, result.getFn());
+            stmt.setDouble(i++, result.getTn());
+            stmt.setDouble(i++, result.getFp());
+            stmt.setDouble(i++, result.getLowerConst1to1());
+            stmt.setDouble(i++, result.getUpperConst1to1());
+            stmt.setDouble(i++, result.getLowerConst1toM());
+            stmt.setDouble(i++, result.getUpperConst1toM());
+            stmt.setDouble(i++, result.getLowerConstNtoM());
+            stmt.setDouble(i++, result.getUpperConstNtoM());
+            stmt.setDouble(i++, result.getLowerSize1to1());
+            stmt.setDouble(i++, result.getUpperSize1to1());
+            stmt.setDouble(i++, result.getLowerSize1toM());
+            stmt.setDouble(i++, result.getUpperSize1toM());
+            stmt.setDouble(i++, result.getLowerSizeNtoM());
+            stmt.setDouble(i++, result.getUpperSizeNtoM());
+            stmt.setDouble(i++, result.getLowerConst1to1Imp10());
+            stmt.setDouble(i++, result.getUpperConst1to1Imp10());
+            stmt.setDouble(i++, result.getLowerConst1toMImp10());
+            stmt.setDouble(i++, result.getUpperConst1toMImp10());
+            stmt.setDouble(i++, result.getLowerConstNtoMImp10());
+            stmt.setDouble(i++, result.getUpperConstNtoMImp10());
+            stmt.setDouble(i++, result.getLowerSize1to1Imp10());
+            stmt.setDouble(i++, result.getUpperSize1to1Imp10());
+            stmt.setDouble(i++, result.getLowerSize1toMImp10());
+            stmt.setDouble(i++, result.getUpperSize1toMImp10());
+            stmt.setDouble(i++, result.getLowerSizeNtoMImp10());
+            stmt.setDouble(i++, result.getUpperSizeNtoMImp10());
+            stmt.setDouble(i++, result.getLowerConst1to1Imp20());
+            stmt.setDouble(i++, result.getUpperConst1to1Imp20());
+            stmt.setDouble(i++, result.getLowerConst1toMImp20());
+            stmt.setDouble(i++, result.getUpperConst1toMImp20());
+            stmt.setDouble(i++, result.getLowerConstNtoMImp20());
+            stmt.setDouble(i++, result.getUpperConstNtoMImp20());
+            stmt.setDouble(i++, result.getLowerSize1to1Imp20());
+            stmt.setDouble(i++, result.getUpperSize1to1Imp20());
+            stmt.setDouble(i++, result.getLowerSize1toMImp20());
+            stmt.setDouble(i++, result.getUpperSize1toMImp20());
+            stmt.setDouble(i++, result.getLowerSizeNtoMImp20());
+            stmt.setDouble(i++, result.getUpperSizeNtoMImp20());
+            stmt.setDouble(i++, result.getLowerConst1to1Imp30());
+            stmt.setDouble(i++, result.getUpperConst1to1Imp30());
+            stmt.setDouble(i++, result.getLowerConst1toMImp30());
+            stmt.setDouble(i++, result.getUpperConst1toMImp30());
+            stmt.setDouble(i++, result.getLowerConstNtoMImp30());
+            stmt.setDouble(i++, result.getUpperConstNtoMImp30());
+            stmt.setDouble(i++, result.getLowerSize1to1Imp30());
+            stmt.setDouble(i++, result.getUpperSize1to1Imp30());
+            stmt.setDouble(i++, result.getLowerSize1toMImp30());
+            stmt.setDouble(i++, result.getUpperSize1toMImp30());
+            stmt.setDouble(i++, result.getLowerSizeNtoMImp30());
+            stmt.setDouble(i++, result.getUpperSizeNtoMImp30());
+            stmt.setDouble(i++, result.getLowerConst1to1Imp40());
+            stmt.setDouble(i++, result.getUpperConst1to1Imp40());
+            stmt.setDouble(i++, result.getLowerConst1toMImp40());
+            stmt.setDouble(i++, result.getUpperConst1toMImp40());
+            stmt.setDouble(i++, result.getLowerConstNtoMImp40());
+            stmt.setDouble(i++, result.getUpperConstNtoMImp40());
+            stmt.setDouble(i++, result.getLowerSize1to1Imp40());
+            stmt.setDouble(i++, result.getUpperSize1to1Imp40());
+            stmt.setDouble(i++, result.getLowerSize1toMImp40());
+            stmt.setDouble(i++, result.getUpperSize1toMImp40());
+            stmt.setDouble(i++, result.getLowerSizeNtoMImp40());
+            stmt.setDouble(i++, result.getUpperSizeNtoMImp40());
+            stmt.setDouble(i++, result.getLowerConst1to1Imp50());
+            stmt.setDouble(i++, result.getUpperConst1to1Imp50());
+            stmt.setDouble(i++, result.getLowerConst1toMImp50());
+            stmt.setDouble(i++, result.getUpperConst1toMImp50());
+            stmt.setDouble(i++, result.getLowerConstNtoMImp50());
+            stmt.setDouble(i++, result.getUpperConstNtoMImp50());
+            stmt.setDouble(i++, result.getLowerSize1to1Imp50());
+            stmt.setDouble(i++, result.getUpperSize1to1Imp50());
+            stmt.setDouble(i++, result.getLowerSize1toMImp50());
+            stmt.setDouble(i++, result.getUpperSize1toMImp50());
+            stmt.setDouble(i++, result.getLowerSizeNtoMImp50());
+            stmt.setDouble(i++, result.getUpperSizeNtoMImp50());
+            
 
             int qryResult = stmt.executeUpdate();
             if (qryResult < 1) {
@@ -286,23 +436,111 @@ public class MySQLResultStorage implements IResultStorage {
     public void createResultsTable() {
         String sql = "CREATE TABLE `" + this.resultsTableName + "` (" +
             "`idresults` int(11) NOT NULL AUTO_INCREMENT," +
-            "`configurationName` varchar(250) NOT NULL," + "`productName` varchar(100) NOT NULL," +
-            "`classifier` varchar(50) NOT NULL," + "`testsize` int(11) DEFAULT NULL," +
-            "`trainsize` int(11) DEFAULT NULL," + "`error` double DEFAULT NULL," +
-            "`recall` double DEFAULT NULL," + "`precision` double DEFAULT NULL," +
-            "`fscore` double DEFAULT NULL," + "`gscore` double DEFAULT NULL," +
-            "`mcc` double DEFAULT NULL," + "`auc` double DEFAULT NULL," +
+            "`configurationName` varchar(250) NOT NULL," +
+            "`productName` varchar(100) NOT NULL," +
+            "`classifier` varchar(50) NOT NULL," +
+            "`testsize` int(11) DEFAULT NULL," +
+            "`trainsize` int(11) DEFAULT NULL," +
+            "`error` double DEFAULT NULL," +
+            "`recall` double DEFAULT NULL," +
+            "`precision` double DEFAULT NULL," +
+            "`fscore` double DEFAULT NULL," +
+            "`gscore` double DEFAULT NULL," +
+            "`mcc` double DEFAULT NULL," +
+            "`auc` double DEFAULT NULL," +
             "`balance` double DEFAULT NULL," + 
-            "`aucec` double DEFAULT NULL," + "`nofb20` double DEFAULT NULL," +
-            "`relb20` double DEFAULT NULL," + "`nofi80` double DEFAULT NULL," +  
-            "`reli80` double DEFAULT NULL," + "`rele80` double DEFAULT NULL," +  
-            "`necm15` double DEFAULT NULL," + "`necm20` double DEFAULT NULL," +  
-            "`necm25` double DEFAULT NULL," + "`nofbPredicted` double DEFAULT NULL," + 
-            "`nofbMissed` double DEFAULT NULL," + "`tpr` double DEFAULT NULL," +
-            "`tnr` double DEFAULT NULL," + "`fpr` double DEFAULT NULL," +
-            "`fnr` double DEFAULT NULL," + "`tp` double DEFAULT NULL," +
-            "`fn` double DEFAULT NULL," + "`tn` double DEFAULT NULL," +
-            "`fp` double DEFAULT NULL," + "PRIMARY KEY (`idresults`)" +
+            "`aucec` double DEFAULT NULL," +
+            "`nofb20` double DEFAULT NULL," +
+            "`relb20` double DEFAULT NULL," +
+            "`nofi80` double DEFAULT NULL," +  
+            "`reli80` double DEFAULT NULL," +
+            "`rele80` double DEFAULT NULL," +  
+            "`necm15` double DEFAULT NULL," +
+            "`necm20` double DEFAULT NULL," +  
+            "`necm25` double DEFAULT NULL," +
+            "`nofbPredicted` double DEFAULT NULL," + 
+            "`nofbMissed` double DEFAULT NULL," +
+            "`tpr` double DEFAULT NULL," +
+            "`tnr` double DEFAULT NULL," +
+            "`fpr` double DEFAULT NULL," +
+            "`fnr` double DEFAULT NULL," +
+            "`tp` double DEFAULT NULL," +
+            "`fn` double DEFAULT NULL," +
+            "`tn` double DEFAULT NULL," +
+            "`fp` double DEFAULT NULL," + 
+            "`lowerConst1to1` double DEFAULT NULL," +
+            "`upperConst1to1` double DEFAULT NULL," +
+            "`lowerConst1toM` double DEFAULT NULL," +
+            "`upperConst1toM` double DEFAULT NULL," +
+            "`lowerConstNtoM` double DEFAULT NULL," +
+            "`upperConstNtoM` double DEFAULT NULL," +
+            "`lowerSize1to1` double DEFAULT NULL," +
+            "`upperSize1to1` double DEFAULT NULL," +
+            "`lowerSize1toM` double DEFAULT NULL," +
+            "`upperSize1toM` double DEFAULT NULL," +
+            "`lowerSizeNtoM` double DEFAULT NULL," +
+            "`upperSizeNtoM` double DEFAULT NULL," +
+            "`lowerConst1to1Imp10` double DEFAULT NULL," +
+            "`upperConst1to1Imp10` double DEFAULT NULL," +
+            "`lowerConst1toMImp10` double DEFAULT NULL," +
+            "`upperConst1toMImp10` double DEFAULT NULL," +
+            "`lowerConstNtoMImp10` double DEFAULT NULL," +
+            "`upperConstNtoMImp10` double DEFAULT NULL," +
+            "`lowerSize1to1Imp10` double DEFAULT NULL," +
+            "`upperSize1to1Imp10` double DEFAULT NULL," +
+            "`lowerSize1toMImp10` double DEFAULT NULL," +
+            "`upperSize1toMImp10` double DEFAULT NULL," +
+            "`lowerSizeNtoMImp10` double DEFAULT NULL," +
+            "`upperSizeNtoMImp10` double DEFAULT NULL," +
+            "`lowerConst1to1Imp20` double DEFAULT NULL," +
+            "`upperConst1to1Imp20` double DEFAULT NULL," +
+            "`lowerConst1toMImp20` double DEFAULT NULL," +
+            "`upperConst1toMImp20` double DEFAULT NULL," +
+            "`lowerConstNtoMImp20` double DEFAULT NULL," +
+            "`upperConstNtoMImp20` double DEFAULT NULL," +
+            "`lowerSize1to1Imp20` double DEFAULT NULL," +
+            "`upperSize1to1Imp20` double DEFAULT NULL," +
+            "`lowerSize1toMImp20` double DEFAULT NULL," +
+            "`upperSize1toMImp20` double DEFAULT NULL," +
+            "`lowerSizeNtoMImp20` double DEFAULT NULL," +
+            "`upperSizeNtoMImp20` double DEFAULT NULL," +
+            "`lowerConst1to1Imp30` double DEFAULT NULL," +
+            "`upperConst1to1Imp30` double DEFAULT NULL," +
+            "`lowerConst1toMImp30` double DEFAULT NULL," +
+            "`upperConst1toMImp30` double DEFAULT NULL," +
+            "`lowerConstNtoMImp30` double DEFAULT NULL," +
+            "`upperConstNtoMImp30` double DEFAULT NULL," +
+            "`lowerSize1to1Imp30` double DEFAULT NULL," +
+            "`upperSize1to1Imp30` double DEFAULT NULL," +
+            "`lowerSize1toMImp30` double DEFAULT NULL," +
+            "`upperSize1toMImp30` double DEFAULT NULL," +
+            "`lowerSizeNtoMImp30` double DEFAULT NULL," +
+            "`upperSizeNtoMImp30` double DEFAULT NULL," +
+            "`lowerConst1to1Imp40` double DEFAULT NULL," +
+            "`upperConst1to1Imp40` double DEFAULT NULL," +
+            "`lowerConst1toMImp40` double DEFAULT NULL," +
+            "`upperConst1toMImp40` double DEFAULT NULL," +
+            "`lowerConstNtoMImp40` double DEFAULT NULL," +
+            "`upperConstNtoMImp40` double DEFAULT NULL," +
+            "`lowerSize1to1Imp40` double DEFAULT NULL," +
+            "`upperSize1to1Imp40` double DEFAULT NULL," +
+            "`lowerSize1toMImp40` double DEFAULT NULL," +
+            "`upperSize1toMImp40` double DEFAULT NULL," +
+            "`lowerSizeNtoMImp40` double DEFAULT NULL," +
+            "`upperSizeNtoMImp40` double DEFAULT NULL," +
+            "`lowerConst1to1Imp50` double DEFAULT NULL," +
+            "`upperConst1to1Imp50` double DEFAULT NULL," +
+            "`lowerConst1toMImp50` double DEFAULT NULL," +
+            "`upperConst1toMImp50` double DEFAULT NULL," +
+            "`lowerConstNtoMImp50` double DEFAULT NULL," +
+            "`upperConstNtoMImp50` double DEFAULT NULL," +
+            "`lowerSize1to1Imp50` double DEFAULT NULL," +
+            "`upperSize1to1Imp50` double DEFAULT NULL," +
+            "`lowerSize1toMImp50` double DEFAULT NULL," +
+            "`upperSize1toMImp50` double DEFAULT NULL," +
+            "`lowerSizeNtoMImp50` double DEFAULT NULL," +
+            "`upperSizeNtoMImp50` double DEFAULT NULL," +
+            "PRIMARY KEY (`idresults`)" +
             ") ENGINE=InnoDB AUTO_INCREMENT=77777 DEFAULT CHARSET=utf8;";
         try(Statement stmt = this.connectionPool.getConnection().createStatement();) { 
             stmt.execute(sql);

@@ -120,6 +120,8 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                 Instances testdata = testVersion.getInstances();
                 List<Double> efforts = testVersion.getEfforts();
                 List<Double> numBugs = testVersion.getNumBugs();
+                Instances bugMatrix = testVersion.getBugMatrix();
+
 
                 // now split data into parts
                 double percentage = 0.5; // 0.5 as default value
@@ -205,7 +207,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, writeHeader,
+                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
                                     this.config.getResultStorages());
                     writeHeader = false;
                 }
