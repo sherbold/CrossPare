@@ -37,43 +37,47 @@ public class CostBoundaryCalculator {
         double effortFalseTmp = 0.0;
         double bugCountTrueTmp = 0.0;
         double bugCountFalseTmp = 0.0;
-        try {
-            distributions = ((AbstractClassifier) classifier).distributionsForInstances(testdata);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("unexpected error during the evaluation of the review effort",
-                                       e);
-        }
-        for (int i = 0; i < testdata.numInstances(); i++) {
-        	double curBugCount = StatUtils.sum(bugMatrix.get(i).toDoubleArray());
-        	if( distributions[i][1]>distributions[i][0] ) {
-        		effortTrueTmp += efforts.get(i);
-        		bugCountTrueTmp += curBugCount;
-        		
-        	} else {
-        		effortFalseTmp += efforts.get(i);
-        		bugCountFalseTmp += curBugCount;
-        	}
-        }
-        
         double bugFoundTmp = 0.0;
         double bugMissTmp = 0.0;
-        for (int j=0; j<bugMatrix.numAttributes(); j++) {
-        	int numPredicted = 0;
-        	int numAffected = 0;
-            for (int i = 0; i < testdata.numInstances(); i++) {
-            	if (bugMatrix.get(i).value(j)>0.0) {
-            		numAffected++;
-        			if (distributions[i][1]>distributions[i][0]) {
-        				numPredicted++;
-        			}
-            	}
-            }
-            if (numPredicted<numAffected) {
-            	bugMissTmp += Math.pow(1-probQAFailure, numAffected);
-            } else {
-            	bugFoundTmp += Math.pow(1-probQAFailure, numAffected);
-            }
+        
+        if(efforts!=null && bugMatrix!=null) {
+	        try {
+	            distributions = ((AbstractClassifier) classifier).distributionsForInstances(testdata);
+	        }
+	        catch (Exception e) {
+	            throw new RuntimeException("unexpected error during the evaluation of the review effort",
+	                                       e);
+	        }
+	        for (int i = 0; i < testdata.numInstances(); i++) {
+	        	double curBugCount = StatUtils.sum(bugMatrix.get(i).toDoubleArray());
+	        	if( distributions[i][1]>distributions[i][0] ) {
+	        		effortTrueTmp += efforts.get(i);
+	        		bugCountTrueTmp += curBugCount;
+	        		
+	        	} else {
+	        		effortFalseTmp += efforts.get(i);
+	        		bugCountFalseTmp += curBugCount;
+	        	}
+	        }
+	        
+	        
+	        for (int j=0; j<bugMatrix.numAttributes(); j++) {
+	        	int numPredicted = 0;
+	        	int numAffected = 0;
+	            for (int i = 0; i < testdata.numInstances(); i++) {
+	            	if (bugMatrix.get(i).value(j)>0.0) {
+	            		numAffected++;
+	        			if (distributions[i][1]>distributions[i][0]) {
+	        				numPredicted++;
+	        			}
+	            	}
+	            }
+	            if (numPredicted<numAffected) {
+	            	bugMissTmp += Math.pow(1-probQAFailure, numAffected);
+	            } else {
+	            	bugFoundTmp += Math.pow(1-probQAFailure, numAffected);
+	            }
+	        }
         }
         
         this.effortTrue = effortTrueTmp;
