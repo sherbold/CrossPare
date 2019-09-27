@@ -240,22 +240,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             costBoundaryEvalImp30 = new CostBoundaryCalculator(testdata, classifier, efforts, bugMatrix, eval, 0.3);
             costBoundaryEvalImp40 = new CostBoundaryCalculator(testdata, classifier, efforts, bugMatrix, eval, 0.4);
             costBoundaryEvalImp50 = new CostBoundaryCalculator(testdata, classifier, efforts, bugMatrix, eval, 0.5);
-            
-            System.out.println(costBoundaryEval.getLowerConst1to1());
-            System.out.println(costBoundaryEval.getUpperConst1to1());
-            System.out.println(costBoundaryEval.getLowerConst1toM());
-            System.out.println(costBoundaryEval.getUpperConst1toM());
-            System.out.println(costBoundaryEval.getLowerConstNtoM());
-            System.out.println(costBoundaryEval.getUpperConstNtoM());
-            System.out.println();
-            System.out.println(costBoundaryEval.getLowerSize1to1());
-            System.out.println(costBoundaryEval.getUpperSize1to1());
-            System.out.println(costBoundaryEval.getLowerSize1toM());
-            System.out.println(costBoundaryEval.getUpperSize1toM());
-            System.out.println(costBoundaryEval.getLowerSizeNtoM());
-            System.out.println(costBoundaryEval.getUpperSizeNtoM());
-            System.out.println("---");
-            
+                        
             double pf =
                 eval.numFalsePositives(1) / (eval.numFalsePositives(1) + eval.numTrueNegatives(1));
             double gmeasure;
