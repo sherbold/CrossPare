@@ -51,6 +51,21 @@ public class MySQLResultStorage implements IResultStorage {
      * Connection pool for the data base.
      */
     private MysqlDataSource connectionPool = null;
+    
+    /**
+     * Create table if it does not exist
+     */
+    final boolean createTableIfNotExists;
+    
+    /**
+     * Ensure that we do not check for every query if the results table exists but only once
+     */
+    private static boolean checkedIfTableExists = false;
+    
+    /**
+     * Lock for synchronizing the table creation
+     */
+    private static final Object createTableLock = new Object();
 
     /**
      * <p>
@@ -98,14 +113,8 @@ public class MySQLResultStorage implements IResultStorage {
         String dbUser = dbProperties.getProperty("db.user", "crosspare");
         String dbPass = dbProperties.getProperty("db.pass", "crosspare");
         this.resultsTableName = dbProperties.getProperty("db.results.tablename", "results");
-        boolean createTableIfNotExists =
-            Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));
+        this.createTableIfNotExists = Boolean.parseBoolean(dbProperties.getProperty("db.results.createtable", "false"));;
         connectToDB(dbHost, dbPort, dbName, dbUser, dbPass);
-
-        // create the results table if required
-        if (!doesResultsTableExist() && createTableIfNotExists) {
-            createResultsTable();
-        }
     }
 
     /**
@@ -143,6 +152,9 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public void addResult(ExperimentResult result) {
+    	// create the results table if required
+    	checkIfCreateTable();
+    	
         StringBuilder preparedSql = new StringBuilder();
         preparedSql.append("INSERT INTO " + this.resultsTableName + " (");
         preparedSql.append("`configurationName`,");
@@ -384,6 +396,8 @@ public class MySQLResultStorage implements IResultStorage {
      */
     @Override
     public int containsResult(String experimentName, String productName, String classifierName) {
+    	checkIfCreateTable();
+    	
         String preparedSql = "SELECT COUNT(*) as cnt FROM " + this.resultsTableName +
             " WHERE configurationName=? AND productName=? AND classifier=?";
         try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql);) {
@@ -426,6 +440,21 @@ public class MySQLResultStorage implements IResultStorage {
         	LOGGER.error("VendorError: " + e.getErrorCode() + "\n");
         }
         return exists;
+    }
+    
+    /**
+     * Helper function that checks if the results results table exists and potentially triggers its creation
+     */
+    private void checkIfCreateTable() {
+    	if(!checkedIfTableExists) {
+    		LOGGER.debug("foo");
+	    	synchronized (createTableLock) {
+	    		if (!checkedIfTableExists && createTableIfNotExists && !doesResultsTableExist()) {
+	                createResultsTable();
+	    		}
+	    		checkedIfTableExists = true;
+	    	}
+		}
     }
 
     /**
