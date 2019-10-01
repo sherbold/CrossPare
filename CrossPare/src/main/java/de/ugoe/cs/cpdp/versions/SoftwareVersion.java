@@ -14,6 +14,7 @@
 
 package de.ugoe.cs.cpdp.versions;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import weka.core.Instances;
@@ -60,7 +61,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
     /**
      * Release date
      */
-    private final String releaseDate;
+    private final LocalDateTime releaseDate;
 
     /**
      * Constructor. Creates a new version.
@@ -91,7 +92,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
                            Instances bugMatrix,
                            List<Double> efforts,
                            List<Double> numBugs,
-                           String releaseDate)
+                           LocalDateTime releaseDate)
     {
         this.dataset = dataset;
         this.project = project;
@@ -175,7 +176,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         return this.numBugs;
     }
     
-    public String getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
     	return releaseDate;
     }
 

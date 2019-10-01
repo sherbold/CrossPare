@@ -103,7 +103,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             	releaseDate = ((MynbouDataLoader) instancesLoader).getReleaseDate();
                             }
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
-                                                             data, bugMatrix, efforts, numBugs, releaseDate.toString()));
+                                                             data, bugMatrix, efforts, numBugs, releaseDate));
                         }
                     }
                 }
