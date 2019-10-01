@@ -21,7 +21,7 @@ public class MynbouFolderLoaderTest {
 		//loader.setLocation("C:\\temp\\MYNBOU");
 		List<SoftwareVersion> versions = loader.load();
 		for( SoftwareVersion version : versions ) {
-			System.out.println(version.getProject()+"\t"+version.getVersion());
+			System.out.println(version.getProject()+"\t"+version.getVersion()+"\t"+version.getReleaseDate());
 		}
 		for (MemoryPoolMXBean mpBean: ManagementFactory.getMemoryPoolMXBeans()) {
 		    if (mpBean.getType() == MemoryType.HEAP) {

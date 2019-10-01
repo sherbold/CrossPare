@@ -3,8 +3,13 @@ package de.ugoe.cs.cpdp.loader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -20,6 +25,11 @@ public class MynbouDataLoader implements SingleVersionLoader, IBugMatrixLoader {
 	 * the bug matrix
 	 */
 	private Instances bugMatrix = null;
+	
+	/**
+	 * Date of the release
+	 */
+	private LocalDateTime releaseDate = null;
 
 	/*
 	 * (non-Javadoc)
@@ -99,6 +109,22 @@ public class MynbouDataLoader implements SingleVersionLoader, IBugMatrixLoader {
 			bugMatrix.add(new DenseInstance(1.0, values));
 		}
 
+		// read metadata
+		File jsonFile = new File(file.getAbsolutePath().replace("_aggregated.csv", ".json"));
+		String jsonData = null;
+        try {
+            jsonData = FileUtils.readFileToString(jsonFile);
+        }
+        catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        JSONObject metadata = new JSONObject(jsonData);
+        String dateString = metadata.getString("release_date");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        this.releaseDate = LocalDateTime.parse(dateString, formatter); 
+		
 		return data;
 	}
 
@@ -121,6 +147,14 @@ public class MynbouDataLoader implements SingleVersionLoader, IBugMatrixLoader {
 	@Override
 	public Instances getBugMatrix() {
 		return bugMatrix;
+	}
+	
+	/**
+	 * Returns the date of the loaded release
+	 * @return date of the release; null if not yet loaded
+	 */
+	public LocalDateTime getReleaseDate() {
+		return this.releaseDate;
 	}
 
 }

@@ -15,6 +15,7 @@
 package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,8 +98,12 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             String versionName = data.relationName();
                             List<Double> efforts = getEfforts(data);
                             List<Double> numBugs = getNumBugs(data);
+                            LocalDateTime releaseDate = null;
+                            if (instancesLoader instanceof MynbouDataLoader) {
+                            	releaseDate = ((MynbouDataLoader) instancesLoader).getReleaseDate();
+                            }
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
-                                                             data, bugMatrix, efforts, numBugs, null));
+                                                             data, bugMatrix, efforts, numBugs, releaseDate.toString()));
                         }
                     }
                 }
