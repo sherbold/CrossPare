@@ -98,7 +98,7 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             List<Double> efforts = getEfforts(data);
                             List<Double> numBugs = getNumBugs(data);
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
-                                                             data, bugMatrix, efforts, numBugs));
+                                                             data, bugMatrix, efforts, numBugs, null));
                         }
                     }
                 }

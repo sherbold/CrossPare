@@ -56,6 +56,11 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * Number of bugs per instance. Binary 0/1 in case of nominal loading.
      */
     private final List<Double> numBugs;
+    
+    /**
+     * Release date
+     */
+    private final String releaseDate;
 
     /**
      * Constructor. Creates a new version.
@@ -75,6 +80,8 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      *            review efforts for the version
      * @param numBugs
      *            number of bugs for the instances
+     * @param releaseDate
+     *            date of the release (null if not available)
      */
     @SuppressWarnings("hiding")
     public SoftwareVersion(String dataset,
@@ -83,7 +90,8 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
                            Instances instances,
                            Instances bugMatrix,
                            List<Double> efforts,
-                           List<Double> numBugs)
+                           List<Double> numBugs,
+                           String releaseDate)
     {
         this.dataset = dataset;
         this.project = project;
@@ -92,6 +100,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         this.bugMatrix = bugMatrix;
         this.efforts = efforts;
         this.numBugs = numBugs;
+        this.releaseDate = releaseDate;
     }
 
     /**
@@ -164,6 +173,10 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      */
     public List<Double> getNumBugs() {
         return this.numBugs;
+    }
+    
+    public String getReleaseDate() {
+    	return releaseDate;
     }
 
     /**
