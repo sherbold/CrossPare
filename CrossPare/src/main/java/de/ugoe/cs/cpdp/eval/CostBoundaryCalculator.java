@@ -28,7 +28,6 @@ public class CostBoundaryCalculator {
 	private final double bugMiss;
 	
 	public CostBoundaryCalculator(Instances testdata, Classifier classifier, List<Double> efforts, Instances bugMatrix, Evaluation eval, double probQAFailure) {
-		// TODO make robust against nulls (efforts, bugMatrix)
 		this.eval = eval;
 		this.probQAFailure = probQAFailure;
 		
