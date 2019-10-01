@@ -1,6 +1,8 @@
 
 package de.ugoe.cs.cpdp.util;
 
+import java.util.Comparator;
+
 /**
  * <p>
  * Utility functions for sorting.
@@ -24,7 +26,7 @@ public class SortUtils {
      *            the index set for the array
      */
     public static <T extends Comparable<T>> void quicksort(T[] main, int[] index) {
-        quicksort(main, index, 0, index.length - 1, false);
+    	quicksort(main, index, false);
     }
 
     /**
@@ -46,7 +48,39 @@ public class SortUtils {
                                                            int[] index,
                                                            boolean descending)
     {
-        quicksort(main, index, 0, index.length - 1, descending);
+    	Comparator<T> comparator = new Comparator<T>() {
+			@Override
+			public int compare(T first, T second) {
+				return first.compareTo(second);
+			}
+    		
+		};
+		if(!descending) {
+			comparator = comparator.reversed();
+		}
+        quicksort(main, index, comparator);
+    }
+    
+    /**
+     * <p>
+     * Implements a quick sort that sorts an index set together with the array.
+     * </p>
+     * 
+     * @param <T>
+     *            type for sorting
+     *
+     * @param main
+     *            the array that is sorted
+     * @param index
+     *            the index set for the array
+     * @param comparator
+     *            defines the sorting order
+     */
+    public static <T> void quicksort(T[] main,
+                                                           int[] index,
+                                                           Comparator<T> comparator)
+    {
+        quicksort(main, index, 0, index.length - 1, comparator);
     }
 
     /**
@@ -62,20 +96,20 @@ public class SortUtils {
      *            defines the current partition
      * @param right
      *            defines the current partition
-     * @param descending
+     * @param comparator
      *            defines the sorting order
      */
-    private static <T extends Comparable<T>> void quicksort(T[] main,
+    private static <T> void quicksort(T[] main,
                                                             int[] index,
                                                             int left,
                                                             int right,
-                                                            boolean descending)
+                                                            Comparator<T> comparator)
     {
         if (right <= left)
             return;
-        int i = partition(main, index, left, right, descending);
-        quicksort(main, index, left, i - 1, descending);
-        quicksort(main, index, i + 1, right, descending);
+        int i = partition(main, index, left, right, comparator);
+        quicksort(main, index, left, i - 1, comparator);
+        quicksort(main, index, i + 1, right, comparator);
     }
 
     /**
@@ -91,23 +125,23 @@ public class SortUtils {
      *            defines the current partition
      * @param right
      *            defines the current partition
-     * @param descending
+     * @param comparator
      *            defines the sorting order
      */
-    private static <T extends Comparable<T>> int partition(T[] main,
+    private static <T> int partition(T[] main,
                                                            int[] index,
                                                            int left,
                                                            int right,
-                                                           boolean descending)
+                                                           Comparator<T> comparator)
     {
         int i = left - 1;
         int j = right;
         while (true) {
-            while (compare(main[++i], main[right], descending)) {
+            while (comparator.compare(main[++i], main[right])>0) {
                 // find item on left to swap
                 // a[right] acts as sentinel
             }
-            while (compare(main[right], main[--j], descending)) {
+            while (comparator.compare(main[right], main[--j])>0) {
                 // find item on right to swap
                 if (j == left) {
                     break; // don't go out-of-bounds
@@ -124,27 +158,6 @@ public class SortUtils {
 
     /**
      * <p>
-     * helper function for comparator evaluation
-     * </p>
-     *
-     * @param x
-     *            first element that is compared
-     * @param y
-     *            second element that is compared
-     * @param descending
-     *            defines the sorting order
-     * @return true if x is larger than y and descending is true or y is larger than x and
-     *         descending is false
-     */
-    private static <T extends Comparable<T>> boolean compare(T x, T y, boolean descending) {
-        if (descending) {
-            return x.compareTo(y) > 0;
-        }
-        return x.compareTo(y) < 0;
-    }
-
-    /**
-     * <p>
      * swaps to elements
      * </p>
      *
@@ -157,7 +170,7 @@ public class SortUtils {
      * @param j
      *            index of the second element
      */
-    private static <T extends Comparable<T>> void swap(T[] main, int[] index, int i, int j) {
+    private static <T> void swap(T[] main, int[] index, int i, int j) {
         T tmp = main[i];
         main[i] = main[j];
         main[j] = tmp;
