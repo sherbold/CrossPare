@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
 import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
+import de.ugoe.cs.cpdp.dataprocessing.IVersionProcessingStrategy;
 import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
@@ -191,7 +192,11 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
                             if (isTrainingVersion(trainingVersion, testVersion, versions)) {
-                                traindataSet.add(trainingVersion.getInstances());
+                            	Instances traindata = trainingVersion.getInstances();
+                            	for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
+                            		processor.apply(testVersion, trainingVersion, traindata);
+                            	}
+                                traindataSet.add(traindata);
                             }
                         }
                     }

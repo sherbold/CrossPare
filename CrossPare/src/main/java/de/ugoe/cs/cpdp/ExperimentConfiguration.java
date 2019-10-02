@@ -38,6 +38,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
 import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
+import de.ugoe.cs.cpdp.dataprocessing.IVersionProcessingStrategy;
 import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
@@ -99,6 +100,11 @@ public class ExperimentConfiguration extends DefaultHandler {
      * data set filters that decide if a data is used as candidate training data
      */
     private List<IVersionFilter> trainingVersionFilters;
+    
+    /**
+     * processors for training versions directly after added the data within a single experiment run
+     */
+    private List<IVersionProcessingStrategy> trainversionprocessors;
 
     /**
      * setwise data processors that are applied before the setwise data selection
@@ -208,6 +214,7 @@ public class ExperimentConfiguration extends DefaultHandler {
         this.versionFilters = new LinkedList<>();
         this.testVersionFilters = new LinkedList<>();
         this.trainingVersionFilters = new LinkedList<>();
+        this.trainversionprocessors = new LinkedList<>();
         this.setwisepreprocessors = new LinkedList<>();
         this.setwiseselectors = new LinkedList<>();
         this.setwisepostprocessors = new LinkedList<>();
@@ -308,6 +315,10 @@ public class ExperimentConfiguration extends DefaultHandler {
      */
     public List<IVersionFilter> getTrainingVersionFilters() {
         return this.trainingVersionFilters;
+    }
+    
+    public List<IVersionProcessingStrategy> getTrainingVersionProcessors() {
+    	return this.trainversionprocessors;
     }
 
     /**
@@ -506,6 +517,12 @@ public class ExperimentConfiguration extends DefaultHandler {
                 filter.setParameter(attributes.getValue("param"));
                 this.trainingVersionFilters.add(filter);
             }
+            else if (qName.equalsIgnoreCase("trainVersionProcessor")) {
+                final IVersionProcessingStrategy processor = (IVersionProcessingStrategy) Class
+                    .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
+                    .newInstance();
+                this.trainversionprocessors.add(processor);
+            }
             else if (qName.equalsIgnoreCase("setwisepreprocessor")) {
                 final ISetWiseProcessingStrategy processor = (ISetWiseProcessingStrategy) Class
                     .forName("de.ugoe.cs.cpdp.dataprocessing." + attributes.getValue("name")).getDeclaredConstructor()
@@ -667,6 +684,7 @@ public class ExperimentConfiguration extends DefaultHandler {
         this.versionFilters.addAll(other.versionFilters);
         this.testVersionFilters.addAll(other.testVersionFilters);
         this.trainingVersionFilters.addAll(other.trainingVersionFilters);
+        this.trainversionprocessors.addAll(other.trainversionprocessors);
         this.setwisepreprocessors.addAll(other.setwisepreprocessors);
         this.setwiseselectors.addAll(other.setwiseselectors);
         this.setwisepostprocessors.addAll(other.setwisepostprocessors);
@@ -707,6 +725,8 @@ public class ExperimentConfiguration extends DefaultHandler {
         builder
             .append("Test version filters: " + this.testVersionFilters.toString() + System.lineSeparator());
         builder.append("Training version filters: " + this.trainingVersionFilters.toString() +
+        		System.lineSeparator());
+        builder.append("Training version processors: " + this.trainversionprocessors.toString() +
         		System.lineSeparator());
         builder.append("Setwise preprocessors: " + this.setwisepreprocessors.toString() +
         		System.lineSeparator());
