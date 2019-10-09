@@ -489,6 +489,7 @@ public class ExperimentConfiguration extends DefaultHandler {
                 if( classType!=null ) {
                     loader.setClassType(classType);
                 }
+                loader.setParameter(attributes.getValue("param"));
                 this.loaders.add(loader);
 
                 // TODO location as relative

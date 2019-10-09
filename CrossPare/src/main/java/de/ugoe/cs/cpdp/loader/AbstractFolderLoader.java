@@ -23,7 +23,7 @@ import java.util.List;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-
+import de.ugoe.cs.cpdp.IParameterizable;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
@@ -43,6 +43,20 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
      * Default for class type is binary, not numeric. This ensure downwards compability.
      */
     private boolean isBinaryClass = true;
+    
+    /**
+     * parameters that may be used by single version loaders
+     */
+    private String parameters = null;
+    
+    /**
+     * parameters are passed on to SingleVersionLoader, if the loader supports parameters
+     * @see IParameterizable#setParameter(String)
+     */
+    @Override
+    public void setParameter(String parameters) {
+    	this.parameters = parameters;
+    }
 
     /**
      * @see de.ugoe.cs.cpdp.loader.IVersionLoader#setLocation(java.lang.String)
@@ -74,11 +88,19 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
         final List<SoftwareVersion> versions = new LinkedList<>();
 
         final File dataDir = new File(this.path);
-        final SingleVersionLoader instancesLoader = getSingleLoader();
         if (dataDir.listFiles() == null) {
             return versions;
         }
         String datasetName = dataDir.getName();
+        
+        final SingleVersionLoader instancesLoader = getSingleLoader();
+        if( parameters!=null && parameters.length()>0) {
+        	if( instancesLoader instanceof IParameterizable ) {
+        		((IParameterizable) instancesLoader).setParameter(parameters);
+        	} else {
+        		throw new RuntimeException("there are parameters specified for a data loader that does not support parameters");
+        	}
+        }
 
         for (File projectDir : dataDir.listFiles()) {
             if (projectDir.isDirectory()) {

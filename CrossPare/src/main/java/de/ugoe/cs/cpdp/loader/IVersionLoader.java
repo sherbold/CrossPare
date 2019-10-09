@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.loader;
 
 import java.util.List;
 
+import de.ugoe.cs.cpdp.IParameterizable;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
@@ -23,7 +24,7 @@ import de.ugoe.cs.cpdp.versions.SoftwareVersion;
  * 
  * @author Steffen Herbold
  */
-public interface IVersionLoader {
+public interface IVersionLoader extends IParameterizable {
 
     /**
      * Sets the location of the data.
