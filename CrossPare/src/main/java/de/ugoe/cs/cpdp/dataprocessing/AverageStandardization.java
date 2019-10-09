@@ -72,7 +72,11 @@ public class AverageStandardization implements ISetWiseProcessingStrategy, IProc
                 Instance instance = traindata.instance(i);
                 for (int j = 0; j < testdata.numAttributes(); j++) {
                     if (testdata.attribute(j) != classAttribute) {
-                        instance.setValue(j, instance.value(j) * meanTest[j] / meanTrain[j]);
+                    	if(  meanTrain[j]==0.0 ) {
+                    		instance.setValue(j, 0.0);
+                        } else {
+                        	instance.setValue(j, instance.value(j) * meanTest[j] / meanTrain[j]);
+                        }
                     }
                 }
             }
