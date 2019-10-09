@@ -49,9 +49,14 @@ public class UnbalancedFilter implements IVersionFilter {
     public boolean apply(SoftwareVersion version, List<SoftwareVersion> allVersions) {
         final Instances instances = version.getInstances();
 
-        final int[] counts = instances.attributeStats(instances.classIndex()).nominalCounts;
-        return ((double) counts[0]) / instances.numInstances() >= (1 - this.quantil) ||
-            ((double) counts[0]) / instances.numInstances() <= (this.quantil);
+        int count = 0;
+        for(int i=0; i<instances.size(); i++) {
+        	if(instances.get(i).classValue()>0) {
+        		count++;
+        	}
+        }
+        return ((double) count) / instances.numInstances() >= (1 - this.quantil) ||
+            ((double) count) / instances.numInstances() <= (this.quantil);
     }
 
 }
