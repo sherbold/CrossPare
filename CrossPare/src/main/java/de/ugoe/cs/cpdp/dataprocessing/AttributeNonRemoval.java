@@ -21,7 +21,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import weka.core.Instances;
 
 /**
- * Removes attributes from all data sets, except the one defined, using their name.
+ * Removes attributes from all data sets, except the one defined, using their name. 
  * 
  * @author Fabian Trautsch
  */
@@ -33,10 +33,10 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
     private ArrayList<String> attributeNames = new ArrayList<>();
 
     /**
-     * Sets that attributes that will be kept. The string contains the blank-separated names of the
+     * Sets that attributes that will be kept. The string contains the blank-separated regular expressions of the
      * attributes to be kept. <br>
      * <br>
-     * Note, that keeping of attributes with blanks is currently not supported!
+     * Note, that the regular expressions currently must not contain whitespaces.
      * 
      * @param parameters
      *            string with the blank-separated attribute names
@@ -57,13 +57,18 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
      */
     @Override
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (String attributeName : this.attributeNames) {
-            for (int i = 0; i < testdata.numAttributes(); i++) {
-                if (!attributeName.equals(testdata.attribute(i).name())) {
-                    testdata.deleteAttributeAt(i);
-                    for (Instances traindata : traindataSet) {
-                        traindata.deleteAttributeAt(i);
-                    }
+    	for (int i = testdata.numAttributes() - 1; i >= 0; i--) {
+        	String curAttribute = testdata.attribute(i).name();
+        	boolean hasMatch = false;
+        	for( String regex : attributeNames ) {
+        		if( curAttribute.matches(regex) ) {
+        			hasMatch = true;
+        		}
+        	}
+        	if( !hasMatch ) {
+                testdata.deleteAttributeAt(i);
+                for( Instances traindata : traindataSet ) {
+                	traindata.deleteAttributeAt(i);
                 }
             }
         }
@@ -75,7 +80,14 @@ public class AttributeNonRemoval implements ISetWiseProcessingStrategy, IProcess
     @Override
     public void apply(Instances testdata, Instances traindata) {
         for (int i = testdata.numAttributes() - 1; i >= 0; i--) {
-            if (!this.attributeNames.contains(testdata.attribute(i).name())) {
+        	String curAttribute = testdata.attribute(i).name();
+        	boolean hasMatch = false;
+        	for( String regex : attributeNames ) {
+        		if( curAttribute.matches(regex) ) {
+        			hasMatch = true;
+        		}
+        	}
+        	if( !hasMatch ) {
                 testdata.deleteAttributeAt(i);
                 traindata.deleteAttributeAt(i);
             }
