@@ -28,6 +28,7 @@ import weka.classifiers.rules.ZeroR;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.WekaException;
 
 /**
  * <p>
@@ -316,6 +317,16 @@ public class WekaUtils {
                     throw new RuntimeException(e);
                 }
             }
+        }
+        catch( WekaException e) {
+        	if (e.getMessage() != null &&
+        		e.getMessage().contains("Some instance weights are not equal to 1")) {
+        		Instances traindataCopy = new Instances(traindata);
+        		for(int i=0; i<traindataCopy.size(); i++ ) {
+        			traindataCopy.get(i).setWeight(1.0d);
+        		}
+        		classifier = buildClassifier(classifier, traindataCopy);
+        	}
         }
         catch (Exception e) {
             if (e.getMessage() != null &&
