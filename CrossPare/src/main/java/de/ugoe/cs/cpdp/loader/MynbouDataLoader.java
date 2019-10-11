@@ -139,7 +139,7 @@ public class MynbouDataLoader implements SingleVersionLoader, IBugMatrixLoader, 
 		for (int i = 1; i < lines.length; i++) {
 			lineSplit = lines[i].split(";");
 			double[] values = new double[issueMatrixAtts.size()];
-			for (int j = 0; j < values.length - 1; j++) {
+			for (int j = 0; j < values.length; j++) {
 				values[j] = Double.parseDouble(lineSplit[j + importIndex + 2].trim());
 			}
 			bugMatrix.add(new DenseInstance(1.0, values));
