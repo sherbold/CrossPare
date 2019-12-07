@@ -146,7 +146,7 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
         int tmp = 0;
         for (int j = 0; j < data.numAttributes(); j++) {
             if (data.attribute(j) != data.classAttribute() && data.attribute(j).isNumeric()) {
-                instanceVector[tmp] = instance.value(j);
+                instanceVector[tmp++] = instance.value(j);
             }
         }
 
