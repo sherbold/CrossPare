@@ -79,6 +79,7 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
             for (int rep = 0; rep < this.maxRep; rep++) {
                 // sample instances
                 Instances sample = new Instances(testdata);
+                sample.clear();
                 for (int j = 0; j < this.sampleSize; j++) {
                     Instance inst =
                         new DenseInstance(testdata.instance(rand.nextInt(testdata.numInstances())));
