@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.util.MathArrays;
 
+import de.ugoe.cs.cpdp.util.ArrayUtils;
 import weka.core.Instances;
 
 /**
@@ -44,41 +45,48 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
     public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
         final Instances data = normalizedCharacteristicInstances(testdata, traindataSet);
 
-        final Set<Integer> selected = new HashSet<>();
-        for (int i = 0; i < this.k; i++) {
-            int closestIndex = getClosest(data);
-
-            selected.add(closestIndex);
-            data.delete(closestIndex);
-        }
-
+        final Set<Integer> selected = getClosestK(data, this.k);
         for (int i = traindataSet.size() - 1; i >= 0; i--) {
-            if (selected.contains(i)) {
+            if (!selected.contains(i + 1)) {  // traindata starts from data[1] but from traindataSet[0]
                 traindataSet.remove(i);
             }
         }
     }
 
     /**
-     * Helper method that determines the index of the instance with the smallest distance to the
+     * Helper method that determines the indices of the k instances with the smallest distance to the
      * first instance (index 0).
      * 
      * @param data
      *            data set
      * @return index of the closest instance
      */
-    private static int getClosest(Instances data) {
-        double closestDistance = Double.MAX_VALUE;
-        int closestIndex = 1;
-        for (int i = 1; i < data.numInstances(); i++) {
-            double distance = MathArrays.distance(data.instance(0).toDoubleArray(),
-                                                  data.instance(i).toDoubleArray());
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = i;
+    private static Set<Integer> getClosestK(Instances data, int k) {
+        double farthestClosestDistance = Double.MAX_VALUE;
+        int farthestClosestIndex = 0;
+        double[] closestDistances = new double[k];
+        for (int m = 0; m < closestDistances.length; m++) {
+            closestDistances[m] = Double.MAX_VALUE;
+        }
+        int[] closestIndex = new int[k];
+
+        for (int n = 1; n < data.numInstances(); n++) {
+            double distance = MathArrays.distance(data.instance(0).toDoubleArray(), data.instance(n).toDoubleArray());
+
+            if (distance < farthestClosestDistance) {
+                closestIndex[farthestClosestIndex] = n;
+                closestDistances[farthestClosestIndex] = distance;
+
+                farthestClosestIndex = ArrayUtils.findMax(closestDistances);
+                farthestClosestDistance = closestDistances[farthestClosestIndex];
             }
         }
-        return closestIndex;
+
+        final Set<Integer> selected = new HashSet<>();
+        for (int index : closestIndex) {
+            selected.add(index);
+        }
+        return selected;
     }
 
     /**
