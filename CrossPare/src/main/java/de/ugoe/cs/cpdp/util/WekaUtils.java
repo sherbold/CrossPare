@@ -180,7 +180,7 @@ public class WekaUtils {
             l = 0;
             for (int k = 0; k < data.numAttributes(); k++) {
                 if (k != data.classIndex()) {
-                    inst1[l] = data.instance(i).value(k);
+                    inst1[l++] = data.instance(i).value(k);
                 }
             }
             for (int j = 0; j < data.numInstances(); j++) {
@@ -188,7 +188,7 @@ public class WekaUtils {
                     l = 0;
                     for (int k = 0; k < data.numAttributes(); k++) {
                         if (k != data.classIndex()) {
-                            inst2[l] = data.instance(j).value(k);
+                            inst2[l++] = data.instance(j).value(k);
                         }
                     }
                     distance = euclideanDistance.compute(inst1, inst2);
