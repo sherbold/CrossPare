@@ -220,7 +220,7 @@ public class WekaLocalFQTraining extends WekaBaseTraining implements ITrainingSt
                 Instance classInstance = createInstance(traindata, instance);
 
                 // this one keeps the class attribute
-                Instances traindata2 = this.ctraindata.get(1);
+                Instances traindata2 = this.ctraindata.get(0);
 
                 // remove class attribute before clustering
                 Remove filter = new Remove();
