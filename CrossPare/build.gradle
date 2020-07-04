@@ -59,3 +59,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
+/* Removes transitive dependency on xerces which fixes 
+"the package is accessible from more than one module" - error
+for javax.xml.parsers as well as org.xml.sax */
+configurations {
+    all*.exclude group: 'xerces'
+}
