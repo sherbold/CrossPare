@@ -126,7 +126,6 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 
 		String[] lineSplit = lines[0].split(",");
 		List<Integer> usedAttributes = new ArrayList<>();
-		int committerDateIndex = 1;
 		int index = 3;
 		while (!"label_adhoc".equals(lineSplit[index])) {
 			// skip previous inducing as this was more of a test
@@ -191,10 +190,9 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 			data.add(new DenseInstance(1.0, values));
 		}
 		
-		// create issue matrix and fetch committer dates
+		// create issue matrix
 		final ArrayList<Attribute> issueMatrixAtts = new ArrayList<>();
 		List<Integer> usedIssues = new ArrayList<>();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
 		lineSplit = lines[0].split(",");
 		while (issueMatrixIndex < lineSplit.length) {
 			// determine whether its an adhoc or jira issue
@@ -209,7 +207,6 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 			issueMatrixIndex++;
 		}
 		bugMatrix = new Instances(file.getName(), issueMatrixAtts, 0);
-		committerDates = new ArrayList<>();
 		for (int i = 1; i < lines.length; i++) {
 			lineSplit = split(lines[i], ',');
 			double[] values = new double[issueMatrixAtts.size()];
@@ -217,8 +214,16 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 				values[j] = Double.parseDouble(lineSplit[usedIssues.get(j)].trim());
 			}
 			bugMatrix.add(new DenseInstance(1.0, values));
-			String dateString = lineSplit[committerDateIndex];
-			committerDates.add(OffsetDateTime.parse(dateString, formatter)); 
+		}
+
+		// fetch committer dates
+		int dateIndex = 1;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
+		committerDates = new ArrayList<>();
+		for (int i = 1; i < lines.length; i++) {
+			lineSplit = split(lines[i], ',');
+			String dateString = lineSplit[dateIndex];
+			committerDates.add(OffsetDateTime.parse(dateString, formatter));
 		}
         return data;
 	}
@@ -248,7 +253,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	 * Returns a list of committer dates
 	 * @return dates of the commits 
 	 */
-	public ArrayList<OffsetDateTime> getCommitterDates() {
+	public List<OffsetDateTime> getCommitterDates() {
 		return this.committerDates;
 	}
 }
