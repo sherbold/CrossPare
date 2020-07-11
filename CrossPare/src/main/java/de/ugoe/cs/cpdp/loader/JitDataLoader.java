@@ -35,12 +35,12 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	 * the committer dates
 	 */
 	private List<OffsetDateTime> committerDates = new ArrayList<>();
-	
+
 	/**
      * names of the attributes to be kept (determined by {@link #setParameter(String)})
      */
 	private ArrayList<String> attributeNames = new ArrayList<>();
-	
+
 	/**
      * Sets the label to be used and the attributes that will be kept. The string contains the label and the blank-separated regular expressions of the
      * attributes to be kept. <br>
@@ -53,17 +53,17 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	@Override
 	public void setParameter(String parameters) {
 		if (parameters != null) {
-            String[] parameterArray = parameters.split(" ");
+			String[] parameterArray = parameters.split(" ");
 			int index = 0;
-            if(parameterArray[index].equals("adhoc") || parameterArray[index].equals("jira")) {
+			if(parameterArray[index].equals("adhoc") || parameterArray[index].equals("jira")) {
 				label = parameterArray[index];
 				index++;
-            }
-            while(index < parameterArray.length) {
-                this.attributeNames.add(parameterArray[index]);
-                index++;
-            }
-        }
+			}
+			while(index < parameterArray.length) {
+				this.attributeNames.add(parameterArray[index]);
+				index++;
+			}
+		}
 	}
 	
 	/**
