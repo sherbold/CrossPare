@@ -34,7 +34,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	/**
 	 * the committer dates
 	 */
-	private ArrayList<OffsetDateTime> committerDates = new ArrayList<>();
+	private List<OffsetDateTime> committerDates = new ArrayList<>();
 	
 	/**
      * names of the attributes to be kept (determined by {@link #setParameter(String)})
@@ -56,8 +56,8 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
             String[] parameterArray = parameters.split(" ");
             int index = 0;
             if(parameterArray[index].equals("adhoc")) {
-            	this.adhoc = true;
-            	index++;
+				this.adhoc = true;
+				index++;
             }
             while(index < parameterArray.length) {
                 this.attributeNames.add(parameterArray[index]);
@@ -74,36 +74,35 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	 *            delimiter that is used
 	 * @return
 	 */			
-	private static String[] split(final String line, final char delimiter)
-	{
-	    CharSequence[] temp = new CharSequence[(line.length() / 2) + 1];
+	private static String[] split(final String line, final char delimiter) {
+		CharSequence[] temp = new CharSequence[(line.length() / 2) + 1];
 		int wordCount = 0;
 		// indices of the first split
-	    int i = 0;
+		int i = 0;
 		int j = line.indexOf(delimiter, 0);
 		// start and end indices of labels to be skipped
-	    int adhocLabelStart = line.indexOf('"', 1);
-	    int adhocLabelEnd = line.indexOf('"', adhocLabelStart+1);
-	    int jiraLabelStart = line.indexOf('"', adhocLabelEnd+1);
-	    int jiraLabelEnd = line.indexOf('"', jiraLabelStart+1);
-	    while (j >= 0) {
+		int adhocLabelStart = line.indexOf('"', 1);
+		int adhocLabelEnd = line.indexOf('"', adhocLabelStart+1);
+		int jiraLabelStart = line.indexOf('"', adhocLabelEnd+1);
+		int jiraLabelEnd = line.indexOf('"', jiraLabelStart+1);
+		while (j >= 0) {
 			// split
 			temp[wordCount++] = line.substring(i, j);
 			// start index of next split
 			i = j + 1;
 			// set end index of next split
-	        if(i == adhocLabelStart) {
-	        	j = adhocLabelEnd+1;
-	        } else if(i == jiraLabelStart){
+			if(i == adhocLabelStart) {
+				j = adhocLabelEnd+1;
+			} else if(i == jiraLabelStart){
 				j = jiraLabelEnd+1;
-	        } else {
-		        j = line.indexOf(delimiter, i);
-	        }
-	    }
-	    temp[wordCount++] = line.substring(i); 
-	    String[] parts = new String[wordCount];
-	    System.arraycopy(temp, 0, parts, 0, wordCount);
-	    return parts;
+			} else {
+				j = line.indexOf(delimiter, i);
+			}
+		}
+		temp[wordCount++] = line.substring(i); 
+		String[] parts = new String[wordCount];
+		System.arraycopy(temp, 0, parts, 0, wordCount);
+		return parts;
 	}
 
 	/*
@@ -137,15 +136,15 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 			}
 			String curAttribute = lineSplit[index];
 			boolean hasMatch = false;
-        	for( String regex : attributeNames ) {
-        		if( curAttribute.matches(regex) ) {
-        			hasMatch = true;
-        		}
-        	}
-        	if( hasMatch || attributeNames.isEmpty() ) {
-        		atts.add(new Attribute(curAttribute));
-        		usedAttributes.add(index);
-        	}
+			for( String regex : attributeNames ) {
+				if( curAttribute.matches(regex) ) {
+					hasMatch = true;
+				}
+			}
+			if( hasMatch || attributeNames.isEmpty() ) {
+				atts.add(new Attribute(curAttribute));
+				usedAttributes.add(index);
+			}
 			index++;
 		}
 		
