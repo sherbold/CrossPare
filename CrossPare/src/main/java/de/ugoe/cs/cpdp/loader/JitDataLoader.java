@@ -15,19 +15,41 @@ import weka.core.DenseInstance;
 import weka.core.Instances;
 
 /**
+ * Loader for just-in-time data
  * @author jvdmosel
- *
  */
 public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IParameterizable {
 	
+	/**
+	 * the bug matrix
+	 */
 	private Instances bugMatrix = null;
 	
+	/**
+	 * the used label
+	 * default is jira
+	 */
 	private boolean adhoc = false;
 	
+	/**
+	 * the committer dates
+	 */
 	private ArrayList<OffsetDateTime> committerDates = new ArrayList<>();
 	
+	/**
+     * names of the attributes to be kept (determined by {@link #setParameter(String)})
+     */
 	private ArrayList<String> attributeNames = new ArrayList<>();
 	
+	/**
+     * Sets the label to be used and the attributes that will be kept. The string contains the label and the blank-separated regular expressions of the
+     * attributes to be kept. <br>
+     * <br>
+     * Note, that the regular expressions currently must not contain whitespaces.
+     * 
+     * @param parameters
+     *            string with the label and blank-separated attribute names
+     */
 	@Override
 	public void setParameter(String parameters) {
 		if (parameters != null) {
@@ -44,33 +66,52 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
         }
 	}
 	
-	private static String[] split(final String line)
+	/**
+	 * Splits a line outside of labels into parts using a delimiter
+	 * @param line
+	 *            line to be split
+	 * @param delimiter
+	 *            delimiter that is used
+	 * @return
+	 */			
+	private static String[] split(final String line, final char delimiter)
 	{
 	    CharSequence[] temp = new CharSequence[(line.length() / 2) + 1];
-	    int wordCount = 0;
+		int wordCount = 0;
+		// indices of the first split
 	    int i = 0;
-	    int j = line.indexOf(',', 0); // first substring
+		int j = line.indexOf(delimiter, 0);
+		// start and end indices of labels to be skipped
 	    int adhocLabelStart = line.indexOf('"', 1);
 	    int adhocLabelEnd = line.indexOf('"', adhocLabelStart+1);
 	    int jiraLabelStart = line.indexOf('"', adhocLabelEnd+1);
 	    int jiraLabelEnd = line.indexOf('"', jiraLabelStart+1);
 	    while (j >= 0) {
-	        temp[wordCount++] = line.substring(i, j);
-	        i = j + 1;
+			// split
+			temp[wordCount++] = line.substring(i, j);
+			// start index of next split
+			i = j + 1;
+			// set end index of next split
 	        if(i == adhocLabelStart) {
 	        	j = adhocLabelEnd+1;
 	        } else if(i == jiraLabelStart){
-	        	j = jiraLabelEnd+1;
+				j = jiraLabelEnd+1;
 	        } else {
-		        j = line.indexOf(',', i); // rest of substrings
+		        j = line.indexOf(delimiter, i);
 	        }
 	    }
-	    temp[wordCount++] = line.substring(i); // last substring
-	    String[] result = new String[wordCount];
-	    System.arraycopy(temp, 0, result, 0, wordCount);
-	    return result;
+	    temp[wordCount++] = line.substring(i); 
+	    String[] parts = new String[wordCount];
+	    System.arraycopy(temp, 0, parts, 0, wordCount);
+	    return parts;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#load(
+	 * java.io.File)
+	 */
 	@Override
 	public Instances load(File file, boolean binaryClass) {
 		final String[] lines;
@@ -108,6 +149,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 			index++;
 		}
 		
+		// set correct label index
 		int labelIndex = (adhoc) ? index : index + 1;
 		int issueMatrixIndex = index + 4;
 		Attribute classAtt;
@@ -128,10 +170,11 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 
 		// fetch data
 		for (int i = 1; i < lines.length; i++) {
-			lineSplit = split(lines[i]);;
+			lineSplit = split(lines[i], ',');;
 			double[] values = new double[usedAttributes.size()+1];
 			for (int j = 0; j < values.length - 1; j++) {
 				String value = lineSplit[usedAttributes.get(j)].trim();
+				// encode truth values to binary
 				if(!"True".equals(value) && !"False".equals(value)) {
 					values[j] = Double.parseDouble(lineSplit[usedAttributes.get(j)].trim());
 				} else {
@@ -157,6 +200,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 		while (issueMatrixIndex < lineSplit.length) {
 			// determine whether its an adhoc or jira issue
 			String keyword = lineSplit[issueMatrixIndex].substring(0,5);
+			// skip bugmatrix entries that are not part of the label
 			if((this.adhoc && !"adhoc".equals(keyword)) || (!this.adhoc && "adhoc".equals(keyword))) {
 				issueMatrixIndex++;
 				continue;
@@ -168,12 +212,9 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 		bugMatrix = new Instances(file.getName(), issueMatrixAtts, 0);
 		committerDates = new ArrayList<>();
 		for (int i = 1; i < lines.length; i++) {
-			lineSplit = split(lines[i]);
+			lineSplit = split(lines[i], ',');
 			double[] values = new double[issueMatrixAtts.size()];
 			for (int j = 0; j < values.length; j++) {
-				if("True".equals(lineSplit[usedIssues.get(j)].trim())) {
-					System.out.println("Test");
-				}
 				values[j] = Double.parseDouble(lineSplit[usedIssues.get(j)].trim());
 			}
 			bugMatrix.add(new DenseInstance(1.0, values));
@@ -183,11 +224,22 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
         return data;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ugoe.cs.cpdp.loader.IBugMatrixLoader#getBugMatrix()
+	 */
 	@Override
 	public Instances getBugMatrix() {
 		return this.bugMatrix;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ugoe.cs.cpdp.loader.AbstractFolderLoader.SingleVersionLoader#
+	 * filenameFilter(java.lang.String)
+	 */
 	@Override
 	public boolean filenameFilter(String filename) {
 		return filename.endsWith(".csv");
