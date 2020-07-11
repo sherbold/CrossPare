@@ -11,7 +11,7 @@ import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 
 public class JitFolderLoaderTest {
-    
+
 	@Test
 	public void testLoadVersions() {
 		JitFolderLoader loader = new JitFolderLoader();
@@ -33,8 +33,7 @@ public class JitFolderLoaderTest {
 		}
 		System.out.println("Number of Attributes:"+'\t'+numberOfAttributes.get(0));
 		assertEquals(numberOfAttributes.get(0), numberOfAttributes.get(1));
-		assertEquals(numberOfAttributes.get(0), numberOfAttributes.get(2));
-		assertEquals(3, versions.size());
+		assertEquals(2, versions.size());
     }
     
 }
