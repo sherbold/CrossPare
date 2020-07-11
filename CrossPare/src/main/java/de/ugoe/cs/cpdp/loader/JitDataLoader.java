@@ -29,7 +29,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	 * the used label
 	 * default is jira
 	 */
-	private boolean adhoc = false;
+	private String label = "jira";
 	
 	/**
 	 * the committer dates
@@ -54,9 +54,9 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 	public void setParameter(String parameters) {
 		if (parameters != null) {
             String[] parameterArray = parameters.split(" ");
-            int index = 0;
-            if(parameterArray[index].equals("adhoc")) {
-				this.adhoc = true;
+			int index = 0;
+            if(parameterArray[index].equals("adhoc") || parameterArray[index].equals("jira")) {
+				label = parameterArray[index];
 				index++;
             }
             while(index < parameterArray.length) {
@@ -148,7 +148,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 		}
 		
 		// set correct label index
-		int labelIndex = (adhoc) ? index : index + 1;
+		int labelIndex = (label.equals("adhoc")) ? index : index + 1;
 		int issueMatrixIndex = index + 4;
 		Attribute classAtt;
 		if (binaryClass) {
@@ -198,7 +198,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 			// determine whether its an adhoc or jira issue
 			String keyword = lineSplit[issueMatrixIndex].substring(0,5);
 			// skip bugmatrix entries that are not part of the label
-			if((this.adhoc && !"adhoc".equals(keyword)) || (!this.adhoc && "adhoc".equals(keyword))) {
+			if(!label.equals(keyword)) {
 				issueMatrixIndex++;
 				continue;
 			}
