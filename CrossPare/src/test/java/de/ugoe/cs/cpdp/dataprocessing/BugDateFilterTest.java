@@ -20,7 +20,7 @@ public class BugDateFilterTest {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		
 		// setup test version
-		SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", null, null, null, null, LocalDateTime.parse("2008-01-01 12:12:12", formatter));
+		SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", null, null, null, null, LocalDateTime.parse("2008-01-01 12:12:12", formatter), null);
 		
 		// setup train version
 		ArrayList<Attribute> attributes = new ArrayList<>();
@@ -43,7 +43,7 @@ public class BugDateFilterTest {
         bugMatrix.add(new DenseInstance(1.0, new double[] {0.0, 0.0, 0.0}));
         bugMatrix.add(new DenseInstance(1.0, new double[] {0.0, 0.0, 1.0}));
 		
-        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindataSetup, bugMatrix, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindataSetup, bugMatrix, null, null, null, null);
         Instances traindata = trainversion.getInstances();
         
 		BugDateFilter filter = new BugDateFilter();
