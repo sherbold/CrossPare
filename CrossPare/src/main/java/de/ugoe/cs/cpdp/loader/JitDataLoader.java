@@ -198,7 +198,7 @@ public class JitDataLoader implements SingleVersionLoader, IBugMatrixLoader, IPa
 			// determine whether its an adhoc or jira issue
 			String keyword = lineSplit[issueMatrixIndex].substring(0,5);
 			// skip bugmatrix entries that are not part of the label
-			if(!label.equals(keyword)) {
+			if(("adhoc".equals(label) && !"adhoc".equals(keyword)) || (!"adhoc".equals(label) && "adhoc".equals(keyword))) {
 				issueMatrixIndex++;
 				continue;
 			}

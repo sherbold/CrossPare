@@ -16,7 +16,8 @@ public class JitFolderLoaderTest {
 	public void testLoadVersions() {
 		JitFolderLoader loader = new JitFolderLoader();
 		loader.setLocation("testdata/jit");
-		loader.setParameter("adhoc");
+		//loader.setParameter("adhoc);
+		loader.setParameter("jira");
 		List<SoftwareVersion> versions = loader.load();
 		List<Integer> numberOfAttributes = new ArrayList<Integer>();
 		for( SoftwareVersion version : versions ) {
@@ -27,7 +28,8 @@ public class JitFolderLoaderTest {
 			for(Instance inst : version.getBugMatrix()) {
 				for(int i=0; i<inst.numAttributes(); ++i) {
 					String keyword = inst.attribute(i).name().substring(0,5);
-					assertEquals("adhoc", keyword);
+					//assertEquals("adhoc", keyword);
+					assertNotEquals("adhoc", keyword);
 				}
 			}
 		}
