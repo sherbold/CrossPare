@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.loader;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,11 +122,15 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
                             List<Double> efforts = getEfforts(data);
                             List<Double> numBugs = getNumBugs(data);
                             LocalDateTime releaseDate = null;
+                            List<OffsetDateTime> committerDates = null;
                             if (instancesLoader instanceof MynbouDataLoader) {
                             	releaseDate = ((MynbouDataLoader) instancesLoader).getReleaseDate();
                             }
+                            if (instancesLoader instanceof JitDataLoader) {
+                            	committerDates = ((JitDataLoader) instancesLoader).getCommitterDates();
+                            }
                             versions.add(new SoftwareVersion(datasetName, projectName, versionName,
-                                                             data, bugMatrix, efforts, numBugs, releaseDate));
+                                                            data, bugMatrix, efforts, numBugs, releaseDate, committerDates));
                         }
                     }
                 }
@@ -165,6 +170,10 @@ public abstract class AbstractFolderLoader implements IVersionLoader {
         }
         if (effortAtt == null) {
         	effortAtt = data.attribute("SM_file_lloc");
+        }
+        if (effortAtt == null) {
+            // attribute in the just in time data
+            effortAtt = data.attribute("current_LLOC");
         }
         List<Double> efforts = new ArrayList<>(data.size());
         for (int i = 0; i < data.size(); i++) {
