@@ -15,6 +15,7 @@
 package de.ugoe.cs.cpdp.versions;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import weka.core.Instances;
@@ -62,6 +63,11 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * Release date
      */
     private final LocalDateTime releaseDate;
+    
+    /**
+     * Committer date
+     */
+    private final List<OffsetDateTime> committerDates;
 
     /**
      * Constructor. Creates a new version.
@@ -83,6 +89,8 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      *            number of bugs for the instances
      * @param releaseDate
      *            date of the release (null if not available)
+     * @param committerDates
+     *            dates of the commits (null if not available)
      */
     @SuppressWarnings("hiding")
     public SoftwareVersion(String dataset,
@@ -92,7 +100,8 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
                            Instances bugMatrix,
                            List<Double> efforts,
                            List<Double> numBugs,
-                           LocalDateTime releaseDate)
+                           LocalDateTime releaseDate,
+                           List<OffsetDateTime> committerDates)
     {
         this.dataset = dataset;
         this.project = project;
@@ -102,6 +111,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         this.efforts = efforts;
         this.numBugs = numBugs;
         this.releaseDate = releaseDate;
+        this.committerDates = committerDates;
     }
 
     /**
@@ -178,6 +188,10 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
     
     public LocalDateTime getReleaseDate() {
     	return releaseDate;
+    }
+    
+    public List<OffsetDateTime> getCommitterDates() {
+    	return committerDates;
     }
 
     /**
