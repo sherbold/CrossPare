@@ -17,18 +17,18 @@ public interface ISetWiseVersionProcessingStrategy extends IParameterizable {
     /**
      * Applies the processing strategy.
      * 
-     * @param testversion
+     * @param testVersion
      *            version of the test data
-     * @param trainversion
-     *            version of the training data
-     * @param testdata
+     * @param trainVersions
+     *            versions of the training data
+     * @param testData
      *            instances of the test data
-     * @param traindata
+     * @param trainData
      *            instances of the training data
      * @param testBugMatrix
      *            bugMatrix of the test data
-     * @param trainBugMatrix
-     *            bugMatrix of the training data
+     * @param trainBugMatrices
+     *            bugMatrices of the training data
      */
     void apply(SoftwareVersion testVersion, SetUniqueList<SoftwareVersion> trainVersions, Instances testData, SetUniqueList<Instances> trainData, Instances testBugMatrix, SetUniqueList<Instances> trainBugMatrices);
 }
