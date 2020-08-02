@@ -21,18 +21,18 @@ import weka.core.Attribute;
 public class JitDateFilterTest {
 
     @Test
-	public void test() {
+    public void test() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
-        OffsetDateTime trainStartDate = OffsetDateTime.parse("2003-05-23"+" 00:00:00+00:00", formatter);
-		OffsetDateTime trainEndDate = OffsetDateTime.parse("2015-06-23"+" 00:00:00+00:00", formatter);
-		OffsetDateTime testStartDate = OffsetDateTime.parse("2015-09-23"+" 00:00:00+00:00", formatter);
-        OffsetDateTime testEndDate = OffsetDateTime.parse("2017-11-01"+" 00:00:00+00:00", formatter);
-        
+        OffsetDateTime trainStartDate = OffsetDateTime.parse("2003-05-23" + " 00:00:00+00:00", formatter);
+        OffsetDateTime trainEndDate = OffsetDateTime.parse("2015-06-23" + " 00:00:00+00:00", formatter);
+        OffsetDateTime testStartDate = OffsetDateTime.parse("2015-09-23" + " 00:00:00+00:00", formatter);
+        OffsetDateTime testEndDate = OffsetDateTime.parse("2017-11-01" + " 00:00:00+00:00", formatter);
+
         JitDateFilter filter = new JitDateFilter();
         filter.setParameter("2003-05-23 2015-06-23 2015-09-23 2017-11-01");
 
         JitFolderLoader loader = new JitFolderLoader();
-		loader.setLocation("testdata/jit");
+        loader.setLocation("testdata/jit");
         loader.setParameter("jira");
         List<SoftwareVersion> versions = loader.load();
 
@@ -53,7 +53,7 @@ public class JitDateFilterTest {
 
         int[] trainDateCount = new int[trainVersions.size()];
         int testDateCount = 0;
-        for (int i=0; i<versions.size(); i++) {
+        for (int i = 0; i < versions.size(); i++) {
             for (OffsetDateTime date : versions.get(i).getCommitterDates()) {
                 if (i == 0 && date.compareTo(testStartDate) >= 0 && date.compareTo(testEndDate) < 0) {
                     testDateCount++;
@@ -72,7 +72,7 @@ public class JitDateFilterTest {
                 Attribute attribute = iterator.next();
                 String attributeName = attribute.name();
                 String dateString = attributeName.substring(attributeName.lastIndexOf("_") + 1);
-                dateString += (dateString.contains("+")) ? "" : "+00:00";  
+                dateString += (dateString.contains("+")) ? "" : "+00:00";
                 OffsetDateTime issueDate = OffsetDateTime.parse(dateString, formatter);
                 assertTrue(issueDate.compareTo(trainStartDate) >= 0 && issueDate.compareTo(testStartDate) < 0);
             }
