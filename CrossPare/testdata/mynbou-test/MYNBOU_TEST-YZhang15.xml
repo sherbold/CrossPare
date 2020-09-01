@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="MynbouFolderLoader" datalocation="testdata/mynbou" relative="false" classtype="numeric" />
+ <setwisepreprocessor name="MakeClassBinary" param="" />
+ <versionfilter name="MinInstanceNumberFilter" param="100" />
+ <trainversionfilter name="UnbalancedFilter" param="0.05" />
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <trainer name="WekaTraining" param="BAG-NB weka.classifiers.meta.Bagging -P 100 -S 1 -I 10 -W weka.classifiers.bayes.NaiveBayes" />
+ <trainer name="WekaTraining" param="BOOST-NB weka.classifiers.meta.AdaBoostM1 -P 100 -S 1 -I 10 -W weka.classifiers.bayes.NaiveBayes" />
+ <eval name="NormalWekaEvaluation" param="" />
+ <storage name="MySQLResultStorage" param="" />
+</config>
