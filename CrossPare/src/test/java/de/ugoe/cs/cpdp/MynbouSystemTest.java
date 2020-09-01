@@ -1,4 +1,4 @@
-package de.ugoe.cs.cpdp.system;
+package de.ugoe.cs.cpdp;
 
 import java.io.File;
 import java.util.Arrays;
@@ -10,10 +10,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.ugoe.cs.cpdp.Runner;
-
 @RunWith(Parameterized.class)
-public class MynbouTest {
+public class MynbouSystemTest {
 
     @Parameters(name = "file {index}: {0}")
     public static Iterable<String> data() {
@@ -30,5 +28,5 @@ public class MynbouTest {
     public void test() {
         Runner.main(new String[]{fileName});
     }
-
+    
 }
