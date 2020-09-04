@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.versions;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import weka.core.Instances;
@@ -112,6 +113,24 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         this.numBugs = numBugs;
         this.releaseDate = releaseDate;
         this.committerDates = committerDates;
+    }
+
+    /**
+     * Deep Copy-Constructor.
+     * 
+     * @param version
+     *              version to copy
+     */
+    public SoftwareVersion(SoftwareVersion version) {
+        this.dataset = version.dataset;
+        this.project = version.project;
+        this.version = version.version;
+        this.instances = new Instances(version.instances);
+        this.bugMatrix = new Instances(version.bugMatrix);
+        this.efforts = new ArrayList<Double>(version.efforts);
+        this.numBugs = new ArrayList<Double>(version.numBugs);
+        this.releaseDate = version.releaseDate;
+        this.committerDates = new ArrayList<OffsetDateTime>(version.committerDates);
     }
 
     /**
