@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="MynbouFolderLoader" datalocation="testdata/mynbou" relative="false" classtype="numeric" />
+ <setwisepreprocessor name="MakeClassBinary" param="" />
+ <versionfilter name="MinInstanceNumberFilter" param="100" />
+ <trainversionfilter name="UnbalancedFilter" param="0.05" />
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <preprocessor name="ZScoreNormalization" param="" />
+ <trainer name="WekaTraining" param="MODEP100 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 1.0" />
+ <trainer name="WekaTraining" param="MODEP90 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.9" />
+ <trainer name="WekaTraining" param="MODEP80 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.8" />
+ <trainer name="WekaTraining" param="MODEP70 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.7" />
+ <trainer name="WekaTraining" param="MODEP60 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.6" />
+ <trainer name="WekaTraining" param="MODEP50 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.5" />
+ <trainer name="WekaTraining" param="MODEP40 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.4" />
+ <trainer name="WekaTraining" param="MODEP30 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.3" />
+ <trainer name="WekaTraining" param="MODEP20 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.2" />
+ <trainer name="WekaTraining" param="MODEP10 de.ugoe.cs.cpdp.wekaclassifier.MODEPClassifier -R 0.1" />
+ <eval name="NormalWekaEvaluation" param="" />
+ <repetitions number="10" />
+ <storage name="MySQLResultStorage" param="" />
+</config>

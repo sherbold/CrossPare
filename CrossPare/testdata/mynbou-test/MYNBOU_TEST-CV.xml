@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+ <loader name="MynbouFolderLoader" datalocation="testdata/mynbou" relative="false" classtype="numeric" />
+ <setwisepreprocessor name="MakeClassBinary" param="" />
+ <versionfilter name="MinInstanceNumberFilter" param="100" />
+ <trainversionfilter name="UnbalancedFilter" param="0.05" />
+ <versionfilter name="MinClassNumberFilter" param="5" />
+ <resultspath path="benchmark/results-csv"/>
+ <trainer name="WekaTraining" param="NBCARET de.ugoe.cs.cpdp.wekaclassifier.NaiveBayesCaret" />
+ <trainer name="WekaTraining" param="RFCARET weka.classifiers.trees.RandomForest -CVPARAM I 10 50 10" />
+ <eval name="CVWekaEvaluation" param="" />
+ <executionStrategy name="CrossValidationExperiment" param="" />
+ <repetitions number="10" />
+ <storage name="MySQLResultStorage" param="" />
+</config>
