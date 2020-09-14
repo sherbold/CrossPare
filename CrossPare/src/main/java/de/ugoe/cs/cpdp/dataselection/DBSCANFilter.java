@@ -14,6 +14,9 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.lmu.ifi.dbs.elki.algorithm.clustering.DBSCAN;
 import de.lmu.ifi.dbs.elki.data.Cluster;
 import de.lmu.ifi.dbs.elki.data.Clustering;
@@ -27,6 +30,7 @@ import de.lmu.ifi.dbs.elki.database.relation.Relation;
 import de.lmu.ifi.dbs.elki.datasource.ArrayAdapterDatabaseConnection;
 import de.lmu.ifi.dbs.elki.datasource.DatabaseConnection;
 import de.lmu.ifi.dbs.elki.distance.distancefunction.minkowski.EuclideanDistanceFunction;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -47,12 +51,28 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
     }
 
     /**
-     * @see IPointWiseDataselectionStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IPointWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public Instances apply(Instances testdata, Instances traindata) {
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances traindata = trainversion.getInstances();
+        Instances testdata = testversion.getInstances();
         Instances filteredTraindata = new Instances(traindata);
+        Instances bugMatrix = null;
+        List<Double> efforts = null;
+        List<Double> numBugs = null;
+        if (trainversion.getEfforts() != null) {
+            efforts = new ArrayList<>();
+        }
+        if (trainversion.getNumBugs() != null) {
+            numBugs = new ArrayList<>();
+        }
         filteredTraindata.clear();
+        if (trainversion.getBugMatrix() != null) {
+            bugMatrix = new Instances(trainversion.getBugMatrix());
+            bugMatrix.clear();
+        }
 
         double[][] data =
             new double[testdata.size() + traindata.size()][testdata.numAttributes() - 1];
@@ -102,13 +122,23 @@ public class DBSCANFilter implements IPointWiseDataselectionStrategy {
                     if (internalIndex >= 0) {
                         // index belongs to a training instance
                         filteredTraindata.add(traindata.get(internalIndex));
+                        if (bugMatrix != null) {
+                            bugMatrix.add(trainversion.getBugMatrix().instance(internalIndex));
+                        }
+                        if (efforts != null) {
+                            efforts.add(trainversion.getEfforts().get(internalIndex));
+                        }
+                        if (numBugs != null) {
+                            numBugs.add(trainversion.getNumBugs().get(internalIndex));
+                        }
                     }
                 }
 
             }
         }
 
-        return filteredTraindata;
+        return new SoftwareVersion(trainversion.getDataset(), trainversion.getProject(), trainversion.getVersion(),
+                filteredTraindata, bugMatrix, efforts, numBugs, trainversion.getReleaseDate(), null);
     }
 
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.util.MathArrays;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -45,12 +46,27 @@ public class PetersFilter implements IPointWiseDataselectionStrategy {
     }
 
     /*
-     * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @SuppressWarnings("boxing")
     @Override
-    public Instances apply(Instances testdata, Instances traindata) {
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances traindata = trainversion.getInstances();
+        Instances testdata = testversion.getInstances();
+        Instances bugMatrix = null;
+        List<Double> efforts = null;
+        List<Double> numBugs = null;
+        if (trainversion.getEfforts() != null) {
+            efforts = new ArrayList<>();
+        }
+        if (trainversion.getNumBugs() != null) {
+            numBugs = new ArrayList<>();
+        }
+        if (trainversion.getBugMatrix() != null) {
+            bugMatrix = new Instances(trainversion.getBugMatrix());
+            bugMatrix.delete();
+        }
         final Attribute classAttribute = testdata.classAttribute();
 
         final double[][] testDoubles =
@@ -116,8 +132,18 @@ public class PetersFilter implements IPointWiseDataselectionStrategy {
         selected.delete();
         for (Integer i : selectedIndex) {
             selected.add(traindata.instance(i));
+            if (bugMatrix != null) {
+                bugMatrix.add(trainversion.getBugMatrix().instance(i));
+            }
+            if (efforts != null) {
+                efforts.add(trainversion.getEfforts().get(i));
+            }
+            if (numBugs != null) {
+                numBugs.add(trainversion.getNumBugs().get(i));
+            }
         }
-        return selected;
+        return new SoftwareVersion(trainversion.getDataset(), trainversion.getProject(), trainversion.getVersion(),
+                selected, bugMatrix, efforts, numBugs, trainversion.getReleaseDate(), null);
     }
 
 }

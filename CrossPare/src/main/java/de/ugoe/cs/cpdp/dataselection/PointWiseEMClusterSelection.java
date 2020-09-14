@@ -14,6 +14,7 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.clusterers.EM;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -65,11 +67,26 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
      * 1. Cluster the traindata 2. for each instance in the testdata find the assigned cluster 3.
      * select only traindata from the clusters we found in our testdata
      * 
-     * @returns the selected training data
+     * @returns the software version of the selected training data
      */
     @SuppressWarnings("boxing")
     @Override
-    public Instances apply(Instances testdata, Instances traindata) {
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances traindata = trainversion.getInstances();
+        Instances testdata = testversion.getInstances();
+        Instances bugMatrix = null;
+        List<Double> efforts = null;
+        List<Double> numBugs = null;
+        if (trainversion.getEfforts() != null) {
+            efforts = new ArrayList<>();
+        }
+        if (trainversion.getNumBugs() != null) {
+            numBugs = new ArrayList<>();
+        }
+        if (trainversion.getBugMatrix() != null) {
+            bugMatrix = new Instances(trainversion.getBugMatrix());
+            bugMatrix.delete();
+        }
         // final Attribute classAttribute = testdata.classAttribute();
 
         final List<Integer> selectedCluster =
@@ -146,6 +163,15 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
                 if (selectedCluster.contains(cnumber)) {
                     // this only works if the index does not change
                     selected.add(traindata.get(j));
+                    if (bugMatrix != null) {
+                        bugMatrix.add(trainversion.getBugMatrix().instance(j));
+                    }
+                    if (efforts != null) {
+                        efforts.add(trainversion.getEfforts().get(j));
+                    }
+                    if (numBugs != null) {
+                        numBugs.add(trainversion.getNumBugs().get(j));
+                    }
                     // check for differences, just one attribute, we are pretty sure the index does
                     // not change
                     if (traindata.get(j).value(3) != ctrain.get(j).value(3)) {
@@ -162,7 +188,8 @@ public class PointWiseEMClusterSelection implements IPointWiseDataselectionStrat
             throw new RuntimeException("error in pointwise em", e);
         }
 
-        return selected;
+        return new SoftwareVersion(trainversion.getDataset(), trainversion.getProject(), trainversion.getVersion(),
+                selected, bugMatrix, efforts, numBugs, trainversion.getReleaseDate(), null);
     }
 
 }

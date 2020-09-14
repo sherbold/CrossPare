@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.clusterers.EM;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -32,12 +33,12 @@ import weka.core.Instances;
 public class SetWiseEMClusterSelection extends AbstractCharacteristicSelection {
 
     /**
-     * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see ISetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        final Instances data = normalizedCharacteristicInstances(testdata, traindataSet);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        final Instances data = normalizedCharacteristicInstances(testversion, trainversionSet);
         final Instance targetInstance = data.instance(0);
         final List<Instance> candidateInstances = new LinkedList<>();
         for (int i = 1; i < data.numInstances(); i++) {
@@ -68,7 +69,7 @@ public class SetWiseEMClusterSelection extends AbstractCharacteristicSelection {
             int numRemoved = 0;
             for (int i = 0; i < candidateInstances.size(); i++) {
                 if (emeans.clusterInstance(candidateInstances.get(i)) != targetCluster) {
-                    traindataSet.remove(i - numRemoved++);
+                    trainversionSet.remove(i - numRemoved++);
                 }
             }
         }

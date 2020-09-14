@@ -14,7 +14,6 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
-import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -24,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -34,8 +34,8 @@ import weka.core.Instances;
  * 
  * @author Steffen Herbold
  */
-public class MahalanobisOutlierRemoval
-    implements IPointWiseDataselectionStrategy, ISetWiseDataselectionStrategy
+public class MahalanobisOutlierRemoval 
+    implements IPointWiseDataselectionStrategy
 {
 	
 	/**
@@ -63,26 +63,13 @@ public class MahalanobisOutlierRemoval
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(weka.core.Instances,
-     * org.apache.commons.collections4.list.SetUniqueList)
-     */
-    @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (Instances traindata : traindataSet) {
-            applyMahalanobisDistancesRemoval(traindata);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(weka.core.Instances,
      * weka.core.Instances)
      */
     @Override
-    public Instances apply(Instances testdata, Instances traindata) {
-        applyMahalanobisDistancesRemoval(traindata);
-        return traindata;
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applyMahalanobisDistancesRemoval(trainversion);
+        return trainversion;
     }
 
     /**
@@ -91,10 +78,11 @@ public class MahalanobisOutlierRemoval
      * epsilon.
      * </p>
      *
-     * @param data
-     *            data where the outliers are removed
+     * @param version
+     *            software version of the data where the outliers are removed
      */
-    private void applyMahalanobisDistancesRemoval(Instances data) {
+    private void applyMahalanobisDistancesRemoval(SoftwareVersion version) {
+        Instances data = version.getInstances();
         RealMatrix values = new BlockRealMatrix(data.size(), data.numAttributes() - 1);
         for (int i = 0; i < data.size(); i++) {
             values.setRow(i, WekaUtils.instanceValues(data.get(i)));
@@ -124,6 +112,15 @@ public class MahalanobisOutlierRemoval
                                     meanValues);
             if (distance > this.epsilon) {
                 data.remove(i);
+                if (version.getBugMatrix() != null) {
+                    version.getBugMatrix().remove(i);
+                }
+                if (version.getEfforts() != null) {
+                    version.getEfforts().remove(i);
+                }
+                if (version.getNumBugs() != null) {
+                    version.getInstances().remove(i);
+                }
             }
         }
     }

@@ -17,8 +17,7 @@ package de.ugoe.cs.cpdp.dataselection;
 import org.apache.commons.collections4.list.SetUniqueList;
 
 import de.ugoe.cs.cpdp.IParameterizable;
-
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * Interface for setwise data selection strategies.
@@ -30,10 +29,10 @@ public interface ISetWiseDataselectionStrategy extends IParameterizable {
     /**
      * Applies a setwise data selection strategy.
      * 
-     * @param testdata
-     *            test data for which the training data is selected
-     * @param traindataSet
-     *            candidate training data
+     * @param testversion
+     *            version of the test data for which the training data is selected
+     * @param trainversionSet
+     *            versions of the candidate training data
      */
-    void apply(Instances testdata, SetUniqueList<Instances> traindataSet);
+    void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet);
 }

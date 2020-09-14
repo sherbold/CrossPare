@@ -20,6 +20,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
@@ -43,12 +44,12 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
     private static final Logger LOGGER = LogManager.getLogger("main");
 	
     /*
-     * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      * org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        final Instances data = characteristicInstances(testdata, traindataSet);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        final Instances data = characteristicInstances(testversion, trainversionSet);
 
         final ArrayList<String> attVals = new ArrayList<>();
         attVals.add("same");
@@ -64,9 +65,9 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
 
         try {
             Classifier classifier = new J48();
-            for (int i = 0; i < traindataSet.size(); i++) {
-                classifier.buildClassifier(traindataSet.get(i));
-                for (int j = 0; j < traindataSet.size(); j++) {
+            for (int i = 0; i < trainversionSet.size(); i++) {
+                classifier.buildClassifier(trainversionSet.get(i).getInstances());
+                for (int j = 0; j < trainversionSet.size(); j++) {
                     if (i != j) {
                         double[] similarity = new double[data.numAttributes() + 1];
                         for (int k = 0; k < data.numAttributes(); k++) {
@@ -80,9 +81,8 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
                                 similarity[k] = 0.0;
                             }
                         }
-
-                        Evaluation eval = new Evaluation(traindataSet.get(j));
-                        eval.evaluateModel(classifier, traindataSet.get(j));
+                        Evaluation eval = new Evaluation(trainversionSet.get(j).getInstances());
+                        eval.evaluateModel(classifier, trainversionSet.get(j).getInstances());
                         similarity[data.numAttributes()] = eval.fMeasure(1);
                         similarityData.add(new DenseInstance(1.0, similarity));
                     }
@@ -97,7 +97,7 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
 
             Instances testTrainSimilarity = new Instances(similarityData);
             testTrainSimilarity.clear();
-            for (int i = 0; i < traindataSet.size(); i++) {
+            for (int i = 0; i < trainversionSet.size(); i++) {
                 double[] similarity = new double[data.numAttributes() + 1];
                 for (int k = 0; k < data.numAttributes(); k++) {
                     if (0.9 * data.get(0).value(k) > data.get(i + 1).value(k)) {
@@ -115,16 +115,16 @@ public class DecisionTreeSelection extends AbstractCharacteristicSelection {
 
             int bestScoringProductIndex = -1;
             double maxScore = Double.MIN_VALUE;
-            for (int i = 0; i < traindataSet.size(); i++) {
+            for (int i = 0; i < trainversionSet.size(); i++) {
                 double score = repTree.classifyInstance(testTrainSimilarity.get(i));
                 if (score > maxScore) {
                     maxScore = score;
                     bestScoringProductIndex = i;
                 }
             }
-            Instances bestScoringProduct = traindataSet.get(bestScoringProductIndex);
-            traindataSet.clear();
-            traindataSet.add(bestScoringProduct);
+            SoftwareVersion bestScoringProduct = trainversionSet.get(bestScoringProductIndex);
+            trainversionSet.clear();
+            trainversionSet.add(bestScoringProduct);
         }
         catch (Exception e) {
             LOGGER.error("failure during DecisionTreeSelection: " + e.getMessage());

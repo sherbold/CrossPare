@@ -14,9 +14,12 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -41,12 +44,12 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public Instances apply(Instances testdata, Instances traindata) {
-        return applyNeighborhoodFilter(testdata, traindata);
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        return applyNeighborhoodFilter(testversion, trainversion);
     }
 
     /**
@@ -54,14 +57,29 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
      * Applies the relevancy filter after Ryu et al.
      * </p>
      *
-     * @param testdata
-     *            test data
+     * @param testversion
+     *            version of the test data
      * @param traindata
-     *            training data
-     * @return filtered trainind data
+     *            version of the training data
+     * @return filtered version of the training data
      */
     @SuppressWarnings("boxing")
-    private static Instances applyNeighborhoodFilter(Instances testdata, Instances traindata) {
+    private static SoftwareVersion applyNeighborhoodFilter(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances testdata = testversion.getInstances();
+        Instances traindata = trainversion.getInstances();
+        Instances bugMatrix = null;
+        List<Double> efforts = null;
+        List<Double> numBugs = null;
+        if (trainversion.getEfforts() != null) {
+            efforts = new ArrayList<>();
+        }
+        if (trainversion.getNumBugs() != null) {
+            numBugs = new ArrayList<>();
+        }
+        if (trainversion.getBugMatrix() != null) {
+            bugMatrix = new Instances(trainversion.getBugMatrix());
+            bugMatrix.clear();
+        }
         TreeSet<Integer> selectedInstances = new TreeSet<>();
         for (int i = 0; i < testdata.size(); i++) {
             double minHam = Double.MAX_VALUE;
@@ -82,7 +100,18 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
         selectedTraindata.clear();
         for (Integer index : selectedInstances) {
             selectedTraindata.add(traindata.instance(index));
+            if (bugMatrix != null) {
+                bugMatrix.add(trainversion.getBugMatrix().instance(index));
+            }
+            if (efforts != null) {
+                efforts.add(trainversion.getEfforts().get(index));
+            }
+            if (numBugs != null) {
+                numBugs.add(trainversion.getNumBugs().get(index));
+            }
+
         }
-        return selectedTraindata;
+        return new SoftwareVersion(trainversion.getDataset(), trainversion.getProject(), trainversion.getVersion(),
+                selectedTraindata, bugMatrix, efforts, numBugs, trainversion.getReleaseDate(), null);
     }
 }

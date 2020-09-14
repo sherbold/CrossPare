@@ -24,6 +24,7 @@ import org.apache.commons.math3.util.MathArrays;
 
 import de.ugoe.cs.cpdp.dataprocessing.MORPH;
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -58,16 +59,16 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      * org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        Instances selectedData = new Instances(testdata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        Instances selectedData = new Instances(testversion.getInstances());
         selectedData.clear();
 
-        LinkedList<Instances> traindataCopy = new LinkedList<>(traindataSet);
-        Collections.shuffle(traindataCopy);
+        LinkedList<SoftwareVersion> trainversionCopy = new LinkedList<>(trainversionSet);
+        Collections.shuffle(trainversionCopy);
 
         CLIFF cliff = new CLIFF();
         cliff.setParameter(Double.toString(this.percentage));
@@ -75,8 +76,9 @@ public class LACE2 implements ISetWiseDataselectionStrategy {
         Median median = new Median();
         double minDist = Double.MIN_VALUE;
 
-        for (Instances traindata : traindataCopy) {
-            Instances cliffedData = cliff.applyCLIFF(traindata);
+        for (SoftwareVersion trainversion : trainversionCopy) {
+            Instances traindata = trainversion.getInstances();
+            Instances cliffedData = cliff.applyCLIFF(trainversion).getInstances();
             if (minDist == Double.MIN_VALUE) {
                 // determine distance for leader-follower algorithm
                 Instances sample;

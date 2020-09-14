@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -57,17 +58,18 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
      * Transforms the data into the distributional characteristics. The first instance is the test
      * data, followed by the training data.
      * 
-     * @param testdata
-     *            test data
-     * @param traindataSet
-     *            training data sets
+     * @param testversion
+     *            version of the test data
+     * @param trainversionSet
+     *            versions of the training data sets
      * @return distributional characteristics of the data
      */
-    protected Instances characteristicInstances(Instances testdata,
-                                                SetUniqueList<Instances> traindataSet)
+    protected Instances characteristicInstances(SoftwareVersion testversion,
+                                                SetUniqueList<SoftwareVersion> trainversionSet)
     {
         // setup weka Instances for clustering
         final ArrayList<Attribute> atts = new ArrayList<>();
+        Instances testdata = testversion.getInstances();
 
         final Attribute classAtt = testdata.classAttribute();
         for (int i = 0; i < testdata.numAttributes(); i++) {
@@ -116,7 +118,8 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
         }
         data.add(new DenseInstance(1.0, instanceValues));
 
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             instanceValues = new double[atts.size()];
             for (int i = 0; i < traindata.numAttributes(); i++) {
                 Attribute dataAtt = traindata.attribute(i);
@@ -160,16 +163,16 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
     /**
      * Returns the normalized distributional characteristics of the training data.
      * 
-     * @param testdata
-     *            test data
+     * @param testversion
+     *            version of the test data
      * @param traindataSet
-     *            training data sets
+     *            versions of the training data sets
      * @return normalized distributional characteristics of the data
      */
-    protected Instances normalizedCharacteristicInstances(Instances testdata,
-                                                          SetUniqueList<Instances> traindataSet)
+    protected Instances normalizedCharacteristicInstances(SoftwareVersion testversion,
+                                                          SetUniqueList<SoftwareVersion> trainversionSet)
     {
-        Instances data = characteristicInstances(testdata, traindataSet);
+        Instances data = characteristicInstances(testversion, trainversionSet);
         try {
             final Normalize normalizer = new Normalize();
             normalizer.setInputFormat(data);

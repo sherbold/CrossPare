@@ -14,10 +14,11 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import org.apache.commons.collections4.list.SetUniqueList;
-
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -25,7 +26,7 @@ import weka.core.Instances;
  * 
  * @author Steffen Herbold
  */
-public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselectionStrategy {
+public class CLIFF implements IPointWiseDataselectionStrategy {
 
     /**
      * percentage of data selected
@@ -51,23 +52,12 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
     }
 
     /*
-     * @see de.ugoe.cs.cpdp.dataselection.SetWiseDataselectionStrategy#apply(weka.core.Instances,
-     * org.apache.commons.collections4.list.SetUniqueList)
+     * @see de.ugoe.cs.cpdp.dataselection.PointWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (Instances traindata : traindataSet) {
-            applyCLIFF(traindata);
-        }
-    }
-
-    /*
-     * @see de.ugoe.cs.cpdp.dataselection.PointWiseDataselectionStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
-     */
-    @Override
-    public Instances apply(Instances testdata, Instances traindata) {
-        return applyCLIFF(traindata);
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        return applyCLIFF(trainversion);
     }
 
     /**
@@ -75,11 +65,25 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
      * Applies the CLIFF relevancy filter to the data.
      * </p>
      *
-     * @param data
-     *            the data
-     * @return CLIFF-filtered data
+     * @param version
+     *            version of the data
+     * @return version of the CLIFF-filtered data
      */
-    protected Instances applyCLIFF(Instances data) {
+    protected SoftwareVersion applyCLIFF(SoftwareVersion version) {
+        Instances data = version.getInstances();
+        Instances bugMatrix = null;
+        List<Double> efforts = null;
+        List<Double> numBugs = null;
+        if (version.getEfforts() != null) {
+            efforts = new ArrayList<>();
+        }
+        if (version.getNumBugs() != null) {
+            numBugs = new ArrayList<>();
+        }
+        if (version.getBugMatrix() != null) {
+            bugMatrix = new Instances(version.getBugMatrix());
+            bugMatrix.clear();
+        }
         final double[][] powerAttributes = new double[data.size()][data.numAttributes()];
         final double[] powerEntity = new double[data.size()];
 
@@ -123,14 +127,24 @@ public class CLIFF implements IPointWiseDataselectionStrategy, ISetWiseDataselec
         Arrays.sort(sortedPower);
         double cutOff = sortedPower[(int) (data.numInstances() * (1 - this.percentage))];
 
-        final Instances selected = new Instances(data);
+        Instances selected = new Instances(data);
         selected.delete();
         for (int i = 0; i < data.numInstances(); i++) {
             if (powerEntity[i] >= cutOff) {
                 selected.add(data.instance(i));
+                if (bugMatrix != null) {
+                    bugMatrix.add(version.getBugMatrix().instance(i));
+                }
+                if (efforts != null) {
+                    efforts.add(version.getEfforts().get(i));
+                }
+                if (numBugs != null) {
+                    numBugs.add(version.getNumBugs().get(i));
+                }
             }
         }
-        return selected;
+        return new SoftwareVersion(version.getDataset(), version.getProject(), version.getVersion(), selected,
+                bugMatrix, efforts, numBugs, version.getReleaseDate(), null);
     }
 
     /**

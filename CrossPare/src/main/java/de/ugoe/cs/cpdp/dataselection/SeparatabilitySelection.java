@@ -19,6 +19,7 @@ import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.Logistic;
 import weka.core.DenseInstance;
@@ -63,18 +64,20 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
     }
 
     /**
-     * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see ISetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
         final Random rand = new Random(1);
 
         // calculate distances between testdata and traindata
-        final double[] distances = new double[traindataSet.size()];
+        final double[] distances = new double[trainversionSet.size()];
 
+        Instances testdata = testversion.getInstances();
         int i = 0;
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             double distance = 0.0;
             for (int rep = 0; rep < this.maxRep; rep++) {
                 // sample instances
@@ -113,9 +116,9 @@ public class SeparatabilitySelection implements ISetWiseDataselectionStrategy {
         Arrays.sort(distancesCopy);
         final double cutoffDistance = distancesCopy[this.neighbors];
 
-        for (i = traindataSet.size() - 1; i >= 0; i--) {
+        for (i = trainversionSet.size() - 1; i >= 0; i--) {
             if (distances[i] > cutoffDistance) {
-                traindataSet.remove(i);
+                trainversionSet.remove(i);
             }
         }
     }
