@@ -15,10 +15,13 @@
 package de.ugoe.cs.cpdp.execution;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Map;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +42,9 @@ import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.Instance;
 import weka.core.Instances;
 
 /**
@@ -116,16 +122,17 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                                  List<SoftwareVersion> versions);
 
     /**
-     * Helper method that combines a set of Weka {@link Instances} sets into a single
+     * Helper method that combines a set of {@link SoftwareVersion} sets into a single
      * {@link Instances} set.
      * 
      * @param traindataSet
-     *            set of {@link Instances} to be combines
+     *            set of {@link SoftwareVersion} which training data is to be combined
      * @return single {@link Instances} set
      */
-    public static Instances makeSingleTrainingSet(SetUniqueList<Instances> traindataSet) {
+    public static Instances makeSingleTrainingSet(SetUniqueList<SoftwareVersion> trainversionSet) {
         Instances traindataFull = null;
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             if (traindataFull == null) {
                 traindataFull = new Instances(traindata);
             }
@@ -136,6 +143,82 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
             }
         }
         return traindataFull;
+    }
+
+    /**
+     * Helper method that combines a set of {@link SoftwareVersion} into a single
+     * {@link Instances} bugmatrix.
+     * 
+     * @param traindataBugs
+     *            set of {@link SoftwareVersion} which bug matrices are to be combined
+     * @return single {@link Instances} bugmatrix
+     */
+    public static Instances makeSingleBugMatrixSet(SetUniqueList<SoftwareVersion> trainversionSet) {
+        final ArrayList<Attribute> bugMatrixAtts = new ArrayList<>();
+        final Map<String, Integer> nameToIndex = new HashMap<>();
+        for (SoftwareVersion trainversion : trainversionSet) {
+            for (Iterator<Attribute> iterator = trainversion.getBugMatrix().enumerateAttributes().asIterator(); iterator
+                    .hasNext();) {
+                String attName = iterator.next().name();
+                Attribute att = new Attribute(attName);
+                if (!bugMatrixAtts.contains(att)) {
+                    bugMatrixAtts.add(att);
+                    nameToIndex.put(attName, nameToIndex.size());
+                }
+            }
+        }
+        Instances singleBugMatrix = new Instances("singleBugMatrix", bugMatrixAtts, 0);
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances bugMatrix = trainversion.getBugMatrix();
+            List<String> attNames = new ArrayList<>();
+            for (Iterator<Attribute> iterator = bugMatrix.enumerateAttributes().asIterator(); iterator.hasNext();) {
+                attNames.add(iterator.next().name());
+            }
+            for (Instance instance : bugMatrix) {
+                double[] allBugs = new double[bugMatrixAtts.size()];
+                double[] bugs = instance.toDoubleArray();
+                for (int j = 0; j < bugs.length; j++) {
+                    allBugs[nameToIndex.get(attNames.get(j))] = bugs[j];
+                }
+                singleBugMatrix.add(new DenseInstance(1.0, allBugs));
+            }
+        }
+        return singleBugMatrix;
+    }
+
+    /**
+     * Helper method that combines a set of SetUniqueList<SoftwareVersion> into a single
+     * Softwareversion.
+     * 
+     * @param trainversionSet
+     *            set of {@link SoftwareVersion} to be combined
+     * @return single {@link SoftwareVersion} set
+     */
+    public static SoftwareVersion makeSingleVersionSet(SetUniqueList<SoftwareVersion> trainversionSet) {
+        Instances instances = makeSingleTrainingSet(trainversionSet);
+        Instances bugmatrix = makeSingleBugMatrixSet(trainversionSet);
+        List<Double> efforts = null;
+        List<Double> numBugs = null;
+        for (SoftwareVersion trainversion : trainversionSet) {
+            List<Double> tempEfforts = trainversion.getEfforts();
+            List<Double> tempNumBugs = trainversion.getNumBugs();
+            if (efforts == null) {
+                efforts = new ArrayList<Double>(tempEfforts);
+            }
+            if (numBugs == null) {
+                numBugs = new ArrayList<Double>(tempNumBugs);
+            }
+            else {
+                for (int i = 0; i < tempEfforts.size(); i++) {
+                    efforts.add(tempEfforts.get(i));
+                }
+                for (int i = 0; i < tempNumBugs.size(); i++) {
+                    numBugs.add(tempNumBugs.get(i));
+                }
+            }
+        }
+        return new SoftwareVersion("singleTrainVersionSet", "trainProjects", "trainVersions", instances, bugmatrix,
+                efforts, numBugs, null, null);
     }
 
     /**
@@ -181,27 +264,28 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     continue;
                 }
 
-                // Setup testdata and training data
-                Instances testdata = testVersion.getInstances();
-                List<Double> efforts = testVersion.getEfforts();
-                List<Double> numBugs = testVersion.getNumBugs();
-                Instances bugMatrix = testVersion.getBugMatrix();
-                SetUniqueList<Instances> traindataSet =
-                    SetUniqueList.setUniqueList(new LinkedList<Instances>());
+                // Setup testdata and training data                
+                SoftwareVersion testversion = new SoftwareVersion(testVersion);
+                Instances testdata = testversion.getInstances();
+                List<Double> efforts = testversion.getEfforts();
+                List<Double> numBugs = testversion.getNumBugs();
+                Instances bugMatrix = testversion.getBugMatrix();
+                SetUniqueList<SoftwareVersion> trainversionSet =
+                    SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
                 for (SoftwareVersion trainingVersion : versions) {
                     if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
-                        if (trainingVersion != testVersion) {
-                            if (isTrainingVersion(trainingVersion, testVersion, versions)) {
-                            	Instances traindata = trainingVersion.getInstances();
+                        if (trainingVersion != testversion) {
+                            if (isTrainingVersion(trainingVersion, testversion, versions)) {
+                                SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
                             	for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
-                            		processor.apply(testVersion, trainingVersion, traindata);
+                            		processor.apply(testversion, trainversion);
                             	}
-                                traindataSet.add(traindata);
+                                trainversionSet.add(trainversion);
                             }
                         }
                     }
                 }
-                if( traindataSet.isEmpty() ) {
+                if (trainversionSet.isEmpty()) {
                 	LOGGER.warn(String
                                     .format("[%s] [%02d/%02d] %s: no training data this product; skipped",
                                             this.config.getExperimentName(), versionCount, testVersionCount,
@@ -214,7 +298,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
+                    processor.apply(testversion, trainversionSet);
                 }
                 for (ISetWiseDataselectionStrategy dataselector : this.config
                     .getSetWiseSelectors())
@@ -223,7 +307,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                                this.config.getExperimentName(), versionCount,
                                                testVersionCount, testVersion.getVersion(),
                                                dataselector.getClass().getName()));
-                    dataselector.apply(testdata, traindataSet);
+                    dataselector.apply(testversion, trainversionSet);
                 }
                 for (ISetWiseProcessingStrategy processor : this.config
                     .getSetWisePostprocessors())
@@ -231,14 +315,14 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
+                    processor.apply(testversion, trainversionSet);
                 }
                 for (ISetWiseTrainingStrategy setwiseTrainer : this.config.getSetWiseTrainers()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise trainer %s",
                                                this.config.getExperimentName(), versionCount,
                                                testVersionCount, testVersion.getVersion(),
                                                setwiseTrainer.getName()));
-                    setwiseTrainer.apply(traindataSet);
+                    setwiseTrainer.apply(trainversionSet);
                 }
                 for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
                     .getSetWiseTestdataAwareTrainers())
@@ -246,15 +330,15 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying testdata aware setwise trainer %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), setwiseTestdataAwareTrainer.getName()));
-                    setwiseTestdataAwareTrainer.apply(traindataSet, testdata);
+                    setwiseTestdataAwareTrainer.apply(trainversionSet, testversion);
                 }
-                Instances traindata = makeSingleTrainingSet(traindataSet);
+                SoftwareVersion trainversion = makeSingleVersionSet(trainversionSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 for (IPointWiseDataselectionStrategy dataselector : this.config
                     .getPointWiseSelectors())
@@ -262,27 +346,27 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), dataselector.getClass().getName()));
-                    traindata = dataselector.apply(testdata, traindata);
+                    trainversion = dataselector.apply(testversion, trainversion);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
-                    trainer.apply(traindata);
+                    trainer.apply(trainversion);
                 }
                 for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
-                    trainer.apply(testdata, traindata);
+                    trainer.apply(testversion, trainversion);
                 }
                 File resultsDir = new File(this.config.getResultsPath());
                 if (!resultsDir.exists()) {
@@ -314,8 +398,8 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
-                                    this.config.getResultStorages());
+                    evaluator.apply(testdata, trainversion.getInstances(), allTrainers, efforts,
+                            numBugs, bugMatrix, writeHeader, this.config.getResultStorages());
                     writeHeader = false;
                 }
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

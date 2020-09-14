@@ -106,21 +106,21 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
         for (SoftwareVersion testVersion : versions) {
 
             // At first: traindata == testdata
-            Instances testdata = testVersion.getInstances();
-            Instances traindata = new Instances(testdata);
-            List<Double> efforts = testVersion.getEfforts();
-            List<Double> numBugs = testVersion.getNumBugs();
-            Instances bugMatrix = testVersion.getBugMatrix();
+            SoftwareVersion testversion = new SoftwareVersion(testVersion);
+            SoftwareVersion trainversion = new SoftwareVersion(testVersion);
+            List<Double> efforts = testversion.getEfforts();
+            List<Double> numBugs = testversion.getNumBugs();
+            Instances bugMatrix = testversion.getBugMatrix();
 
             // Give the dataset a new name
-            testdata.setRelationName(testVersion.getProject());
+            testversion.getInstances().setRelationName(testVersion.getProject());
 
             for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                               this.config.getExperimentName(), versionCount,
                                               versions.size(), testVersion.getProject(),
                                               processor.getClass().getName()));
-                processor.apply(testdata, traindata);
+                processor.apply(testversion, trainversion);
             }
 
             for (IPointWiseDataselectionStrategy dataselector : this.config
@@ -130,7 +130,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                                            this.config.getExperimentName(), versionCount,
                                            versions.size(), testVersion.getProject(),
                                            dataselector.getClass().getName()));
-                traindata = dataselector.apply(testdata, traindata);
+                trainversion = dataselector.apply(testversion, trainversion);
             }
 
             for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
@@ -138,7 +138,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                                            this.config.getExperimentName(), versionCount,
                                            versions.size(), testVersion.getProject(),
                                            processor.getClass().getName()));
-                processor.apply(testdata, traindata);
+                processor.apply(testversion, trainversion);
             }
 
             // Trainerlist for evaluation later on
@@ -150,7 +150,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                 allTrainers.add(trainer);
 
                 // Train classifier
-                trainer.apply(traindata);
+                trainer.apply(trainversion);
 
                 if (this.config.getSaveClassifier()) {
                     // If classifier should be saved, train him and save him
@@ -179,8 +179,8 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     evaluator.setParameter(this.config.getResultsPath() + "/" +
                         this.config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
-                                this.config.getResultStorages());
+                evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers, efforts, numBugs,
+                        bugMatrix, writeHeader, this.config.getResultStorages());
                 writeHeader = false;
             }
 

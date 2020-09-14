@@ -117,10 +117,11 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                 }
 
                 // Setup testdata and training data
-                Instances testdata = testVersion.getInstances();
-                List<Double> efforts = testVersion.getEfforts();
-                List<Double> numBugs = testVersion.getNumBugs();
-                Instances bugMatrix = testVersion.getBugMatrix();
+                SoftwareVersion testversion = new SoftwareVersion(testVersion);
+                Instances testdata = testversion.getInstances();
+                List<Double> efforts = testversion.getEfforts();
+                List<Double> numBugs = testversion.getNumBugs();
+                Instances bugMatrix = testversion.getBugMatrix();
 
 
                 // now split data into parts
@@ -136,7 +137,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                     }
                 }
                 int initialTestSize = testdata.size();
-                Instances traindata = new Instances(testdata);
+                SoftwareVersion trainversion = new SoftwareVersion(testversion);
                 for (int i = initialTestSize - 1; i >= 0; i--) {
                     if ((((double) i) / initialTestSize) < percentage) {
                         testdata.delete(i);
@@ -146,9 +147,21 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         if (numBugs != null) {
                             numBugs.remove(i);
                         }
+                        if (bugMatrix != null) {
+                            bugMatrix.delete(i);
+                        }
                     }
                     else {
-                        traindata.delete(i);
+                        trainversion.getInstances().delete(i);
+                        if (trainversion.getBugMatrix() != null) {
+                            trainversion.getBugMatrix().delete(i);
+                        }
+                        if (trainversion.getEfforts() != null) {
+                            trainversion.getEfforts().remove(i);
+                        }
+                        if (trainversion.getNumBugs() != null) {
+                            trainversion.getNumBugs().remove(i);
+                        }
                     }
                 }
 
@@ -157,7 +170,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 for (IPointWiseDataselectionStrategy dataselector : this.config
                     .getPointWiseSelectors())
@@ -165,27 +178,27 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                     LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying pointwise selection %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), dataselector.getClass().getName()));
-                    traindata = dataselector.apply(testdata, traindata);
+                    trainversion = dataselector.apply(testversion, trainversion);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
-                    trainer.apply(traindata);
+                    trainer.apply(trainversion);
                 }
                 for (ITestAwareTrainingStrategy trainer : this.config.getTestAwareTrainers()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying trainer %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
-                    trainer.apply(testdata, traindata);
+                    trainer.apply(testversion, trainversion);
                 }
                 File resultsDir = new File(this.config.getResultsPath());
                 if (!resultsDir.exists()) {
@@ -207,8 +220,8 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, traindata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
-                                    this.config.getResultStorages());
+                    evaluator.apply(testdata, trainversion.getInstances(), allTrainers, efforts, numBugs, bugMatrix,
+                            writeHeader, this.config.getResultStorages());
                     writeHeader = false;
                 }
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

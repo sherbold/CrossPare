@@ -163,17 +163,17 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 }
 
                                 // Setup testdata and training data
-                                Instances testdata = testVersion.getInstances();
+                                SoftwareVersion testversion = new SoftwareVersion(testVersion);
                                 List<Double> efforts = testVersion.getEfforts();
                                 List<Double> numBugs = testVersion.getNumBugs();
                                 Instances bugMatrix = testVersion.getBugMatrix();
 
-                                Instances traindata = trainingVersion.getInstances();
+                                SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
 
                                 // only one set
-                                SetUniqueList<Instances> traindataSet =
-                                    SetUniqueList.setUniqueList(new LinkedList<Instances>());
-                                traindataSet.add(traindata);
+                                SetUniqueList<SoftwareVersion> trainversionSet =
+                                    SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
+                                trainversionSet.add(trainversion);
 
                                 for (ISetWiseProcessingStrategy processor : this.config
                                     .getSetWisePreprocessors())
@@ -184,7 +184,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 testVersionCount, testVersion.getVersion(),
                                                 trainingVersion.getVersion(),
                                                 processor.getClass().getName()));
-                                    processor.apply(testdata, traindataSet);
+                                    processor.apply(testversion, trainversionSet);
                                 }
                                 for (ISetWiseDataselectionStrategy dataselector : this.config
                                     .getSetWiseSelectors())
@@ -194,7 +194,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 dataselector.getClass().getName()));
-                                    dataselector.apply(testdata, traindataSet);
+                                    dataselector.apply(testversion, trainversionSet);
                                 }
                                 for (ISetWiseProcessingStrategy processor : this.config
                                     .getSetWisePostprocessors())
@@ -204,7 +204,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 processor.getClass().getName()));
-                                    processor.apply(testdata, traindataSet);
+                                    processor.apply(testversion, trainversionSet);
                                 }
                                 for (ISetWiseTrainingStrategy setwiseTrainer : this.config
                                     .getSetWiseTrainers())
@@ -214,7 +214,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 setwiseTrainer.getName()));
-                                    setwiseTrainer.apply(traindataSet);
+                                    setwiseTrainer.apply(trainversionSet);
                                 }
                                 for (ISetWiseTestdataAwareTrainingStrategy setwiseTestdataAwareTrainer : this.config
                                     .getSetWiseTestdataAwareTrainers())
@@ -225,7 +225,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 testVersionCount, testVersion.getVersion(),
                                                 trainingVersion.getVersion(),
                                                 setwiseTestdataAwareTrainer.getName()));
-                                    setwiseTestdataAwareTrainer.apply(traindataSet, testdata);
+                                    setwiseTestdataAwareTrainer.apply(trainversionSet, testversion);
                                 }
 
                                 // this part will not work in heterogeneous
@@ -238,7 +238,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 processor.getClass().getName()));
-                                    processor.apply(testdata, traindata);
+                                    processor.apply(testversion, trainversion);
                                 }
                                 for (IPointWiseDataselectionStrategy dataselector : this.config
                                     .getPointWiseSelectors())
@@ -248,7 +248,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 dataselector.getClass().getName()));
-                                    traindata = dataselector.apply(testdata, traindata);
+                                    trainversion = dataselector.apply(testversion, trainversion);
                                 }
                                 for (IProcessesingStrategy processor : this.config
                                     .getPostProcessors())
@@ -258,7 +258,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 processor.getClass().getName()));
-                                    processor.apply(testdata, traindata);
+                                    processor.apply(testversion, trainversion);
                                 }
                                 for (ITrainingStrategy trainer : this.config.getTrainers()) {
                                 	LOGGER.info(String
@@ -266,7 +266,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 trainer.getName()));
-                                    trainer.apply(traindata);
+                                    trainer.apply(trainversion);
                                 }
                                 for (ITestAwareTrainingStrategy trainer : this.config
                                     .getTestAwareTrainers())
@@ -276,7 +276,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                                 this.config.getExperimentName(), versionCount,
                                                 testVersionCount, testVersion.getVersion(),
                                                 trainer.getName()));
-                                    trainer.apply(testdata, traindata);
+                                    trainer.apply(testversion, trainversion);
                                 }
                                 File resultsDir = new File(this.config.getResultsPath());
                                 if (!resultsDir.exists()) {
@@ -312,9 +312,9 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                                             this.config.getExperimentName() + ".csv");
                                     }
-                                    evaluator.apply(testdata, traindata, allTrainers, efforts,
-                                                    numBugs, bugMatrix, writeHeader,
-                                                    this.config.getResultStorages());
+                                    evaluator.apply(testversion.getInstances(), trainversion.getInstances(),
+                                            allTrainers, efforts, numBugs, bugMatrix, writeHeader,
+                                            this.config.getResultStorages());
                                     writeHeader = false;
                                 }
                                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

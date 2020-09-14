@@ -168,17 +168,18 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 }
 
                 // Setup testdata and training data
-                Instances testdata = testVersion.getInstances();
-                List<Double> efforts = testVersion.getEfforts();
-                List<Double> numBugs = testVersion.getNumBugs();
-                Instances bugMatrix = testVersion.getBugMatrix();
+                SoftwareVersion testversion = new SoftwareVersion(testVersion);
+                Instances testdata = testversion.getInstances();
+                List<Double> efforts = testversion.getEfforts();
+                List<Double> numBugs = testversion.getNumBugs();
+                Instances bugMatrix = testversion.getBugMatrix();
 
-                SetUniqueList<Instances> traindataSet =
-                    SetUniqueList.setUniqueList(new LinkedList<Instances>());
+                SetUniqueList<SoftwareVersion> trainversionSet =
+                    SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
                 for (SoftwareVersion trainingVersion : versions) {
                     if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
-                            traindataSet.add(trainingVersion.getInstances());
+                            trainversionSet.add(new SoftwareVersion(trainingVersion));
                         }
                     }
                 }
@@ -188,7 +189,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                     LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
+                    processor.apply(testversion, trainversionSet);
                 }
                 for (ISetWiseProcessingStrategy processor : this.config
                     .getSetWisePostprocessors())
@@ -196,21 +197,21 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
+                    processor.apply(testversion, trainversionSet);
                 }
-                Instances traindata = makeSingleTrainingSet(traindataSet);
+                SoftwareVersion trainversion = AbstractCrossProjectExperiment.makeSingleVersionSet(trainversionSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 
                 // training with test data
@@ -219,7 +220,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
-                    trainer.apply(testdata);
+                    trainer.apply(testversion);
                 }
 
                 File resultsDir = new File(this.config.getResultsPath());
