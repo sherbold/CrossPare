@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
@@ -50,12 +51,12 @@ public class WekaLASERTraining extends WekaBaseTraining implements ITrainingStra
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.training.ITrainingStrategy#apply(weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.training.ITrainingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances traindata) {
+    public void apply(SoftwareVersion trainversion) {
         try {
-            this.internalClassifier.buildClassifier(traindata);
+            this.internalClassifier.buildClassifier(trainversion.getInstances());
         }
         catch (Exception e) {
             throw new RuntimeException(e);

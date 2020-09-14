@@ -34,6 +34,7 @@ import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.attributeSelection.SignificanceAttributeEval;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
@@ -107,7 +108,7 @@ public class MetricMatchingTraining extends WekaBaseTraining
      */
     @SuppressWarnings("boxing")
     @Override
-    public void apply(SetUniqueList<Instances> traindataSet, Instances testdata) {
+    public void apply(SetUniqueList<SoftwareVersion> trainversionSet, SoftwareVersion testversion) {
         // reset these for each run
         this.mm = null;
         this.classifier = null;
@@ -116,10 +117,10 @@ public class MetricMatchingTraining extends WekaBaseTraining
         int num = 0;
         int biggest_num = 0;
         MetricMatch tmp;
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
             num++;
 
-            tmp = new MetricMatch(traindata, testdata);
+            tmp = new MetricMatch(trainversion.getInstances(), testversion.getInstances());
 
             // metric selection may create error, continue to next training set
             try {

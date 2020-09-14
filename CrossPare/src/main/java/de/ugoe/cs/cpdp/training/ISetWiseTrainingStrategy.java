@@ -16,7 +16,7 @@ package de.ugoe.cs.cpdp.training;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * <p>
@@ -32,10 +32,10 @@ public interface ISetWiseTrainingStrategy extends ITrainer {
      * Applies the training strategy.
      * </p>
      *
-     * @param traindataSet
+     * @param trainversionSet
      *            the training data per product
      */
-    void apply(SetUniqueList<Instances> traindataSet);
+    void apply(SetUniqueList<SoftwareVersion> trainversionSet);
 
     /**
      * <p>
