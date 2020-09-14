@@ -10,7 +10,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.junit.Test;
 
 import de.ugoe.cs.cpdp.dataprocessing.MedianAsReference;
-
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -42,15 +42,19 @@ public class MedianAsReferenceTest {
 		
 		Instances trainInstances = new Instances("train", attributes, 0);
 		trainInstances.setClassIndex(1);
-                trainInstances.add(new DenseInstance(1.0, new double[]{1.6, -1.0, 2.0}));
-                trainInstances.add(new DenseInstance(1.0, new double[]{1.4, 1.0, 3.0}));
-                trainInstances.add(new DenseInstance(1.0, new double[]{1.7, 2.0, 5.0}));
-                
-                List<Instances> trainList = new LinkedList<>();
-                trainList.add(trainInstances);
-                
+        trainInstances.add(new DenseInstance(1.0, new double[]{1.6, -1.0, 2.0}));
+        trainInstances.add(new DenseInstance(1.0, new double[]{1.4, 1.0, 3.0}));
+		trainInstances.add(new DenseInstance(1.0, new double[]{1.7, 2.0, 5.0}));
+		
+		SoftwareVersion version = new SoftwareVersion("foo", "bar", "2.0", instances, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", trainInstances, null, null, null, null, null);
+
+        List<SoftwareVersion> trainList = new LinkedList<>();
+		trainList.add(trainversion);
+		
+		
 		MedianAsReference processor = new MedianAsReference();
-		processor.apply(instances, SetUniqueList.setUniqueList(trainList) );
+		processor.apply(version, SetUniqueList.setUniqueList(trainList) );
 		
 		double[] expected1 = new double[]{1.5,-1.0, 5.0};
 		double[] expected2 = new double[]{1.3, 1.0, 6.0};

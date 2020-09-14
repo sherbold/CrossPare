@@ -47,7 +47,7 @@ public class BugDateFilterTest {
         Instances traindata = trainversion.getInstances();
         
 		BugDateFilter filter = new BugDateFilter();
-		filter.apply(testversion, trainversion, traindata);
+		filter.apply(testversion, trainversion);
 		
 		assertEquals(1.0d, traindata.get(0).classValue(), 0.00001);
 		assertEquals(1.0d, traindata.get(1).classValue(), 0.00001);

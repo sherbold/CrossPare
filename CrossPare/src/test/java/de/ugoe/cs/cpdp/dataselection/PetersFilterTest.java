@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -46,9 +47,12 @@ public class PetersFilterTest {
 		traindata.add(new DenseInstance(1.0, new double[]{5.0, 0.0}));
 		traindata.add(new DenseInstance(1.0, new double[]{6.6, 0.0}));
 		
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", testdata, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindata, null, null, null, null, null);
 		PetersFilter filter = new PetersFilter();
-		Instances selected = filter.apply(testdata, traindata);
-		
+		SoftwareVersion selectedVersions = filter.apply(testversion, trainversion);
+		Instances selected = selectedVersions.getInstances();
+
 		Set<Double> selectedSet = new HashSet<>();
 		for( int i=0 ; i<selected.numInstances() ; i++ ) {
 			selectedSet.add(selected.instance(i).toDoubleArray()[0]);

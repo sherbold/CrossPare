@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import de.ugoe.cs.cpdp.dataprocessing.InstanceRemoval;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -30,16 +30,21 @@ public class InstanceRemovalTest {
         testdata.add(new DenseInstance(1.0, new double[]{1.0, 0.0, 0.0}));
         testdata.add(new DenseInstance(1.0, new double[]{0.0, 0.0, 0.0}));
         testdata.add(new DenseInstance(1.0, new double[]{0.0, 1.0, 0.0}));
+        testdata.add(new DenseInstance(1.0, new double[]{0.0, 1.0, 0.0}));
                 
         Instances traindata = new Instances("traindata", attributes, 0);
         traindata.setClassIndex(2);
         traindata.add(new DenseInstance(1.0, new double[]{1.0, 0.0, 0.0}));
         traindata.add(new DenseInstance(1.0, new double[]{0.0, 0.0, 0.0}));
         traindata.add(new DenseInstance(1.0, new double[]{0.0, 1.0, 0.0}));
+        traindata.add(new DenseInstance(1.0, new double[]{0.0, 1.0, 0.0}));
         
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", testdata, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindata, null, null, null, null, null);
+
         InstanceRemoval filter = new InstanceRemoval();
         filter.setParameter("test:0,another:1");
-        filter.apply(testdata, traindata);
+        filter.apply(testversion, trainversion);
 
         assertTrue(traindata.numInstances() == 2);
         assertTrue(traindata.get(0).value(traindata.attribute("test")) == 1.0);
