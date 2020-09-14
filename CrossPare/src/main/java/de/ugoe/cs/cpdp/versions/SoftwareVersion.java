@@ -126,11 +126,11 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         this.project = version.project;
         this.version = version.version;
         this.instances = new Instances(version.instances);
-        this.bugMatrix = new Instances(version.bugMatrix);
-        this.efforts = new ArrayList<Double>(version.efforts);
-        this.numBugs = new ArrayList<Double>(version.numBugs);
+        this.bugMatrix = (version.bugMatrix != null) ? new Instances(version.bugMatrix) : null;
+        this.efforts = (version.efforts != null) ? new ArrayList<>(version.efforts) : null;
+        this.numBugs = (version.numBugs != null) ? new ArrayList<>(version.numBugs) : null;
         this.releaseDate = version.releaseDate;
-        this.committerDates = new ArrayList<OffsetDateTime>(version.committerDates);
+        this.committerDates = (version.committerDates != null) ? new ArrayList<OffsetDateTime>(version.committerDates) : null;
     }
 
     /**
@@ -168,7 +168,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
      * @return data
      */
     public Instances getInstances() {
-        return new Instances(this.instances);
+        return this.instances;
     }
     
     /**
@@ -180,7 +180,7 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
     	if( this.bugMatrix==null ) {
     		return null;
     	}
-    	return new Instances(this.bugMatrix);
+    	return this.bugMatrix;
     }
 
     /**
