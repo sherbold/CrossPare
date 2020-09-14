@@ -17,7 +17,9 @@ package de.ugoe.cs.cpdp.dataprocessing;
 import java.util.ArrayList;
 
 import java.util.HashMap;
+import java.util.List;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -54,14 +56,32 @@ public class SimulationFilter implements IProcessesingStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @SuppressWarnings("boxing")
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        SoftwareVersion trainversioncopy = new SoftwareVersion(trainversion);
+        Instances traindata = trainversion.getInstances();
+        Instances bugmatrix = trainversion.getBugMatrix();
+        List<Double> efforts = trainversion.getEfforts();
+        List<Double> numBugs = trainversion.getNumBugs();
         Instances newDataSet = new Instances(traindata);
+        newDataSet.insertAttributeAt(new Attribute("instance_index"), 0);
+        for (int i=0; i<newDataSet.size(); i++) {
+            newDataSet.get(i).setValue(0, i);
+        }
         traindata.delete();
+        if (bugmatrix != null) {
+            bugmatrix.delete();
+        }
+        if (efforts != null) {
+            efforts.clear();
+        }
+        if (numBugs != null) {
+            numBugs.clear();
+        }
 
         HashMap<Double, Instance> artifactNames = new HashMap<>();
 
@@ -89,6 +109,7 @@ public class SimulationFilter implements IProcessesingStrategy {
          */
         for (int i = 0; i < newDataSet.numInstances(); i++) {
             Instance wekaInstance = newDataSet.instance(i);
+            int index = (int)wekaInstance.value(0);
 
             double newBugLabel = wekaInstance.classValue();
             Attribute wekaArtifactName = newDataSet.attribute("Artifact.Name");
@@ -101,12 +122,30 @@ public class SimulationFilter implements IProcessesingStrategy {
                 artifactNames.put(artifactName, wekaInstance);
             }
             else if (newBugLabel == 1.0 && artifactNames.keySet().contains(artifactName)) {
-                traindata.add(wekaInstance);
+                traindata.add(trainversioncopy.getInstances().get(index));
+                if (bugmatrix != null) {
+                    bugmatrix.add(trainversioncopy.getBugMatrix().get(index));
+                }
+                if (efforts != null) {
+                    efforts.add(trainversioncopy.getEfforts().get(index));
+                }
+                if (numBugs != null) {
+                    numBugs.add(trainversioncopy.getNumBugs().get(index));
+                }
                 artifactNames.remove(artifactName);
             }
             else if (newBugLabel == 1.0 && !artifactNames.keySet().contains(artifactName)) {
                 if (!firstOccurenceArtifactNames.contains(artifactName)) {
-                    traindata.add(wekaInstance);
+                    traindata.add(trainversioncopy.getInstances().get(index));
+                    if (bugmatrix != null) {
+                        bugmatrix.add(trainversioncopy.getBugMatrix().get(index));
+                    }
+                    if (efforts != null) {
+                        efforts.add(trainversioncopy.getEfforts().get(index));
+                    }
+                    if (numBugs != null) {
+                        numBugs.add(trainversioncopy.getNumBugs().get(index));
+                    }
                     firstOccurenceArtifactNames.add(artifactName);
                 }
             }
@@ -129,7 +168,17 @@ public class SimulationFilter implements IProcessesingStrategy {
         }
 
         for (Double artifact : artifactNamesCopy.keySet()) {
-            traindata.add(artifactNamesCopy.get(artifact));
+            int index = (int)artifactNamesCopy.get(artifact).value(0);
+            traindata.add(trainversioncopy.getInstances().get(index));
+            if (bugmatrix != null) {
+                bugmatrix.add(trainversioncopy.getBugMatrix().get(index));
+            }
+            if (efforts != null) {
+                efforts.add(trainversioncopy.getEfforts().get(index));
+            }
+            if (numBugs != null) {
+                numBugs.add(trainversioncopy.getNumBugs().get(index));
+            }
         }
 
     }

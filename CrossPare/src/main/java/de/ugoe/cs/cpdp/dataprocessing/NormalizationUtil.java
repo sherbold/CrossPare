@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -140,12 +141,13 @@ public class NormalizationUtil {
      * by Nam et al.).
      * </p>
      *
-     * @param testdata
-     *            test data of the target product
+     * @param testversion
+     *            version of the test data of the target product
      * @param traindataSet
-     *            training data
+     *            version of the training data
      */
-    public static void zScoreTarget(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    public static void zScoreTarget(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        Instances testdata = testversion.getInstances();
         final double[] mean = new double[testdata.numAttributes()];
         final double[] std = new double[testdata.numAttributes()];
 
@@ -158,8 +160,8 @@ public class NormalizationUtil {
         }
 
         applyZScore(testdata, mean, std);
-        for (Instances traindata : traindataSet) {
-            applyZScore(traindata, mean, std);
+        for (SoftwareVersion trainversion : trainversionSet) {
+            applyZScore(trainversion.getInstances(), mean, std);
         }
     }
 

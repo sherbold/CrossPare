@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -43,11 +44,12 @@ public class AverageStandardization implements ISetWiseProcessingStrategy, IProc
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        Instances testdata = testversion.getInstances();
         final Attribute classAttribute = testdata.classAttribute();
 
         final double[] meanTest = new double[testdata.numAttributes()];
@@ -60,7 +62,8 @@ public class AverageStandardization implements ISetWiseProcessingStrategy, IProc
         }
 
         // preprocess training data
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             double[] meanTrain = new double[testdata.numAttributes()];
             for (int j = 0; j < testdata.numAttributes(); j++) {
                 if (testdata.attribute(j) != classAttribute) {
@@ -84,10 +87,13 @@ public class AverageStandardization implements ISetWiseProcessingStrategy, IProc
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances testdata = trainversion.getInstances();
+        Instances traindata = trainversion.getInstances();
         final Attribute classAttribute = testdata.classAttribute();
 
         final double[] meanTest = new double[testdata.numAttributes()];

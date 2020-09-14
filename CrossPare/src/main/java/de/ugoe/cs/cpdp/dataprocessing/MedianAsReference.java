@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -43,11 +44,12 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(weka.core.de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        Instances testdata = testversion.getInstances();
         final Attribute classAttribute = testdata.classAttribute();
         final double[] median = new double[testdata.numAttributes()];
 
@@ -65,7 +67,8 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
         }
 
         // preprocess training data
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             // get median of current training set
             traindataClassAttribute = traindata.classAttribute();
             for (int j = 0; j < traindata.numAttributes(); j++) {
@@ -92,10 +95,13 @@ public class MedianAsReference implements ISetWiseProcessingStrategy, IProcesses
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances testdata = testversion.getInstances();
+        Instances traindata = trainversion.getInstances();
         final Attribute classAttribute = testdata.classAttribute();
         final Attribute traindataClassAttribute = traindata.classAttribute();
         final double[] median = new double[testdata.numAttributes()];

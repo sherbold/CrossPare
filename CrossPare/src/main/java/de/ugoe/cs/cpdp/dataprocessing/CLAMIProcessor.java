@@ -22,6 +22,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -61,12 +62,12 @@ public class CLAMIProcessor implements IProcessesingStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        applyCLAMI(testdata, traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applyCLAMI(testversion, trainversion);
     }
 
     /**
@@ -75,13 +76,15 @@ public class CLAMIProcessor implements IProcessesingStrategy {
      * guarantee a consistent metric set.
      * </p>
      *
-     * @param testdata
-     *            test data; the data is not modified, only metrics are dropped
-     * @param data
-     *            data to which the CLAMI processor is applied
+     * @param testversion
+     *            version of the test data; the data is not modified, only metrics are dropped
+     * @param trainversion
+     *            version of the data to which the CLAMI processor is applied
      */
     @SuppressWarnings("boxing")
-    private static void applyCLAMI(Instances testdata, Instances data) {
+    private static void applyCLAMI(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances testdata = testversion.getInstances();
+        Instances data = trainversion.getInstances();
 
         // first determine medians
         double[] medians = new double[data.numAttributes()];
@@ -210,6 +213,15 @@ public class CLAMIProcessor implements IProcessesingStrategy {
         for (int i = data.numInstances() - 1; i >= 0; i--) {
             if (!cleanInstances[i]) {
                 data.delete(i);
+                if (trainversion.getBugMatrix() != null) {
+                    trainversion.getBugMatrix().delete(i);
+                }
+                if (trainversion.getEfforts() != null) {
+                    trainversion.getEfforts().remove(i);
+                }
+                if (trainversion.getNumBugs() != null) {
+                    trainversion.getNumBugs().remove(i);
+                }
             }
             else {
                 // set the classification

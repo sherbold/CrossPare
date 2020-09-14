@@ -3,6 +3,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -29,22 +30,23 @@ public class WeightByNumBugs implements ISetWiseProcessingStrategy, IProcessesin
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (Instances traindata : traindataSet) {
-            createWeights(traindata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            createWeights(trainversion.getInstances());
         }
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        createWeights(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        createWeights(trainversion.getInstances());
     }
 
     /**

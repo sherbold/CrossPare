@@ -16,7 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * Normalizes each attribute of each data set separately.
@@ -26,24 +26,25 @@ import weka.core.Instances;
 public class Normalization implements ISetWiseProcessingStrategy, IProcessesingStrategy {
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        NormalizationUtil.minMax(testdata);
-        for (Instances instances : traindataSet) {
-            NormalizationUtil.minMax(instances);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        NormalizationUtil.minMax(testversion.getInstances());
+        for (SoftwareVersion trainversion : trainversionSet) {
+            NormalizationUtil.minMax(trainversion.getInstances());
         }
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        NormalizationUtil.minMax(testdata);
-        NormalizationUtil.minMax(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        NormalizationUtil.minMax(testversion.getInstances());
+        NormalizationUtil.minMax(trainversion.getInstances());
     }
 
     /**

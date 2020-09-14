@@ -32,6 +32,7 @@ import com.google.common.collect.Sets;
 
 import de.ugoe.cs.cpdp.util.SortUtils;
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
@@ -70,9 +71,9 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
     }
 
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
         try {
-            determineTopKAttributes(testdata, traindataSet);
+            determineTopKAttributes(testversion, trainversionSet);
         }
         catch (Exception e) {
             LOGGER.error("Failure during metric selection: " + e.getMessage());
@@ -81,12 +82,14 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
     }
 
     @SuppressWarnings("boxing")
-    private void determineTopKAttributes(Instances testdata, SetUniqueList<Instances> traindataSet)
+    private void determineTopKAttributes(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet)
         throws Exception
-    {
-        Integer[] counts = new Integer[traindataSet.get(0).numAttributes() - 1];
+    {   
+        Instances testdata = testversion.getInstances();
+        Integer[] counts = new Integer[trainversionSet.get(0).getInstances().get(0).numAttributes() - 1];
         IntStream.range(0, counts.length).forEach(val -> counts[val] = 0);
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             J48 decisionTree = new J48();
             decisionTree.buildClassifier(traindata);
             int k = 0;
@@ -105,7 +108,8 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
 
         // get CFSs for each training set
         List<Set<Integer>> cfsSets = new LinkedList<>();
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             boolean selectionSuccessful = false;
             boolean secondAttempt = false;
             Instances traindataCopy = null;
@@ -171,7 +175,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
             Set<Integer> topkSet = new HashSet<>();
             for (int k = 0; k < topkIndex.length; k++) {
                 topkSet.add(topkIndex[k]);
-                coverages[k] += (coverage(topkSet, cfsSet) / traindataSet.size());
+                coverages[k] += (coverage(topkSet, cfsSet) / trainversionSet.size());
             }
         }
         double bestCoverageValue = Double.MIN_VALUE;
@@ -185,7 +189,8 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         // build correlation matrix
         SpearmansCorrelation corr = new SpearmansCorrelation();
         double[][] correlationMatrix = new double[bestCoverageIndex][bestCoverageIndex];
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             double[][] vectors = new double[bestCoverageIndex][traindata.size()];
             for (int i = 0; i < traindata.size(); i++) {
                 for (int j = 0; j < bestCoverageIndex; j++) {
@@ -215,7 +220,7 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
                     topkCombination.add(topkIndex[index]);
                 }
                 for (Set<Integer> cfsSet : cfsSets) {
-                    currentCoverage += (coverage(topkCombination, cfsSet) / traindataSet.size());
+                    currentCoverage += (coverage(topkCombination, cfsSet) / trainversionSet.size());
                 }
                 if (currentCoverage > bestOptCoverage) {
                     bestOptCoverage = currentCoverage;
@@ -233,13 +238,14 @@ public class TopMetricFilter implements ISetWiseProcessingStrategy {
         }
         LOGGER.debug("selected the following metrics:");
         for (Integer index : opttopkIndex) {
-            LOGGER.debug(traindataSet.get(0).attribute(index).name());
+            LOGGER.debug(trainversionSet.get(0).getInstances().get(0).attribute(index).name());
         }
         // finally remove attributes
         for (int j = testdata.numAttributes() - 1; j >= 0; j--) {
             if (j != testdata.classIndex() && !opttopkIndex.contains(j)) {
                 testdata.deleteAttributeAt(j);
-                for (Instances traindata : traindataSet) {
+                for (SoftwareVersion trainversion : trainversionSet) {
+                    Instances traindata = trainversion.getInstances();
                     traindata.deleteAttributeAt(j);
                 }
             }

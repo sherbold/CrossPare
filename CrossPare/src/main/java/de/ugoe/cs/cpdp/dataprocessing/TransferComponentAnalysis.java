@@ -26,6 +26,7 @@ import org.ojalgo.access.Access2D.Builder;
 import org.ojalgo.array.Array1D;
 
 import de.ugoe.cs.cpdp.util.SortUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -63,12 +64,12 @@ public class TransferComponentAnalysis implements IProcessesingStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        applyTCA(testdata, traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applyTCA(testversion.getInstances(), trainversion.getInstances());
     }
 
     /**

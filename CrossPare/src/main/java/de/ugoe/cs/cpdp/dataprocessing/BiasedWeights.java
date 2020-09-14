@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -47,32 +48,34 @@ public class BiasedWeights implements IProcessesingStrategy, ISetWiseProcessingS
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
         // setBiasedWeights(testdata);
-        setBiasedWeights(traindata);
+        setBiasedWeights(trainversion);
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (Instances traindata : traindataSet) {
-            setBiasedWeights(traindata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            setBiasedWeights(trainversion);
         }
     }
 
     /**
      * Helper method that sets the weights for a given data set.
      * 
-     * @param data
-     *            data set whose weights are set
+     * @param version
+     *            softwareversion of the data set whose weights are set
      */
-    private void setBiasedWeights(Instances data) {
+    private void setBiasedWeights(SoftwareVersion version) {
+        Instances data = version.getInstances();
         final int classIndex = data.classIndex();
 
         final int[] counts = data.attributeStats(classIndex).nominalCounts;
