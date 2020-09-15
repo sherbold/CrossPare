@@ -143,7 +143,7 @@ public class NormalizationUtil {
      *
      * @param testversion
      *            version of the test data of the target product
-     * @param traindataSet
+     * @param trainversionSet
      *            version of the training data
      */
     public static void zScoreTarget(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {

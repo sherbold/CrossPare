@@ -125,7 +125,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
      * Helper method that combines a set of {@link SoftwareVersion} sets into a single
      * {@link Instances} set.
      * 
-     * @param traindataSet
+     * @param trainversionSet
      *            set of {@link SoftwareVersion} which training data is to be combined
      * @return single {@link Instances} set
      */
@@ -149,7 +149,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
      * Helper method that combines a set of {@link SoftwareVersion} into a single
      * {@link Instances} bugmatrix.
      * 
-     * @param traindataBugs
+     * @param trainversionBugs
      *            set of {@link SoftwareVersion} which bug matrices are to be combined
      * @return single {@link Instances} bugmatrix
      */

@@ -165,7 +165,7 @@ public abstract class AbstractCharacteristicSelection implements ISetWiseDatasel
      * 
      * @param testversion
      *            version of the test data
-     * @param traindataSet
+     * @param trainversionSet
      *            versions of the training data sets
      * @return normalized distributional characteristics of the data
      */

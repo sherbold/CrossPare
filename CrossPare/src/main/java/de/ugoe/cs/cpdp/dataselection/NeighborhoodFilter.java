@@ -59,7 +59,7 @@ public class NeighborhoodFilter implements IPointWiseDataselectionStrategy {
      *
      * @param testversion
      *            version of the test data
-     * @param traindata
+     * @param trainversion
      *            version of the training data
      * @return filtered version of the training data
      */

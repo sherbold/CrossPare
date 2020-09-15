@@ -24,7 +24,7 @@ public interface ISetWiseTestdataAwareTrainingStrategy extends ITrainer {
      * @param testversion
      *            the test data from the target product
      */
-    void apply(SetUniqueList<SoftwareVersion> traindataSet, SoftwareVersion testversion);
+    void apply(SetUniqueList<SoftwareVersion> trainversionSet, SoftwareVersion testversion);
 
     /**
      * <p>
