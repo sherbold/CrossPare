@@ -149,7 +149,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
      * Helper method that combines a set of {@link SoftwareVersion} into a single
      * {@link Instances} bugmatrix.
      * 
-     * @param trainversionBugs
+     * @param trainversionSet
      *            set of {@link SoftwareVersion} which bug matrices are to be combined
      * @return single {@link Instances} bugmatrix
      */
