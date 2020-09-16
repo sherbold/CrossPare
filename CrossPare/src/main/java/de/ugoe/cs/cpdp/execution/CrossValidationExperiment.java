@@ -169,10 +169,6 @@ public class CrossValidationExperiment implements IExecutionStrategy {
 
                 // Setup testdata and training data
                 SoftwareVersion testversion = new SoftwareVersion(testVersion);
-                Instances testdata = testversion.getInstances();
-                List<Double> efforts = testversion.getEfforts();
-                List<Double> numBugs = testversion.getNumBugs();
-                Instances bugMatrix = testversion.getBugMatrix();
 
                 SetUniqueList<SoftwareVersion> trainversionSet =
                     SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
@@ -253,8 +249,9 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, testdata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
-                                    this.config.getResultStorages());
+                    evaluator.apply(testversion.getInstances(), testversion.getInstances(), allTrainers,
+                            testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                            this.config.getResultStorages());
                     writeHeader = false;
                 }
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

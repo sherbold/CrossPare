@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import weka.core.Instances;
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy;
 import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
@@ -108,9 +107,6 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             // At first: traindata == testdata
             SoftwareVersion testversion = new SoftwareVersion(testVersion);
             SoftwareVersion trainversion = new SoftwareVersion(testVersion);
-            List<Double> efforts = testversion.getEfforts();
-            List<Double> numBugs = testversion.getNumBugs();
-            Instances bugMatrix = testversion.getBugMatrix();
 
             // Give the dataset a new name
             testversion.getInstances().setRelationName(testVersion.getProject());
@@ -179,8 +175,9 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     evaluator.setParameter(this.config.getResultsPath() + "/" +
                         this.config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers, efforts, numBugs,
-                        bugMatrix, writeHeader, this.config.getResultStorages());
+                evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers,
+                        testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                        this.config.getResultStorages());
                 writeHeader = false;
             }
 

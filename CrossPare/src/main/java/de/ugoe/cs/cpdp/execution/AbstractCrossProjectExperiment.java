@@ -266,10 +266,6 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
 
                 // Setup testdata and training data                
                 SoftwareVersion testversion = new SoftwareVersion(testVersion);
-                Instances testdata = testversion.getInstances();
-                List<Double> efforts = testversion.getEfforts();
-                List<Double> numBugs = testversion.getNumBugs();
-                Instances bugMatrix = testversion.getBugMatrix();
                 SetUniqueList<SoftwareVersion> trainversionSet =
                     SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
                 for (SoftwareVersion trainingVersion : versions) {
@@ -398,8 +394,9 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, trainversion.getInstances(), allTrainers, efforts,
-                            numBugs, bugMatrix, writeHeader, this.config.getResultStorages());
+                    evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers,
+                            testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                            this.config.getResultStorages());
                     writeHeader = false;
                 }
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",
