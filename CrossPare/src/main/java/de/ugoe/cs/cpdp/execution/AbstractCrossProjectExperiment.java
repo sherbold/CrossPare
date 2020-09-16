@@ -15,13 +15,9 @@
 package de.ugoe.cs.cpdp.execution;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.logging.log4j.LogManager;
@@ -42,10 +38,6 @@ import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import weka.core.Attribute;
-import weka.core.DenseInstance;
-import weka.core.Instance;
-import weka.core.Instances;
 
 /**
  * Class responsible for executing an experiment according to an {@link ExperimentConfiguration}.
@@ -120,106 +112,6 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
     protected abstract boolean isTrainingVersion(SoftwareVersion trainingVersion,
                                                  SoftwareVersion testVersion,
                                                  List<SoftwareVersion> versions);
-
-    /**
-     * Helper method that combines a set of {@link SoftwareVersion} sets into a single
-     * {@link Instances} set.
-     * 
-     * @param trainversionSet
-     *            set of {@link SoftwareVersion} which training data is to be combined
-     * @return single {@link Instances} set
-     */
-    public static Instances makeSingleTrainingSet(SetUniqueList<SoftwareVersion> trainversionSet) {
-        Instances traindataFull = null;
-        for (SoftwareVersion trainversion : trainversionSet) {
-            Instances traindata = trainversion.getInstances();
-            if (traindataFull == null) {
-                traindataFull = new Instances(traindata);
-            }
-            else {
-                for (int i = 0; i < traindata.numInstances(); i++) {
-                    traindataFull.add(traindata.instance(i));
-                }
-            }
-        }
-        return traindataFull;
-    }
-
-    /**
-     * Helper method that combines a set of {@link SoftwareVersion} into a single
-     * {@link Instances} bugmatrix.
-     * 
-     * @param trainversionSet
-     *            set of {@link SoftwareVersion} which bug matrices are to be combined
-     * @return single {@link Instances} bugmatrix
-     */
-    public static Instances makeSingleBugMatrixSet(SetUniqueList<SoftwareVersion> trainversionSet) {
-        final ArrayList<Attribute> bugMatrixAtts = new ArrayList<>();
-        final Map<String, Integer> nameToIndex = new HashMap<>();
-        for (SoftwareVersion trainversion : trainversionSet) {
-            for (Iterator<Attribute> iterator = trainversion.getBugMatrix().enumerateAttributes().asIterator(); iterator
-                    .hasNext();) {
-                String attName = iterator.next().name();
-                Attribute att = new Attribute(attName);
-                if (!bugMatrixAtts.contains(att)) {
-                    bugMatrixAtts.add(att);
-                    nameToIndex.put(attName, nameToIndex.size());
-                }
-            }
-        }
-        Instances singleBugMatrix = new Instances("singleBugMatrix", bugMatrixAtts, 0);
-        for (SoftwareVersion trainversion : trainversionSet) {
-            Instances bugMatrix = trainversion.getBugMatrix();
-            List<String> attNames = new ArrayList<>();
-            for (Iterator<Attribute> iterator = bugMatrix.enumerateAttributes().asIterator(); iterator.hasNext();) {
-                attNames.add(iterator.next().name());
-            }
-            for (Instance instance : bugMatrix) {
-                double[] allBugs = new double[bugMatrixAtts.size()];
-                double[] bugs = instance.toDoubleArray();
-                for (int j = 0; j < bugs.length; j++) {
-                    allBugs[nameToIndex.get(attNames.get(j))] = bugs[j];
-                }
-                singleBugMatrix.add(new DenseInstance(1.0, allBugs));
-            }
-        }
-        return singleBugMatrix;
-    }
-
-    /**
-     * Helper method that combines a set of SetUniqueList<SoftwareVersion> into a single
-     * Softwareversion.
-     * 
-     * @param trainversionSet
-     *            set of {@link SoftwareVersion} to be combined
-     * @return single {@link SoftwareVersion} set
-     */
-    public static SoftwareVersion makeSingleVersionSet(SetUniqueList<SoftwareVersion> trainversionSet) {
-        Instances instances = makeSingleTrainingSet(trainversionSet);
-        Instances bugmatrix = makeSingleBugMatrixSet(trainversionSet);
-        List<Double> efforts = null;
-        List<Double> numBugs = null;
-        for (SoftwareVersion trainversion : trainversionSet) {
-            List<Double> tempEfforts = trainversion.getEfforts();
-            List<Double> tempNumBugs = trainversion.getNumBugs();
-            if (efforts == null) {
-                efforts = new ArrayList<Double>(tempEfforts);
-            }
-            if (numBugs == null) {
-                numBugs = new ArrayList<Double>(tempNumBugs);
-            }
-            else {
-                for (int i = 0; i < tempEfforts.size(); i++) {
-                    efforts.add(tempEfforts.get(i));
-                }
-                for (int i = 0; i < tempNumBugs.size(); i++) {
-                    numBugs.add(tempNumBugs.get(i));
-                }
-            }
-        }
-        return new SoftwareVersion("singleTrainVersionSet", "trainProjects", "trainVersions", instances, bugmatrix,
-                efforts, numBugs, null, null);
-    }
 
     /**
      * Executes the experiment with the steps as described in the class comment.
@@ -328,7 +220,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                 testVersion.getVersion(), setwiseTestdataAwareTrainer.getName()));
                     setwiseTestdataAwareTrainer.apply(trainversionSet, testversion);
                 }
-                SoftwareVersion trainversion = makeSingleVersionSet(trainversionSet);
+                SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,

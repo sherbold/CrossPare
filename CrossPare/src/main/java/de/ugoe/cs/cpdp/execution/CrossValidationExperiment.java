@@ -36,7 +36,6 @@ import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import weka.core.Instances;
 
 /**
  * Class responsible for executing an experiment according to an {@link ExperimentConfiguration}.
@@ -93,29 +92,6 @@ public class CrossValidationExperiment implements IExecutionStrategy {
     @SuppressWarnings("hiding")
     public CrossValidationExperiment(ExperimentConfiguration config) {
         this.config = config;
-    }
-
-    /**
-     * Helper method that combines a set of Weka {@link Instances} sets into a single
-     * {@link Instances} set.
-     * 
-     * @param traindataSet
-     *            set of {@link Instances} to be combines
-     * @return single {@link Instances} set
-     */
-    public static Instances makeSingleTrainingSet(SetUniqueList<Instances> traindataSet) {
-        Instances traindataFull = null;
-        for (Instances traindata : traindataSet) {
-            if (traindataFull == null) {
-                traindataFull = new Instances(traindata);
-            }
-            else {
-                for (int i = 0; i < traindata.numInstances(); i++) {
-                    traindataFull.add(traindata.instance(i));
-                }
-            }
-        }
-        return traindataFull;
     }
 
     /**
@@ -195,7 +171,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                 testVersion.getVersion(), processor.getClass().getName()));
                     processor.apply(testversion, trainversionSet);
                 }
-                SoftwareVersion trainversion = AbstractCrossProjectExperiment.makeSingleVersionSet(trainversionSet);
+                SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
