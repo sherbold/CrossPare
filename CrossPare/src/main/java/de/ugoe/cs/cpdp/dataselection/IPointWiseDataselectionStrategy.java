@@ -15,8 +15,7 @@
 package de.ugoe.cs.cpdp.dataselection;
 
 import de.ugoe.cs.cpdp.IParameterizable;
-
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * Interface for pointwise data selection strategies.
@@ -28,11 +27,11 @@ public interface IPointWiseDataselectionStrategy extends IParameterizable {
     /**
      * Applies the data selection strategy.
      * 
-     * @param testdata
-     *            test data
-     * @param traindata
-     *            candidate training data
-     * @return the selected training data
+     * @param testversion
+     *            version of the test data
+     * @param trainversion
+     *            version of the candidate training data
+     * @return software version of the selected training data
      */
-    Instances apply(Instances testdata, Instances traindata);
+    SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion);
 }

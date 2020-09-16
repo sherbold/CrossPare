@@ -16,7 +16,7 @@ package de.ugoe.cs.cpdp.dataselection;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * Uses the test data as training data.
@@ -37,13 +37,13 @@ public class TestAsTraining implements ISetWiseDataselectionStrategy {
     /**
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        traindataSet.clear();
-        traindataSet.add(new Instances(testdata));
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        trainversionSet.clear();
+        trainversionSet.add(new SoftwareVersion(testversion));
     }
 
 }

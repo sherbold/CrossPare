@@ -14,10 +14,9 @@
 
 package de.ugoe.cs.cpdp.training;
 
-
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import de.ugoe.cs.cpdp.wekaclassifier.ITestAwareClassifier;
-import weka.core.Instances;
 
 /**
  * <p>
@@ -32,16 +31,16 @@ public class WekaTestAwareTraining extends WekaBaseTraining implements ITestAwar
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.training.ITestAwareTrainingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
         this.classifier = setupClassifier();
         if (!(this.classifier instanceof ITestAwareClassifier)) {
             throw new RuntimeException("classifier must implement the ITestAwareClassifier interface in order to be used as TestAwareTrainingStrategy");
         }
-        ((ITestAwareClassifier) this.classifier).setTestdata(testdata);
-        this.classifier = WekaUtils.buildClassifier(this.classifier, traindata);
+        ((ITestAwareClassifier) this.classifier).setTestdata(testversion.getInstances());
+        this.classifier = WekaUtils.buildClassifier(this.classifier, trainversion.getInstances());
     }
 }

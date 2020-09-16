@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -49,12 +50,12 @@ public class CLAProcessor implements IProcessesingStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core. Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        applyCLA(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applyCLA(trainversion.getInstances());
     }
 
     /**

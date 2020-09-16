@@ -17,6 +17,8 @@ package de.ugoe.cs.cpdp.dataprocessing;
 import java.util.Arrays;
 
 import org.apache.commons.collections4.list.SetUniqueList;
+
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -40,14 +42,15 @@ public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesin
     }
 
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        removeInstances(testdata);
-        removeInstances(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        removeInstances(testversion);
+        removeInstances(trainversion);
     }
 
     @SuppressWarnings("boxing")
-    private void removeInstances(Instances ilist) {
-        for (int i = 0; i < ilist.numInstances(); i++) {
+    private void removeInstances(SoftwareVersion version) {
+        Instances ilist = version.getInstances();
+        for (int i = ilist.size() - 1; i >= 0; i--) {
             Boolean matchFound[] = new Boolean[this.condList.length];
             int j = 0;
             System.out.println("");
@@ -60,15 +63,24 @@ public class InstanceRemoval implements ISetWiseProcessingStrategy, IProcessesin
             // any false)
             if (!Arrays.asList(matchFound).contains(false)) {
                 ilist.delete(i);
+                if (version.getBugMatrix() != null) {
+                    version.getBugMatrix().delete(i);
+                }
+                if (version.getEfforts() != null) {
+                    version.getEfforts().remove(i);
+                }
+                if (version.getNumBugs() != null) {
+                    version.getNumBugs().remove(i);
+                }
             }
         }
     }
 
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        removeInstances(testdata);
-        for (Instances traindata : traindataSet) {
-            removeInstances(traindata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        removeInstances(testversion);
+        for (SoftwareVersion trainversion : trainversionSet) {
+            removeInstances(trainversion);
         }
     }
 }

@@ -25,6 +25,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.clusterers.EM;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -68,12 +69,12 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
      * factors. The project context factors are first normalized and then used for clustering. They
      * can be configured in the configuration param.
      * 
-     * @param testdata
-     * @param traindataSet
+     * @param testversion
+     * @param trainversionSet
      */
-    protected void cluster(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    protected void cluster(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
         // now do the clustering, normalizedCharacteristicInstances ruft getContextFactors auf
-        final Instances data = this.normalizedCharacteristicInstances(testdata, traindataSet);
+        final Instances data = this.normalizedCharacteristicInstances(testversion, trainversionSet);
 
         final Instance targetInstance = data.instance(0);
         final List<Instance> candidateInstances = new LinkedList<>();
@@ -106,14 +107,14 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
             while (onlyTarget);
 
             LOGGER.debug("clusters: " + maxNumClusters);
-            LOGGER.debug("instances before clustering: " + traindataSet.size());
+            LOGGER.debug("instances before clustering: " + trainversionSet.size());
             int numRemoved = 0;
             for (int i = 0; i < candidateInstances.size(); i++) {
                 if (emeans.clusterInstance(candidateInstances.get(i)) != targetCluster) {
-                    traindataSet.remove(i - numRemoved++);
+                    trainversionSet.remove(i - numRemoved++);
                 }
             }
-            LOGGER.debug("instances after clustering: " + traindataSet.size());
+            LOGGER.debug("instances after clustering: " + trainversionSet.size());
         }
         catch (Exception e) {
             throw new RuntimeException("error applying setwise EM clustering training data selection",
@@ -124,11 +125,11 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      * org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
         // issuetracking und pl muss passen
         /*
          * int s = traindataSet.size(); Console.traceln(Level.INFO,
@@ -138,20 +139,22 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
          * "size after removal: " + s);
          */
         // now cluster
-        this.cluster(testdata, traindataSet);
+        this.cluster(testversion, trainversionSet);
     }
 
     /**
      * Returns test- and training data with only the project context factors which were chosen in
      * the configuration. This is later used for clustering.
      * 
-     * @param testdata
-     * @param traindataSet
+     * @param testversion
+     * @param trainversionSet
      * @return
      */
-    protected Instances getContextFactors(Instances testdata,
-                                          SetUniqueList<Instances> traindataSet)
-    {
+    protected Instances getContextFactors(SoftwareVersion testversion,
+                                          SetUniqueList<SoftwareVersion> trainversionSet)
+    {   
+        Instances testdata = testversion.getInstances();
+
         // setup weka Instances for clustering
         final ArrayList<Attribute> atts = new ArrayList<>();
 
@@ -175,7 +178,8 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
         data.add(new DenseInstance(1.0, instanceValues));
 
         // now for the projects of the training stet
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
             instanceValues = new double[atts.size()]; // ohne das hier immer dieselben werte?!
             i = 0;
             for (String pcf : this.project_context_factors) {
@@ -225,14 +229,14 @@ public class SetWiseEMContextSelection implements ISetWiseDataselectionStrategy 
     /**
      * Normalizes the data before it gets used for clustering
      * 
-     * @param testdata
-     * @param traindataSet
+     * @param testversion
+     * @param trainversionSet
      * @return
      */
-    protected Instances normalizedCharacteristicInstances(Instances testdata,
-                                                          SetUniqueList<Instances> traindataSet)
+    protected Instances normalizedCharacteristicInstances(SoftwareVersion testversion,
+                                                          SetUniqueList<SoftwareVersion> trainversionSet)
     {
-        Instances data = this.getContextFactors(testdata, traindataSet);
+        Instances data = this.getContextFactors(testversion, trainversionSet);
         try {
             final Normalize normalizer = new Normalize();
             normalizer.setInputFormat(data);

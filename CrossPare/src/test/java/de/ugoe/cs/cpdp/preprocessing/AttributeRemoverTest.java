@@ -9,7 +9,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.junit.Test;
 
 import de.ugoe.cs.cpdp.dataprocessing.AttributeRemoval;
-
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -33,9 +33,11 @@ public class AttributeRemoverTest {
 		instances.add(new DenseInstance(1.0, value2));
 		instances.add(new DenseInstance(1.0, value3));
 		
+        SoftwareVersion version = new SoftwareVersion("foo", "bar", "1.0", instances, null, null, null, null, null);
+
 		AttributeRemoval processor = new AttributeRemoval();
 		processor.setParameter("attr2");
-		processor.apply(instances, SetUniqueList.setUniqueList(new LinkedList<Instances>()) );
+		processor.apply(version, SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>()) );
 		
 		double[] expected1 = new double[]{1.5, 0.0};
 		double[] expected2 = new double[]{1.4, 1.0};
@@ -63,10 +65,12 @@ public class AttributeRemoverTest {
 		instances.add(new DenseInstance(1.0, value1));
 		instances.add(new DenseInstance(1.0, value2));
 		instances.add(new DenseInstance(1.0, value3));
-		
+
+		SoftwareVersion version = new SoftwareVersion("foo", "bar", "1.0", instances, null, null, null, null, null);
+
 		AttributeRemoval processor = new AttributeRemoval();
 		processor.setParameter("attr2 attr1");
-		processor.apply(instances, SetUniqueList.setUniqueList(new LinkedList<Instances>()) );
+		processor.apply(version, SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>()) );
 		
 		double[] expected1 = new double[]{0.0};
 		double[] expected2 = new double[]{1.0};

@@ -20,6 +20,7 @@ import java.util.Random;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.util.MathArrays;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -70,22 +71,23 @@ public class MORPH implements ISetWiseProcessingStrategy, IProcessesingStrategy 
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (Instances traindata : traindataSet) {
-            applyMORPH(traindata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            applyMORPH(trainversion.getInstances());
         }
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        applyMORPH(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applyMORPH(trainversion.getInstances());
     }
 
     /**

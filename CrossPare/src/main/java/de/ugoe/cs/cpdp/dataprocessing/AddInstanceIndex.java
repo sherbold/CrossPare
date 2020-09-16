@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instances;
 
@@ -40,16 +41,18 @@ public class AddInstanceIndex implements ISetWiseProcessingStrategy, IProcessesi
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-    	testdata.insertAttributeAt(new Attribute("instance_index"), 0);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        Instances testdata = testversion.getInstances();
+        testdata.insertAttributeAt(new Attribute("instance_index"), 0);
     	for (int i=0; i<testdata.size(); i++) {
     		testdata.get(i).setValue(0, i);
     	}
-        for (Instances traindata : traindataSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            Instances traindata = trainversion.getInstances();
         	traindata.insertAttributeAt(new Attribute("instance_index"), 0);
         	for (int i=0; i<traindata.size(); i++) {
         		traindata.get(i).setValue(0, i);
@@ -58,10 +61,13 @@ public class AddInstanceIndex implements ISetWiseProcessingStrategy, IProcessesi
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances testdata = testversion.getInstances();
+        Instances traindata = trainversion.getInstances();
     	testdata.insertAttributeAt(new Attribute("instance_index"), 0);
     	for (int i=0; i<testdata.size(); i++) {
     		testdata.get(i).setValue(0, i);

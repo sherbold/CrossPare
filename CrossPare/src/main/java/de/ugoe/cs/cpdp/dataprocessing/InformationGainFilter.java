@@ -19,6 +19,7 @@ import java.util.Random;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -62,23 +63,24 @@ public class InformationGainFilter implements ISetWiseProcessingStrategy, IProce
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        for (Instances traindata : traindataSet) {
-            apply(testdata, traindata, false);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        for (SoftwareVersion trainversion : trainversionSet) {
+            apply(testversion.getInstances(), trainversion.getInstances(), false);
         }
 
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        apply(testdata, traindata, true);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        apply(testversion.getInstances(), trainversion.getInstances(), true);
     }
 
     /**

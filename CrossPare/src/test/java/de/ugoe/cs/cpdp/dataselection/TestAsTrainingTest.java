@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.junit.Test;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -37,16 +38,18 @@ public class TestAsTrainingTest {
 		traindata.add(new DenseInstance(1.0, new double[]{8.0, 0.0}));
 		traindata.add(new DenseInstance(1.0, new double[]{1.0, 0.0}));
 		traindata.add(new DenseInstance(1.0, new double[]{5.0, 0.0}));
-				
-		SetUniqueList<Instances> traindataSet = SetUniqueList.setUniqueList(new LinkedList<Instances>());
-		traindataSet.add(traindata);
+		
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", testdata, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindata, null, null, null, null, null);
+		SetUniqueList<SoftwareVersion> trainversionSet = SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
+		trainversionSet.add(trainversion);
 		
 		TestAsTraining filter = new TestAsTraining();
-		filter.apply(testdata, traindataSet);
+		filter.apply(testversion, trainversionSet);
 		
-		assertEquals(1, traindataSet.size());
+		assertEquals(1, trainversionSet.size());
 	
-		traindata = traindataSet.get(0);
+		traindata = trainversionSet.get(0).getInstances();
 		assertNotSame(testdata, traindata);
 		assertEquals(testdata.numInstances(), traindata.numInstances());
 		for( int i=0; i<testdata.numInstances(); i++ ) {

@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.junit.Test;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instances;
 
@@ -26,9 +27,12 @@ public class AttributeNonRemovalTest {
         Instances traindata = new Instances("traindata", attributes, 0);
         traindata.setClassIndex(2);
         
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", testdata, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindata, null, null, null, null, null);
+
         AttributeNonRemoval attributeNonRemoval = new AttributeNonRemoval();
         attributeNonRemoval.setParameter("test class");
-        attributeNonRemoval.apply(testdata, traindata);
+        attributeNonRemoval.apply(testversion, trainversion);
         
         assertNotNull(testdata.attribute("test"));
         assertNotNull(testdata.attribute("class"));
@@ -48,25 +52,28 @@ public class AttributeNonRemovalTest {
         
         Instances testdata = new Instances("testdata", attributes, 0);
         testdata.setClassIndex(2);
-                
+
         Instances traindata1 = new Instances("traindata1", attributes, 0);
         traindata1.setClassIndex(2);
         Instances traindata2 = new Instances("traindata2", attributes, 0);
         traindata1.setClassIndex(2);
-        SetUniqueList<Instances> traindataSet =
-                SetUniqueList.setUniqueList(new LinkedList<Instances>());
-        traindataSet.add(traindata1);
-        traindataSet.add(traindata2);        
+
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "3.0", testdata, null, null, null, null, null);
+        SetUniqueList<SoftwareVersion> trainversionSet =
+                SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
+        trainversionSet.add(new SoftwareVersion("foo", "bar", "1.0", traindata1, null, null, null, null, null));
+        trainversionSet.add(new SoftwareVersion("foo", "bar", "2.0", traindata2, null, null, null, null, null));       
         
         AttributeNonRemoval attributeNonRemoval = new AttributeNonRemoval();
         attributeNonRemoval.setParameter("test class");
-        attributeNonRemoval.apply(testdata, traindataSet);
+        attributeNonRemoval.apply(testversion, trainversionSet);
         
         assertNotNull(testdata.attribute("test"));
         assertNotNull(testdata.attribute("class"));
         assertNull(testdata.attribute("another"));
         
-        for(Instances traindata : traindataSet) {
+        for(SoftwareVersion trainversion : trainversionSet) {
+                Instances traindata = trainversion.getInstances();
 	        assertNotNull(traindata.attribute("test"));
 	        assertNotNull(traindata.attribute("class"));
 	        assertNull(traindata.attribute("another"));
@@ -86,9 +93,12 @@ public class AttributeNonRemovalTest {
         Instances traindata = new Instances("traindata", attributes, 0);
         traindata.setClassIndex(2);
         
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", testdata, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindata, null, null, null, null, null);
+
         AttributeNonRemoval attributeNonRemoval = new AttributeNonRemoval();
         attributeNonRemoval.setParameter("test");
-        attributeNonRemoval.apply(testdata, traindata);
+        attributeNonRemoval.apply(testversion, trainversion);
 	}
 	
 	@Test
@@ -105,9 +115,12 @@ public class AttributeNonRemovalTest {
         Instances traindata = new Instances("traindata", attributes, 0);
         traindata.setClassIndex(3);
         
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "2.0", testdata, null, null, null, null, null);
+        SoftwareVersion trainversion = new SoftwareVersion("foo", "bar", "1.0", traindata, null, null, null, null, null);
+
         AttributeNonRemoval attributeNonRemoval = new AttributeNonRemoval();
         attributeNonRemoval.setParameter("test.* class");
-        attributeNonRemoval.apply(testdata, traindata);
+        attributeNonRemoval.apply(testversion, trainversion);
         
         assertNotNull(testdata.attribute("test"));
         assertNotNull(testdata.attribute("test2"));
@@ -135,26 +148,28 @@ public class AttributeNonRemovalTest {
         traindata1.setClassIndex(3);
         Instances traindata2 = new Instances("traindata2", attributes, 0);
         traindata1.setClassIndex(3);
-        SetUniqueList<Instances> traindataSet =
-                SetUniqueList.setUniqueList(new LinkedList<Instances>());
-        traindataSet.add(traindata1);
-        traindataSet.add(traindata2);
+        
+        SoftwareVersion testversion = new SoftwareVersion("foo", "bar", "3.0", testdata, null, null, null, null, null);
+        SetUniqueList<SoftwareVersion> trainversionSet =
+                SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
+        trainversionSet.add(new SoftwareVersion("foo", "bar", "1.0", traindata1, null, null, null, null, null));
+        trainversionSet.add(new SoftwareVersion("foo", "bar", "2.0", traindata2, null, null, null, null, null));     
         
         AttributeNonRemoval attributeNonRemoval = new AttributeNonRemoval();
         attributeNonRemoval.setParameter("test.* class");
-        attributeNonRemoval.apply(testdata, traindataSet);
+        attributeNonRemoval.apply(testversion, trainversionSet);
         
         assertNotNull(testdata.attribute("test"));
         assertNotNull(testdata.attribute("test2"));
         assertNotNull(testdata.attribute("class"));
         assertNull(testdata.attribute("another"));
-        
-        for(Instances traindata : traindataSet) {
+        for(SoftwareVersion trainversion : trainversionSet) {
+                Instances traindata = trainversion.getInstances();
 	        assertNotNull(traindata.attribute("test"));
 	        assertNotNull(traindata.attribute("test2"));
 	        assertNotNull(traindata.attribute("class"));
 	        assertNull(traindata.attribute("another"));
         }
-	}
+        }
 
 }

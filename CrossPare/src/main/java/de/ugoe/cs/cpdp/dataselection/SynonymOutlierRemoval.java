@@ -14,6 +14,7 @@
 
 package de.ugoe.cs.cpdp.dataselection;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -38,13 +39,13 @@ public class SynonymOutlierRemoval implements IPointWiseDataselectionStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public Instances apply(Instances testdata, Instances traindata) {
-        applySynonymRemoval(traindata);
-        return traindata;
+    public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applySynonymRemoval(trainversion);
+        return trainversion;
     }
 
     /**
@@ -52,10 +53,11 @@ public class SynonymOutlierRemoval implements IPointWiseDataselectionStrategy {
      * Applies the synonym outlier removal.
      * </p>
      *
-     * @param traindata
-     *            data from which the outliers are removed.
+     * @param trainversion
+     *            version of the data from which the outliers are removed.
      */
-    public static void applySynonymRemoval(Instances traindata) {
+    public static void applySynonymRemoval(SoftwareVersion trainversion) {
+        Instances traindata = trainversion.getInstances();
         double minDistance[][] = new double[traindata.size()][traindata.numAttributes() - 1];
         double minDistanceAttribute[] = new double[traindata.numAttributes() - 1];
         double distance;
@@ -89,7 +91,16 @@ public class SynonymOutlierRemoval implements IPointWiseDataselectionStrategy {
                 hasClosest = minDistance[i][j] <= minDistanceAttribute[j];
             }
             if (!hasClosest) {
-                traindata.delete(i);
+                traindata.remove(i);
+                if (trainversion.getBugMatrix() != null) {
+                    trainversion.getBugMatrix().remove(i);
+                }
+                if (trainversion.getEfforts() != null) {
+                    trainversion.getEfforts().remove(i);
+                }
+                if (trainversion.getNumBugs() != null) {
+                    trainversion.getNumBugs().remove(i);
+                }
             }
         }
     }

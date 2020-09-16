@@ -36,7 +36,6 @@ import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.ITrainingStrategy;
 import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import weka.core.Instances;
 
 /**
  * Class responsible for executing an experiment according to an {@link ExperimentConfiguration}.
@@ -96,29 +95,6 @@ public class CrossValidationExperiment implements IExecutionStrategy {
     }
 
     /**
-     * Helper method that combines a set of Weka {@link Instances} sets into a single
-     * {@link Instances} set.
-     * 
-     * @param traindataSet
-     *            set of {@link Instances} to be combines
-     * @return single {@link Instances} set
-     */
-    public static Instances makeSingleTrainingSet(SetUniqueList<Instances> traindataSet) {
-        Instances traindataFull = null;
-        for (Instances traindata : traindataSet) {
-            if (traindataFull == null) {
-                traindataFull = new Instances(traindata);
-            }
-            else {
-                for (int i = 0; i < traindata.numInstances(); i++) {
-                    traindataFull.add(traindata.instance(i));
-                }
-            }
-        }
-        return traindataFull;
-    }
-
-    /**
      * Executes the experiment with the steps as described in the class comment.
      * 
      * @see Runnable#run()
@@ -168,17 +144,14 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 }
 
                 // Setup testdata and training data
-                Instances testdata = testVersion.getInstances();
-                List<Double> efforts = testVersion.getEfforts();
-                List<Double> numBugs = testVersion.getNumBugs();
-                Instances bugMatrix = testVersion.getBugMatrix();
+                SoftwareVersion testversion = new SoftwareVersion(testVersion);
 
-                SetUniqueList<Instances> traindataSet =
-                    SetUniqueList.setUniqueList(new LinkedList<Instances>());
+                SetUniqueList<SoftwareVersion> trainversionSet =
+                    SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
                 for (SoftwareVersion trainingVersion : versions) {
                     if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
                         if (trainingVersion != testVersion) {
-                            traindataSet.add(trainingVersion.getInstances());
+                            trainversionSet.add(new SoftwareVersion(trainingVersion));
                         }
                     }
                 }
@@ -188,7 +161,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                     LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
+                    processor.apply(testversion, trainversionSet);
                 }
                 for (ISetWiseProcessingStrategy processor : this.config
                     .getSetWisePostprocessors())
@@ -196,21 +169,21 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindataSet);
+                    processor.apply(testversion, trainversionSet);
                 }
-                Instances traindata = makeSingleTrainingSet(traindataSet);
+                SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), processor.getClass().getName()));
-                    processor.apply(testdata, traindata);
+                    processor.apply(testversion, trainversion);
                 }
                 
                 // training with test data
@@ -219,7 +192,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                                                   this.config.getExperimentName(), versionCount,
                                                   testVersionCount, testVersion.getVersion(),
                                                   trainer.getName()));
-                    trainer.apply(testdata);
+                    trainer.apply(testversion);
                 }
 
                 File resultsDir = new File(this.config.getResultsPath());
@@ -252,8 +225,9 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, testdata, allTrainers, efforts, numBugs, bugMatrix, writeHeader,
-                                    this.config.getResultStorages());
+                    evaluator.apply(testversion.getInstances(), testversion.getInstances(), allTrainers,
+                            testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                            this.config.getResultStorages());
                     writeHeader = false;
                 }
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

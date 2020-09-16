@@ -28,10 +28,9 @@ public class BugDateFilter implements IVersionProcessingStrategy {
 	 * 
 	 * @param testversion  the testdata
 	 * @param trainversion the trainversion
-	 * @param traindata    the training data
 	 */
 	@Override
-	public void apply(SoftwareVersion testversion, SoftwareVersion trainversion, Instances traindata) {
+	public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
 		if (testversion.getReleaseDate() == null || trainversion.getBugMatrix()==null) {
 			LOGGER.warn("BugDateFilter does nothing because release date or bug matrix is not available");
 			return;
@@ -39,6 +38,8 @@ public class BugDateFilter implements IVersionProcessingStrategy {
 		LocalDateTime releaseDate = testversion.getReleaseDate();
 		
 		Instances bugMatrix = trainversion.getBugMatrix();
+
+		Instances traindata = trainversion.getInstances();
 
 		int[] bugCounts = new int[traindata.size()];
 		for (int j = 0; j < bugMatrix.numAttributes(); j++) {
@@ -54,7 +55,6 @@ public class BugDateFilter implements IVersionProcessingStrategy {
 				}
 			}
 		}
-
 		for (int i = 0; i < traindata.size(); i++) {
 			if (traindata.classAttribute().isNominal()) {
 				if (bugCounts[i] > 0) {

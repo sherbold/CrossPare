@@ -16,11 +16,12 @@ package de.ugoe.cs.cpdp.training;
 
 
 
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * <p>
@@ -48,12 +49,12 @@ public class WekaTraining extends WekaBaseTraining implements ITrainingStrategy 
     private static final Logger LOGGER = LogManager.getLogger("main");
 
     @Override
-    public void apply(Instances traindata) {
+    public void apply(SoftwareVersion trainversion) {
         this.classifier = setupClassifier();
         if (this.classifier == null) {
             LOGGER.error("classifier of WekaTraining is null");
             throw new RuntimeException("classifier of WekaTraining is null");
         }
-        this.classifier = WekaUtils.buildClassifier(this.classifier, traindata);
+        this.classifier = WekaUtils.buildClassifier(this.classifier, trainversion.getInstances());
     }
 }

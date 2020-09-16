@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
-import de.ugoe.cs.cpdp.loader.AbstractFolderLoader;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -30,24 +30,25 @@ import weka.core.Instances;
 public class NormalizeByLogEffort implements ISetWiseProcessingStrategy, IProcessesingStrategy {
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        normalizeByLogEffort(testdata);
-        for (Instances traindata : traindataSet) {
-            normalizeByLogEffort(traindata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        normalizeByLogEffort(testversion);
+        for (SoftwareVersion trainversion : trainversionSet) {
+            normalizeByLogEffort(trainversion);
         }
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        normalizeByLogEffort(testdata);
-        normalizeByLogEffort(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        normalizeByLogEffort(testversion);
+        normalizeByLogEffort(trainversion);
     }
 
     /**
@@ -64,11 +65,12 @@ public class NormalizeByLogEffort implements ISetWiseProcessingStrategy, IProces
     /**
      * Implements the effort normalization
      * 
-     * @param data
-     *            data that is normalized
+     * @param version
+     *            version of the data that is normalized
      */
-    private void normalizeByLogEffort(Instances data) {
-        List<Double> efforts = AbstractFolderLoader.getEfforts(data);
+    private void normalizeByLogEffort(SoftwareVersion version) {
+        Instances data = version.getInstances();
+        List<Double> efforts = version.getEfforts();
         for (int i = 0; i < data.size(); i++) {
             for (int j = 0; j < data.numAttributes(); j++) {
                 if (j != data.classIndex()) {

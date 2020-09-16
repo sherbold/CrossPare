@@ -17,11 +17,10 @@ package de.ugoe.cs.cpdp.dataprocessing;
 import org.apache.commons.collections4.list.SetUniqueList;
 
 import de.ugoe.cs.cpdp.IParameterizable;
-
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
- * A data processing strategy that is applied to the test data and a multiple sets of training data.
+ * A data processing strategy that is applied to the software version of the test data and a multiple software versions as training data.
  * 
  * @author Steffen Herbold
  */
@@ -30,11 +29,11 @@ public interface ISetWiseProcessingStrategy extends IParameterizable {
     /**
      * Applies the processing strategy.
      * 
-     * @param testdata
-     *            test data
-     * @param traindataSet
-     *            training data sets
+     * @param testversion
+     *            version of the test data
+     * @param trainversionSet
+     *            versions of the training data sets
      */
-    void apply(Instances testdata, SetUniqueList<Instances> traindataSet);
+    void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet);
 
 }
