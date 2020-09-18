@@ -4,7 +4,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 import org.apache.commons.collections4.list.SetUniqueList;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * <p>
@@ -28,26 +28,26 @@ public class MakeClassBinary implements ISetWiseProcessingStrategy, IProcessesin
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        WekaUtils.makeClassBinary(testdata);
-        WekaUtils.makeClassBinary(traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        WekaUtils.makeClassBinary(testversion.getInstances());
+        WekaUtils.makeClassBinary(trainversion.getInstances());
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      * org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        WekaUtils.makeClassBinary(testdata);
-        for (Instances traindata : traindataSet) {
-            WekaUtils.makeClassBinary(traindata);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        WekaUtils.makeClassBinary(testversion.getInstances());
+        for (SoftwareVersion trainversion : trainversionSet) {
+            WekaUtils.makeClassBinary(trainversion.getInstances());
         }
     }
 

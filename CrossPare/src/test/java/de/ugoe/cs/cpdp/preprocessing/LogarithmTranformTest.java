@@ -9,7 +9,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.junit.Test;
 
 import de.ugoe.cs.cpdp.dataprocessing.LogarithmTransform;
-
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -38,8 +38,10 @@ public class LogarithmTranformTest {
 		instances.add(new DenseInstance(1.0, value2));
 		instances.add(new DenseInstance(1.0, value3));
 		
+		SoftwareVersion version = new SoftwareVersion("foo", "bar", "1.0", instances, null, null, null, null, null);
+
 		LogarithmTransform processor = new LogarithmTransform();
-		processor.apply(instances, SetUniqueList.setUniqueList(new LinkedList<Instances>()) );
+		processor.apply(version, SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>()) );
 		
 		double[] expected1 = new double[]{Math.log(1.5+1), 0.0, Math.log(3.0+1)};
 		double[] expected2 = new double[]{Math.log(1.4+1), 1.0, Math.log(6.0+1)};

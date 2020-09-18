@@ -21,6 +21,7 @@ import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.math3.util.MathArrays;
 
 import de.ugoe.cs.cpdp.util.ArrayUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -37,18 +38,18 @@ public class SetWiseKNNSelection extends AbstractCharacteristicSelection {
     private int k = 1;
 
     /**
-     * @see ISetWiseDataselectionStrategy#apply(weka.core.Instances,
+     * @see ISetWiseDataselectionStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @SuppressWarnings("boxing")
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        final Instances data = normalizedCharacteristicInstances(testdata, traindataSet);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        final Instances data = normalizedCharacteristicInstances(testversion, trainversionSet);
 
         final Set<Integer> selected = getClosestK(data, this.k);
-        for (int i = traindataSet.size() - 1; i >= 0; i--) {
-            if (!selected.contains(i + 1)) {  // traindata starts from data[1] but from traindataSet[0]
-                traindataSet.remove(i);
+        for (int i = trainversionSet.size() - 1; i >= 0; i--) {
+            if (!selected.contains(i + 1)) {  // traindata starts from data[1] but from trainversionSet[0]
+                trainversionSet.remove(i);
             }
         }
     }

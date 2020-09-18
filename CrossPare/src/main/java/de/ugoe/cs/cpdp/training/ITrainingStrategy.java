@@ -14,7 +14,7 @@
 
 package de.ugoe.cs.cpdp.training;
 
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * <p>
@@ -30,10 +30,10 @@ public interface ITrainingStrategy extends ITrainer {
      * Applies the training strategy.
      * </p>
      *
-     * @param traindata
+     * @param trainversion
      *            the training data for all target products
      */
-    void apply(Instances traindata);
+    void apply(SoftwareVersion trainversion);
 
     /**
      * <p>

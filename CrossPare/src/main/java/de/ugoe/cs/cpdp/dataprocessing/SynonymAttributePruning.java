@@ -14,6 +14,7 @@
 
 package de.ugoe.cs.cpdp.dataprocessing;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -37,11 +38,12 @@ public class SynonymAttributePruning implements IProcessesingStrategy {
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        applySynonymPruning(testdata, traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applySynonymPruning(testversion.getInstances(), trainversion.getInstances());
     }
 
     /**

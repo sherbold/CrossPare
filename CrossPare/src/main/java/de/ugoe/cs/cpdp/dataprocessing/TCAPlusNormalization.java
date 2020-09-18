@@ -16,6 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.cpdp.util.WekaUtils.DistChar;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Instances;
 
 /**
@@ -41,12 +42,12 @@ public class TCAPlusNormalization implements IProcessesingStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        applyTCAPlus(testdata, traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        applyTCAPlus(testversion.getInstances(), trainversion.getInstances());
     }
 
     private static void applyTCAPlus(Instances testdata, Instances traindata) {

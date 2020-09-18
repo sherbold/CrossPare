@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.Test;
 
 import de.ugoe.cs.cpdp.dataprocessing.BiasedWeights;
-
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -46,8 +46,10 @@ public class BiasedWeightsTest {
 		instances.add(new DenseInstance(1.0, value7));
 		instances.add(new DenseInstance(1.0, value8));
 		
+		SoftwareVersion version = new SoftwareVersion("foo", "bar", "1.0", instances, null, null, null, null, null);
+
 		BiasedWeights processor = new BiasedWeights();
-		processor.apply(new Instances(instances), instances);
+		processor.apply(new SoftwareVersion(version), version);
 		
 		assertEquals(0.6666666d, instances.instance(0).weight(), 0.00001);
 		assertEquals(2.0d, instances.instance(1).weight(), 0.00001);
@@ -91,10 +93,11 @@ public class BiasedWeightsTest {
 		instances.add(new DenseInstance(1.0, value7));
 		instances.add(new DenseInstance(1.0, value8));
 		
-		
+		SoftwareVersion version = new SoftwareVersion("foo", "bar", "1.0", instances, null, null, null, null, null);
+
 		BiasedWeights processor = new BiasedWeights();
 		processor.setParameter("0.7");
-		processor.apply(new Instances(instances), instances);
+		processor.apply(new SoftwareVersion(version), version);
 		
 		assertEquals(0.4, instances.instance(0).weight(), 0.00001);
 		assertEquals(2.8, instances.instance(1).weight(), 0.00001);

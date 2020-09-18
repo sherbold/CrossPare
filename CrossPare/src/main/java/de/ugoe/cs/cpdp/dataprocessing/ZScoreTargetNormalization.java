@@ -16,7 +16,7 @@ package de.ugoe.cs.cpdp.dataprocessing;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 
-import weka.core.Instances;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
  * N4 after "Transfer Defect Learning" by Jaechang Nam, Sinno Jialin Pan, and Sunghun Kim.
@@ -39,19 +39,20 @@ public class ZScoreTargetNormalization
     }
 
     /**
-     * @see ISetWiseProcessingStrategy#apply(weka.core.Instances,
+     * @see ISetWiseProcessingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
      *      org.apache.commons.collections4.list.SetUniqueList)
      */
     @Override
-    public void apply(Instances testdata, SetUniqueList<Instances> traindataSet) {
-        NormalizationUtil.zScoreTarget(testdata, traindataSet);
+    public void apply(SoftwareVersion testversion, SetUniqueList<SoftwareVersion> trainversionSet) {
+        NormalizationUtil.zScoreTarget(testversion, trainversionSet);
     }
 
     /**
-     * @see IProcessesingStrategy#apply(weka.core.Instances, weka.core.Instances)
+     * @see IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     *      de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @Override
-    public void apply(Instances testdata, Instances traindata) {
-        NormalizationUtil.zScoreTarget(testdata, traindata);
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        NormalizationUtil.zScoreTarget(testversion.getInstances(), trainversion.getInstances());
     }
 }

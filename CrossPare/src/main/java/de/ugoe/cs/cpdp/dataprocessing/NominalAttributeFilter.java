@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -56,12 +57,13 @@ public class NominalAttributeFilter implements IProcessesingStrategy {
     /*
      * (non-Javadoc)
      * 
-     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(weka.core.Instances,
-     * weka.core.Instances)
+     * @see de.ugoe.cs.cpdp.dataprocessing.IProcessesingStrategy#apply(de.ugoe.cs.cpdp.versions.SoftwareVersion,
+     * de.ugoe.cs.cpdp.versions.SoftwareVersion)
      */
     @SuppressWarnings("boxing")
     @Override
-    public void apply(Instances testdata, Instances traindata) {
+    public void apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
+        Instances traindata = trainversion.getInstances();
         int indexOfConfidenceAttribute = -1;
 
         // Find index of the named confidence attribute to filter for
@@ -99,6 +101,15 @@ public class NominalAttributeFilter implements IProcessesingStrategy {
                 .contains(wekaInstance.value(indexOfConfidenceAttribute)))
             {
                 traindata.delete(j);
+                if (trainversion.getBugMatrix() != null) {
+                    trainversion.getBugMatrix().delete(j);
+                }
+                if (trainversion.getEfforts() != null) {
+                    trainversion.getEfforts().remove(j);
+                }
+                if (trainversion.getNumBugs() != null) {
+                    trainversion.getNumBugs().remove(j);
+                }
             }
         }
     }

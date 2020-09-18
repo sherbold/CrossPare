@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.collections4.list.SetUniqueList;
 
 import de.ugoe.cs.cpdp.util.WekaUtils;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.core.DenseInstance;
@@ -74,9 +75,9 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
      * SetUniqueList)
      */
     @Override
-    public void apply(SetUniqueList<Instances> traindataSet) {
+    public void apply(SetUniqueList<SoftwareVersion> trainversionSet) {
         try {
-            this.classifier.buildClassifier(traindataSet);
+            this.classifier.buildClassifier(trainversionSet);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -158,16 +159,17 @@ public class WekaBaggingTraining extends WekaBaseTraining implements ISetWiseTra
          * trains a new dataset wise bagging classifier
          * </p>
          *
-         * @param traindataSet
+         * @param trainversionSet
          *            the training data per prodcut
          * @throws Exception
          *             thrown if an error occurs during the training of the classifiers for any
          *             product
          */
-        public void buildClassifier(SetUniqueList<Instances> traindataSet) throws Exception {
+        public void buildClassifier(SetUniqueList<SoftwareVersion> trainversionSet) throws Exception {
             this.classifiers = new LinkedList<>();
             this.trainingData = new LinkedList<>();
-            for (Instances traindata : traindataSet) {
+            for (SoftwareVersion trainversion : trainversionSet) {
+                Instances traindata = trainversion.getInstances();
                 Classifier currentClassifier = setupClassifier();
                 currentClassifier = WekaUtils.buildClassifier(currentClassifier, traindata);
                 this.classifiers.add(currentClassifier);

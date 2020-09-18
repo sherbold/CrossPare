@@ -14,11 +14,11 @@
 
 package de.ugoe.cs.cpdp.dataprocessing;
 
-import weka.core.Instances;
 import de.ugoe.cs.cpdp.IParameterizable;
+import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
- * A data processing strategy that is applied to the test data and a single set of training data.
+ * A data processing strategy that is applied to the software version of the test data and a a single software version as training data.
  * 
  * @author Steffen Herbold
  */
@@ -27,10 +27,10 @@ public interface IProcessesingStrategy extends IParameterizable {
     /**
      * Applies the processing strategy.
      * 
-     * @param testdata
-     *            test data
-     * @param traindata
-     *            training data
+     * @param testversion
+     *            version of the test data
+     * @param trainversion
+     *            version of the training data
      */
-    void apply(Instances testdata, Instances traindata);
+    void apply(SoftwareVersion testversion, SoftwareVersion trainversion);
 }
