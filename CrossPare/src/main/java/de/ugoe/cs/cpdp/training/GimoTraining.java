@@ -34,8 +34,27 @@ import de.unihannover.gimo_m.mining.agents.MiningAgent;
 
 /**
  * Implementation of a classifier that uses the genetic rule mining algorithm
- * GIMO after Baum et al. 2018 for training, adapted to work with defect
- * prediction data.
+ * GIMO after Baum, Herbold & Schneider (https://doi.org/10.1016/j.eswax.2020.100040) 
+ * for training, adapted to work with defect prediction data.
+ * 
+ * When given no or incomplete parameters, the following default parameters are
+ * used:
+ * 
+ * -A number of agents (threads) 
+ *  default: 1
+ * 
+ * -C Maximum complexity of the best rule 
+ *  default: 30
+ * 
+ * -P Percentage in which the GIMO classifier is willing to deteriorate the cost
+ * range in favor of further complexity reduction 
+ *  default: 0.1 (10%)
+ * 
+ * -T Training time in minutes 
+ *  default: 60
+ * 
+ * -V Verbosity: Controls whether the GIMO output should be displayed
+ *  default: false 
  * 
  * @author jvdmosel
  */
@@ -296,7 +315,7 @@ public class GimoTraining implements IWekaCompatibleTrainer, ITrainingStrategy {
             // cost range might be NaN or lower bound might be greater than upper bound (terrible)
             if (vr.isNaN() || vr.isTerrible()) {
                 return Double.MIN_VALUE;
-                // cost range might be positive infinite
+            // cost range might be positive infinite
             } else if (vr.isInfinite()) {
                 return Double.MAX_VALUE;
             } else {
