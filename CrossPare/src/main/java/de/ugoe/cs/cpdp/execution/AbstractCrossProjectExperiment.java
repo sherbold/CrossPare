@@ -181,6 +181,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     versionCount++;
                     continue;
                 }
+                SetUniqueList<SoftwareVersion> trainversionOriginalSet = SetUniqueList.setUniqueList(trainversionSet);
 
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
@@ -221,6 +222,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     setwiseTestdataAwareTrainer.apply(trainversionSet, testversion);
                 }
                 SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
+                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionOriginalSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
@@ -286,8 +288,9 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers,
-                            testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                    evaluator.apply(testversion.getInstances(), trainversion.getInstances(),
+                            trainversionOriginal.getInstances(), allTrainers, testversion.getEfforts(),
+                            testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
                             this.config.getResultStorages());
                     writeHeader = false;
                 }

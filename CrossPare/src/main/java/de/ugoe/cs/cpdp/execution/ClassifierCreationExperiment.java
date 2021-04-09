@@ -107,6 +107,7 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
             // At first: traindata == testdata
             SoftwareVersion testversion = new SoftwareVersion(testVersion);
             SoftwareVersion trainversion = new SoftwareVersion(testVersion);
+            SoftwareVersion trainversionOriginal = new SoftwareVersion(testVersion);
 
             // Give the dataset a new name
             testversion.getInstances().setRelationName(testVersion.getProject());
@@ -175,8 +176,9 @@ public class ClassifierCreationExperiment implements IExecutionStrategy {
                     evaluator.setParameter(this.config.getResultsPath() + "/" +
                         this.config.getExperimentName() + ".csv");
                 }
-                evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers,
-                        testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                evaluator.apply(testversion.getInstances(), trainversion.getInstances(),
+                        trainversionOriginal.getInstances(), allTrainers, testversion.getEfforts(),
+                        testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
                         this.config.getResultStorages());
                 writeHeader = false;
             }

@@ -164,7 +164,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         }
                     }
                 }
-
+                SoftwareVersion trainversionOriginal = new SoftwareVersion(testversion);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
@@ -220,8 +220,8 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testdata, trainversion.getInstances(), allTrainers, efforts, numBugs, bugMatrix,
-                            writeHeader, this.config.getResultStorages());
+                    evaluator.apply(testdata, trainversion.getInstances(), trainversionOriginal.getInstances(),
+                            allTrainers, efforts, numBugs, bugMatrix, writeHeader, this.config.getResultStorages());
                     writeHeader = false;
                 }
                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

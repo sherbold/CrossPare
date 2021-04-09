@@ -101,7 +101,8 @@ public class EffortMetricCalculator {
     }
 
     /**
-     * Calculates AUCEC, i.e., a ROC curve of relative bugs found vs relative review effort
+     * Calculates AUCEC ("area under the cost-effectiveness curve"), i.e.,
+     * a ROC curve of relative bugs found vs relative review effort.
      *
      * @return AUCEC value
      */
@@ -121,6 +122,59 @@ public class EffortMetricCalculator {
             aucec += curRelativeEffort * relativeBugsFound; // simple Riemann integral
         }
         return aucec;
+    }
+
+    /**
+     * Calculates the area under the curve of the ROC defined by recall and false positive rate in a specific
+     * region of interest. The region is defined by thresholds for recall and fpr, which are given by
+     * a baseline model based on the class level imbalance. I.e., only the area counts where the recall is bigger
+     * and the fpr is smaller than the number of defective instances by the number of all instances.
+     *
+     * @return AUC in region of interest
+     */
+    public double getAUCwRoI() {
+        if( scores==null ) {
+            return -1;
+        }
+        int numInstances = scores.length;
+        double numPositives = 0.0;
+        int[] cumLabel = new int[numInstances];
+        if (scores[0].getBugCount() > 0.0){
+            numPositives += 1;
+            cumLabel[0] = 1;
+        }
+        else cumLabel[0] = 0;
+        for (int i=1; i< numInstances; i++){
+            if (scores[i].getBugCount() > 0.0){
+                numPositives += 1;
+                cumLabel[i] = cumLabel[i-1] + 1;
+            }
+            else cumLabel[i] = cumLabel[i-1];
+        }
+        double ratio = numPositives / numInstances;
+        double numNegatives = numInstances - numPositives;
+        double curRecall;
+        double curFPR;
+        double nextFPR;
+        double auc = 0.0;
+        for (int i=0; i < numInstances; i++){
+            curRecall = cumLabel[i] / numPositives;
+            curFPR = ((i+1) - cumLabel[i]) / numNegatives;
+            if (i < numInstances - 1){
+                nextFPR = ((i+2) - cumLabel[i+1]) / numNegatives;
+            }
+            else nextFPR = ratio;
+            if (curRecall <= ratio){
+                curRecall = 0.0;
+            }
+            else curRecall -= ratio;
+            if (nextFPR > ratio){
+                auc += curRecall * (ratio - curFPR);
+                break;
+            }
+            else auc += curRecall * (nextFPR - curFPR);
+        }
+        return auc;
     }
 
     /**
@@ -275,6 +329,23 @@ public class EffortMetricCalculator {
             }
         }
         return nofbMissed;
+    }
+
+    /**
+     * <p>
+     * Cost of the quality assurance, i.e., the effort of artifacts containing a predicted bug.
+     * </p>
+     *
+     * @return
+     */
+    public double getCost() {
+        double cost = 0.0;
+        for( ScoreEffortPair score : scores ) {
+            if(score.getClassification()==1.0) {
+                cost += score.getEffort();
+            }
+        }
+        return cost;
     }
 
     /**

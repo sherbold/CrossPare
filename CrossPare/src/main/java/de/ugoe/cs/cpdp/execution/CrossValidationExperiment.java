@@ -155,7 +155,8 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         }
                     }
                 }
-                
+                SetUniqueList<SoftwareVersion> trainversionOriginalSet = SetUniqueList.setUniqueList(trainversionSet);
+
                 // allowing processors
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
                     LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
@@ -172,6 +173,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                     processor.apply(testversion, trainversionSet);
                 }
                 SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
+                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionOriginalSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
@@ -225,8 +227,9 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testversion.getInstances(), testversion.getInstances(), allTrainers,
-                            testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                    evaluator.apply(testversion.getInstances(), testversion.getInstances(),
+                            trainversionOriginal.getInstances(), allTrainers, testversion.getEfforts(),
+                            testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
                             this.config.getResultStorages());
                     writeHeader = false;
                 }
