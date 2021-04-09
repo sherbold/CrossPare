@@ -164,7 +164,7 @@ public class WithinProjectOrderedSplitExperiment implements IExecutionStrategy {
                         }
                     }
                 }
-                SoftwareVersion trainversionOriginal = new SoftwareVersion(testversion);
+                SoftwareVersion trainversionOriginal = new SoftwareVersion(trainversion);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,

@@ -143,13 +143,17 @@ public class EffortMetricCalculator {
             numPositives += 1;
             cumLabel[0] = 1;
         }
-        else cumLabel[0] = 0;
+        else {
+            cumLabel[0] = 0;
+        }
         for (int i=1; i< numInstances; i++){
             if (scores[i].getBugCount() > 0.0){
                 numPositives += 1;
                 cumLabel[i] = cumLabel[i-1] + 1;
             }
-            else cumLabel[i] = cumLabel[i-1];
+            else {
+                cumLabel[i] = cumLabel[i-1];
+            }
         }
         double ratio = numPositives / numInstances;
         double numNegatives = numInstances - numPositives;
@@ -163,16 +167,22 @@ public class EffortMetricCalculator {
             if (i < numInstances - 1){
                 nextFPR = ((i+2) - cumLabel[i+1]) / numNegatives;
             }
-            else nextFPR = ratio;
+            else {
+                nextFPR = ratio;
+            }
             if (curRecall <= ratio){
                 curRecall = 0.0;
             }
-            else curRecall -= ratio;
+            else {
+                curRecall -= ratio;
+            }
             if (nextFPR > ratio){
                 auc += curRecall * (ratio - curFPR);
                 break;
             }
-            else auc += curRecall * (nextFPR - curFPR);
+            else {
+                auc += curRecall * (nextFPR - curFPR);
+            }
         }
         return auc;
     }

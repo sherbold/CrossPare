@@ -181,8 +181,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     versionCount++;
                     continue;
                 }
-                SetUniqueList<SoftwareVersion> trainversionOriginalSet = SetUniqueList.setUniqueList(trainversionSet);
-
+                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionSet);
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
@@ -222,7 +221,6 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     setwiseTestdataAwareTrainer.apply(trainversionSet, testversion);
                 }
                 SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
-                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionOriginalSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,

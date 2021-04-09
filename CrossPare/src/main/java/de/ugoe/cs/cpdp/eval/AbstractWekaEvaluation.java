@@ -25,6 +25,7 @@ import java.util.List;
 
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instance;
@@ -550,10 +551,13 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      */
     public static double getBias(Instances data) {
         double count = 0.0;
-        for (Instance instance : data) {
-            if (instance.classValue() > 0.0) {
-                count += 1.0;
-            }
+        if (data.classAttribute().isNominal()){
+            count = data.attributeStats(data.classIndex()).nominalCounts[1];
+        }
+        else {
+            Instances nominalData = new Instances(data);
+            WekaUtils.makeClassBinary(nominalData);
+            count = nominalData.attributeStats(data.classIndex()).nominalCounts[1];
         }
         return (count / data.size());
     }
@@ -578,12 +582,12 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
         }
         effortDefect.sort(Collections.reverseOrder());
-        double percentile = Math.ceil(effortDefect.size() / 100.0);
-        double LargestPercentileEffort = 0.0;
-        for (int i = 0; i < percentile; i++){
-            LargestPercentileEffort += effortDefect.get(i);
+        int percentileIndex = (int) Math.ceil(effortDefect.size() / 100.0);
+        double largestPercentileEffort = 0.0;
+        for (int i = 0; i < percentileIndex; i++){
+            largestPercentileEffort += effortDefect.get(i);
         }
-        return LargestPercentileEffort / (double)amountDefectArtifacts;
+        return largestPercentileEffort / (double)amountDefectArtifacts;
     }
 
     /**
@@ -606,11 +610,11 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
         }
         effortClean.sort(Collections.reverseOrder());
-        double percentile = Math.ceil(effortClean.size() / 100.0);
-        double LargestPercentileEffort = 0.0;
-        for (int i = 0; i < percentile; i++){
-            LargestPercentileEffort += effortClean.get(i);
+        int percentileIndex = (int)Math.ceil(effortClean.size() / 100.0);
+        double largestPercentileEffort = 0.0;
+        for (int i = 0; i < percentileIndex; i++){
+            largestPercentileEffort += effortClean.get(i);
         }
-        return LargestPercentileEffort / (double)amountCleanArtifacts;
+        return largestPercentileEffort / (double)amountCleanArtifacts;
     }
 }

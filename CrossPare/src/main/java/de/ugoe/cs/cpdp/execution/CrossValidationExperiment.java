@@ -155,7 +155,7 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                         }
                     }
                 }
-                SetUniqueList<SoftwareVersion> trainversionOriginalSet = SetUniqueList.setUniqueList(trainversionSet);
+                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionSet);
 
                 // allowing processors
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
@@ -173,7 +173,6 @@ public class CrossValidationExperiment implements IExecutionStrategy {
                     processor.apply(testversion, trainversionSet);
                 }
                 SoftwareVersion trainversion = CrosspareUtils.makeSingleVersionSet(trainversionSet);
-                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionOriginalSet);
                 for (IProcessesingStrategy processor : this.config.getPreProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying preprocessor %s",
                                                   this.config.getExperimentName(), versionCount,
