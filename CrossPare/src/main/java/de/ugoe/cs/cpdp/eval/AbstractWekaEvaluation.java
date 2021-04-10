@@ -551,13 +551,10 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
      */
     public static double getBias(Instances data) {
         double count = 0.0;
-        if (data.classAttribute().isNominal()){
-            count = data.attributeStats(data.classIndex()).nominalCounts[1];
-        }
-        else {
-            Instances nominalData = new Instances(data);
-            WekaUtils.makeClassBinary(nominalData);
-            count = nominalData.attributeStats(data.classIndex()).nominalCounts[1];
+        for (Instance instance : data) {
+            if (instance.classValue() > 0.0) {
+                count += 1.0;
+            }
         }
         return (count / data.size());
     }
