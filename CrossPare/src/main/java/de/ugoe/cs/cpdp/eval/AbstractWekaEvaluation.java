@@ -141,6 +141,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",mcc_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",auc_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",aucec_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",aucAlberg_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",aucRoI_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",balance_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",nofb20_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -272,8 +273,9 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 gmeasure = 2 * eval.recall(1) * (1.0 - pf) / (eval.recall(1) + (1.0 - pf));
             }
             double balance = 1.0-Math.sqrt(Math.pow(1-eval.recall(1),2)+Math.pow(pf,2))/Math.sqrt(2);
-            double aucWithRoI = effortEval.getAUCwRoI();
             double aucec = effortEval.getAUCEC();
+            double aucAlberg = effortEval.getAUCAlberg();
+            double aucWithRoI = effortEval.getAUCwRoI();
             double nofb20 = effortEval.getNofb20();
             double relb20 = effortEval.getRelb20();
             double nofi80 = effortEval.getNofi80();
@@ -297,6 +299,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             this.output.append("," + eval.matthewsCorrelationCoefficient(1));
             this.output.append("," + eval.areaUnderROC(1));
             this.output.append("," + aucec);
+            this.output.append("," + aucAlberg);
             this.output.append("," + aucWithRoI);
             this.output.append("," + balance);
             this.output.append("," + nofb20);

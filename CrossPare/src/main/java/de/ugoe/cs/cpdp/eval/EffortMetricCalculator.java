@@ -125,6 +125,27 @@ public class EffortMetricCalculator {
     }
 
     /**
+     * Calculates the AUC of an Alberg diagram, i.e.,
+     * a ROC curve with percentage of found bugs vs percentage of modules.
+     *
+     * @return AUC Alberg value
+     */
+    public double getAUCAlberg() {
+        if( scores==null ) {
+            return -1;
+        }
+        double relativeBugsFound = 0.0;
+        double aucAlberg = 0.0;
+        double percentagePerModule = 1.0 / (double) scores.length;
+        for (ScoreEffortPair score : scores) {
+            double curRelativeBugsFound = score.getBugCount() / totalBugs;
+            relativeBugsFound += curRelativeBugsFound;
+            aucAlberg += relativeBugsFound * percentagePerModule;
+        }
+        return aucAlberg;
+    }
+
+    /**
      * Calculates the area under the curve of the ROC defined by recall and false positive rate in a specific
      * region of interest. The region is defined by thresholds for recall and fpr, which are given by
      * a baseline model based on the class level imbalance. I.e., only the area counts where the recall is bigger
