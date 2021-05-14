@@ -17,14 +17,18 @@ package de.ugoe.cs.cpdp.eval;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import de.ugoe.cs.cpdp.training.ITrainer;
 import de.ugoe.cs.cpdp.training.IWekaCompatibleTrainer;
+import de.ugoe.cs.cpdp.util.WekaUtils;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.core.Instance;
 import weka.core.Instances;
 
 /**
@@ -40,14 +44,17 @@ import weka.core.Instances;
  * <li>AUC</li>
  * <li>balance</li>
  * <li>AUCEC</li>
+ * <li>aucRoI</li>
  * <li>NofB20</li>
  * <li>RelB20</li>
  * <li>NofI80</li>
  * <li>RelI80</li>
  * <li>RelE80</li>
+ * <li>NECM10</li>
  * <li>NECM15</li>
  * <li>NECM20</li>
  * <li>NECM25</li>
+ * <li>cost</li>
  * <li>tpr: true positive rate</li>
  * <li>tnr: true negative rate</li>
  * <li>fpr: false positive rate</li>
@@ -98,6 +105,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
     @Override
     public void apply(Instances testdata,
                       Instances traindata,
+                      Instances traindataOriginal,
                       List<ITrainer> trainers,
                       List<Double> efforts,
                       List<Double> numBugs,
@@ -122,7 +130,8 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         }
 
         if (writeHeader) {
-            this.output.append("version,size_test,size_training");
+            this.output.append("version,size_test,size_training,size_training_original");
+            this.output.append(",bias_test,bias_training,bias_training_original,prop1_defect,prop1_clean");
             for (ITrainer trainer : trainers) {
                 this.output.append(",error_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",recall_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -132,6 +141,14 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",mcc_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",auc_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",aucec_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",aucAlberg_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",aucRoI_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",balance_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",nofb20_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",nofi80_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",necm10_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",necm25_" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",cost_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",tpr_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",tnr_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",fpr_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -163,7 +180,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",lowerSize1toMImp10_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperSize1toMImp10_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerSizeNtoMImp10_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",upperSizeNtoM_Imp10" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",upperSizeNtoMImp10_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1to1Imp20_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperConst1to1Imp20_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1toMImp20_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -175,7 +192,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",lowerSize1toMImp20_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperSize1toMImp20_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerSizeNtoMImp20_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",upperSizeNtoM_Imp20" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",upperSizeNtoMImp20_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1to1Imp30_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperConst1to1Imp30_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1toMImp30_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -187,7 +204,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",lowerSize1toMImp30_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperSize1toMImp30_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerSizeNtoMImp30_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",upperSizeNtoM_Imp30" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",upperSizeNtoMImp30_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1to1Imp40_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperConst1to1Imp40_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1toMImp40_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -199,7 +216,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",lowerSize1toMImp40_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperSize1toMImp40_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerSizeNtoMImp40_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",upperSizeNtoM_Imp40" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",upperSizeNtoMImp40_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1to1Imp50_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperConst1to1Imp50_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerConst1toMImp50_" + ((IWekaCompatibleTrainer) trainer).getName());
@@ -211,7 +228,7 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
                 this.output.append(",lowerSize1toMImp50_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",upperSize1toMImp50_" + ((IWekaCompatibleTrainer) trainer).getName());
                 this.output.append(",lowerSizeNtoMImp50_" + ((IWekaCompatibleTrainer) trainer).getName());
-                this.output.append(",upperSizeNtoM_Imp50" + ((IWekaCompatibleTrainer) trainer).getName());
+                this.output.append(",upperSizeNtoMImp50_" + ((IWekaCompatibleTrainer) trainer).getName());
             }
             this.output.append(System.lineSeparator());
         }
@@ -219,6 +236,12 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
         this.output.append(productName);
         this.output.append("," + testdata.numInstances());
         this.output.append("," + traindata.numInstances());
+        this.output.append("," + traindataOriginal.numInstances());
+        this.output.append("," + getBias(testdata));
+        this.output.append("," + getBias(traindata));
+        this.output.append("," + getBias(traindataOriginal));
+        this.output.append("," + getProp1Defects(testdata, efforts));
+        this.output.append("," + getProp1Clean(testdata, efforts));
 
         Evaluation eval = null;
         EffortMetricCalculator effortEval = null;
@@ -251,18 +274,22 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             }
             double balance = 1.0-Math.sqrt(Math.pow(1-eval.recall(1),2)+Math.pow(pf,2))/Math.sqrt(2);
             double aucec = effortEval.getAUCEC();
+            double aucAlberg = effortEval.getAUCAlberg();
+            double aucWithRoI = effortEval.getAUCwRoI();
             double nofb20 = effortEval.getNofb20();
             double relb20 = effortEval.getRelb20();
             double nofi80 = effortEval.getNofi80();
             double reli80 = effortEval.getReli80();
             double rele80 = effortEval.getRele80();
-            
+
+            double necm10 = getNECM(eval, 10.0);
             double necm15 = getNECM(eval, 15.0);
             double necm20 = getNECM(eval, 20.0);
             double necm25 = getNECM(eval, 25.0);
-            
+
             double nofbPredicted = effortEval.getNofBPredicted();
             double nofbMissed = effortEval.getNofBMissed();
+            double cost = effortEval.getCost();
             
             this.output.append("," + eval.errorRate());
             this.output.append("," + eval.recall(1));
@@ -272,6 +299,14 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
             this.output.append("," + eval.matthewsCorrelationCoefficient(1));
             this.output.append("," + eval.areaUnderROC(1));
             this.output.append("," + aucec);
+            this.output.append("," + aucAlberg);
+            this.output.append("," + aucWithRoI);
+            this.output.append("," + balance);
+            this.output.append("," + nofb20);
+            this.output.append("," + nofi80);
+            this.output.append("," + necm10);
+            this.output.append("," + necm25);
+            this.output.append("," + cost);
             this.output.append("," + eval.truePositiveRate(1));
             this.output.append("," + eval.trueNegativeRate(1));
             this.output.append("," + eval.falsePositiveRate(1));
@@ -506,5 +541,80 @@ public abstract class AbstractWekaEvaluation implements IEvaluationStrategy {
     public static double getNECM(Evaluation eval, double factor) {
         return (eval.numFalsePositives(1)+factor*eval.numFalseNegatives(1))/
                 (eval.numInstances());
+    }
+
+    /**
+     * <p>
+     * Calculates the bias of a data set. That means the percentage of instances in
+     * the training data that are defective.
+     * </p>
+     *
+     * @param data data set to calculate the bias for
+     * @return bias
+     */
+    public static double getBias(Instances data) {
+        double count = 0.0;
+        for (Instance instance : data) {
+            if (instance.classValue() > 0.0) {
+                count += 1.0;
+            }
+        }
+        return (count / data.size());
+    }
+
+    /**
+     * <p>
+     * Calculates ratio of the effort of the largest percentile of defect artifacts by
+     * the overall amount of defect artifacts.
+     * </p>
+     *
+     * @param data test data set
+     * @param efforts effort list from the test data set
+     * @return Effort of the largest percentile of defect artifacts by overall amount of defect artifacts.
+     */
+    public static double getProp1Defects(Instances data, List<Double> efforts) {
+        List<Double> effortDefect = new ArrayList<>();
+        int amountDefectArtifacts = 0;
+        for (int i = 0; i < data.size(); i++){
+            if (data.get(i).classValue() > 0.0) {
+                amountDefectArtifacts += 1;
+                effortDefect.add(efforts.get(i));
+            }
+        }
+        effortDefect.sort(Collections.reverseOrder());
+        int percentileIndex = (int) Math.ceil(effortDefect.size() / 100.0);
+        double largestPercentileEffort = 0.0;
+        for (int i = 0; i < percentileIndex; i++){
+            largestPercentileEffort += effortDefect.get(i);
+        }
+        return largestPercentileEffort / (double)amountDefectArtifacts;
+    }
+
+    /**
+     * <p>
+     * Calculates ratio of the effort of the largest percentile of clean artifacts by
+     * the overall amount of clean artifacts.
+     * </p>
+     *
+     * @param data test data set
+     * @param efforts effort list from the test data set
+     * @return Effort of the largest percentile of clean artifacts by overall amount of clean artifacts.
+     */
+    public static double getProp1Clean(Instances data, List<Double> efforts) {
+        List<Double> effortClean = new ArrayList<>();
+        int amountCleanArtifacts = 0;
+        for (int i = 0; i < data.size(); i++){
+            if (data.get(i).classValue() < 1.0) {
+                amountCleanArtifacts += 1;
+                effortClean.add(efforts.get(i));
+            }
+        }
+        effortClean.sort(Collections.reverseOrder());
+        int percentileIndex = (int)Math.ceil(effortClean.size() / 100.0);
+        double largestPercentileEffort = 0.0;
+        for (int i = 0; i < percentileIndex; i++){
+            largestPercentileEffort += effortClean.get(i);
+        }
+        return largestPercentileEffort / (double)amountCleanArtifacts;
     }
 }

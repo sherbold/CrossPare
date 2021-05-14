@@ -29,6 +29,7 @@ import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
 import de.ugoe.cs.cpdp.dataprocessing.IVersionProcessingStrategy;
 import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
+import de.ugoe.cs.cpdp.dataselection.TestAsTraining;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
 import de.ugoe.cs.cpdp.training.ISetWiseTestdataAwareTrainingStrategy;
@@ -181,7 +182,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     versionCount++;
                     continue;
                 }
-
+                SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionSet);
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",
                                 this.config.getExperimentName(), versionCount, testVersionCount,
@@ -196,6 +197,9 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                                testVersionCount, testVersion.getVersion(),
                                                dataselector.getClass().getName()));
                     dataselector.apply(testversion, trainversionSet);
+                    if (dataselector instanceof TestAsTraining){
+                        trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionSet);
+                    }
                 }
                 for (ISetWiseProcessingStrategy processor : this.config
                     .getSetWisePostprocessors())
@@ -286,8 +290,9 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                         evaluator.setParameter(this.config.getResultsPath() + "/" +
                             this.config.getExperimentName() + ".csv");
                     }
-                    evaluator.apply(testversion.getInstances(), trainversion.getInstances(), allTrainers,
-                            testversion.getEfforts(), testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                    evaluator.apply(testversion.getInstances(), trainversion.getInstances(),
+                            trainversionOriginal.getInstances(), allTrainers, testversion.getEfforts(),
+                            testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
                             this.config.getResultStorages());
                     writeHeader = false;
                 }

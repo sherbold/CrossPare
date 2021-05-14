@@ -166,6 +166,7 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                 SoftwareVersion testversion = new SoftwareVersion(testVersion);
 
                                 SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
+                                SoftwareVersion trainversionOriginal = new SoftwareVersion(trainingVersion);
 
                                 // only one set
                                 SetUniqueList<SoftwareVersion> trainversionSet =
@@ -310,8 +311,9 @@ public class HeterogeneousExperiment implements IExecutionStrategy {
                                             this.config.getExperimentName() + ".csv");
                                     }
                                     evaluator.apply(testversion.getInstances(), trainversion.getInstances(),
-                                            allTrainers, testversion.getEfforts(), testversion.getNumBugs(),
-                                            testversion.getBugMatrix(), writeHeader, this.config.getResultStorages());
+                                            trainversionOriginal.getInstances(), allTrainers, testversion.getEfforts(),
+                                            testversion.getNumBugs(), testversion.getBugMatrix(), writeHeader,
+                                            this.config.getResultStorages());
                                     writeHeader = false;
                                 }
                                 LOGGER.info(String.format("[%s] [%02d/%02d] %s: finished",

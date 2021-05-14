@@ -35,6 +35,8 @@ public interface IEvaluationStrategy extends IParameterizable {
      *            test data for the evaluation
      * @param traindata
      *            training data used
+     * @param traindataOriginal
+     *            training data before preprocessing
      * @param trainers
      *            list of training algorithms used to train the classifiers
      * @param efforts
@@ -51,6 +53,7 @@ public interface IEvaluationStrategy extends IParameterizable {
      */
     void apply(Instances testdata,
                Instances traindata,
+               Instances traindataOriginal,
                List<ITrainer> trainers,
                List<Double> efforts,
                List<Double> numBugs,
