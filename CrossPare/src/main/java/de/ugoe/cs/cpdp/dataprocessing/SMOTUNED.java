@@ -81,6 +81,7 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
      * maximal ratio of the final amount of majority class instances to the overall instances (1.0 = no undersampling)
      */
     final double undersampleRate = 0.5;
+
     /**
      * Parameters are fixed. String is ignored.
      *
@@ -197,13 +198,13 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
      * @return best performing SMOTE filter object
      */
     private SMOTE differentialEvolution(Instances data){
-        ArrayList<SMOTE> frontier = randomFrontier();
+        List<SMOTE> frontier = randomFrontier();
         SmoteScorePair bestSMOTE = new SmoteScorePair(new SMOTE(frontier.get(0)), data);
         Random rand = new Random();
         int lives = 1;
         while(lives > 0){
             lives -= 1;
-            ArrayList<SMOTE> tempFrontier = new ArrayList<>();
+            List<SMOTE> tempFrontier = new ArrayList<>();
             for(int i=0; i<frontier.size(); i++){
                 SmoteScorePair oldSMOTE = new SmoteScorePair(new SMOTE(frontier.get(i)), data);
                 SMOTE x = frontier.get(rand.nextInt(frontier.size()));
@@ -272,8 +273,8 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
      *
      * @return list of SMOTE objects
      */
-    private ArrayList<SMOTE> randomFrontier(){
-        ArrayList<SMOTE> frontier = new ArrayList<>();
+    private List<SMOTE> randomFrontier(){
+        List<SMOTE> frontier = new ArrayList<>();
         Random rand = new Random();
         for(int i=0; i<this.sizeFrontier; i++){
             int numNeighbors = rand.nextInt(this.maxNumNeighbors) + this.minNumNeighbors;
@@ -472,7 +473,7 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
             if (this.numNeighbors >= sizeMinority){
                 this.numNeighbors = sizeMinority - 1;
             }
-            ArrayList<Integer> synthList = new ArrayList<Integer>();
+            List<Integer> synthList = new ArrayList<>();
             for(int i=0; i<sizeMinority; i++){
                 synthList.add(i);
             }
@@ -512,7 +513,7 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
          */
         private Instances createSyntheticInstances(Instances minority, Instance pickedInstance){
             Random rand = new Random();
-            ArrayList<NeighborDistancePair> neighbors = new ArrayList<>();
+            List<NeighborDistancePair> neighbors = new ArrayList<>();
             for (Instance instance : minority) {
                 double distance = minkowskiDistance(pickedInstance, instance);
                 neighbors.add(new NeighborDistancePair(distance, instance));
@@ -540,7 +541,7 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
             while(synthCounter > 0){
                 synthCounter -= 1;
                 int randNeighborIndex = rand.nextInt(this.numNeighbors);
-                ArrayList<Double> diff = diffInstances(pickedInstance, neighbors.get(randNeighborIndex).getInstance());
+                List<Double> diff = diffInstances(pickedInstance, neighbors.get(randNeighborIndex).getInstance());
                 syntheticInstances.get(synthCounter).setValue(0, pickedInstance.value(0));
                 syntheticInstances.get(synthCounter).setValue(1,
                         neighbors.get(randNeighborIndex).getInstance().value(0));
@@ -575,8 +576,8 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
          * @param  secondInstance Instance whose attribute values are subtracted from the other
          * @return List with difference of each attribute
          */
-        private ArrayList<Double> diffInstances(Instance firstInstance, Instance secondInstance){
-            ArrayList<Double> difference = new ArrayList<>();
+        private List<Double> diffInstances(Instance firstInstance, Instance secondInstance){
+            List<Double> difference = new ArrayList<>();
             for (int i=0; i< firstInstance.numAttributes(); i++){
                 difference.add(firstInstance.value(i) - secondInstance.value(i));
             }

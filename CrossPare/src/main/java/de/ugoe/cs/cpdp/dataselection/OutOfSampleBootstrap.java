@@ -1,8 +1,6 @@
 package de.ugoe.cs.cpdp.dataselection;
 
-import de.ugoe.cs.cpdp.util.WekaUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
-import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import weka.core.Instance;
@@ -54,9 +52,12 @@ public class OutOfSampleBootstrap implements IPointWiseDataselectionStrategy {
      */
     @Override
     public SoftwareVersion apply(SoftwareVersion testversion, SoftwareVersion trainversion) {
-        WekaUtils.makeClassBinary(testversion.getInstances());
-        WekaUtils.makeClassBinary(trainversion.getInstances());
-
+        if (testversion.getInstances().classAttribute().isNumeric()) {
+            throw new RuntimeException("Error: The class attribute of the test data is not binary.");
+        }
+        if (trainversion.getInstances().classAttribute().isNumeric()) {
+            throw new RuntimeException("Error: The class attribute of the training data is not binary.");
+        }
         SoftwareVersion testversioncopy = new SoftwareVersion(testversion);
         Instances testdata = testversion.getInstances();
         Instances testBugMatrix = testversion.getBugMatrix();
@@ -110,18 +111,18 @@ public class OutOfSampleBootstrap implements IPointWiseDataselectionStrategy {
                 if (abortCounter >= abortLimit){
                     throw new RuntimeException(
                             String.format("Error while taking a bootstrap sample of %s: After %d iterations, " +
-                                            "no bootstrap sample containing a defect was created.",
-                                    trainversion.getVersion(), abortLimit));
+                                            "no bootstrap sample containing at least %d defective files was created.",
+                                    trainversion.getVersion(), abortLimit, this.minDefects));
                 }
                 continue;
             }
 
-            List<Double> leftovers = new ArrayList<>();
+            List<Integer> leftovers = new ArrayList<>();
             for (int i = 0; i < datasetSize; i++) {
-                leftovers.add((double) i);
+                leftovers.add(i);
             }
             for (int i = 0; i < datasetSize; i++) {
-                leftovers.remove((double) bootstrapSample.get(i));
+                leftovers.remove(bootstrapSample.get(i));
             }
             testdata.clear();
             if (testBugMatrix != null) {
@@ -133,8 +134,7 @@ public class OutOfSampleBootstrap implements IPointWiseDataselectionStrategy {
             if (testNumBugs != null) {
                 testNumBugs.clear();
             }
-            for (int i = 0; i < leftovers.size(); i++) {
-                int index = leftovers.get(i).intValue();
+            for (int index : leftovers) {
                 testdata.add((Instance) testversioncopy.getInstances().get(index).copy());
                 if (testBugMatrix != null) {
                     testBugMatrix.add((Instance) testversioncopy.getBugMatrix().get(index).copy());
