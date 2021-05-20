@@ -15,6 +15,9 @@
 package de.ugoe.cs.cpdp.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
@@ -22,12 +25,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.functions.RBFNetwork;
 import weka.classifiers.meta.CVParameterSelection;
 import weka.classifiers.rules.ZeroR;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.OptionHandler;
 import weka.core.WekaException;
 
 /**
@@ -403,6 +408,366 @@ public class WekaUtils {
         }
         else if (!data.classAttribute().isNumeric()) {
             throw new RuntimeException("class attribute invalid: neither numeric nor nominal");
+        }
+    }
+
+    /**
+     * Optimization of a classifiers' hyperparameters with differential evolution
+     * <p>
+     * Differential evolution is a genetic algorithm in which the hyperparameters get optimized by mutation, i.e.
+     * they are manipulated in a random process and if the mutated version performs better it 'survives'.
+     * The parameters of this function consists of the data to optimize on, the classifier and hyperparameter descriptions,
+     * and control parameter for the optimization.
+     *
+     * @param traindata data set on which the optimization is done
+     * @param clfClass weka class name of the classifier to train
+     * @param fixedParamString String with fixed hyperparameters
+     * @param tuneParams list of hyperparameters, which are to be tuned
+     * @param mutationConstant differentiation constant (control parameter)
+     * @param crossoverConstant probability of hyperparameters to mutate (control parameter)
+     * @param populationSize size of population (control parameter)
+     * @param numGenerations number of iterations (control parameter)
+     * @return trained classifier with optimized hyperparameters
+     */
+    public static Classifier differentialEvolution(Instances traindata, String clfClass, String fixedParamString,
+                                                   List<Hyperparameter> tuneParams, double mutationConstant,
+                                                   double crossoverConstant, int populationSize, int numGenerations) {
+        if(populationSize < 4){
+            throw new RuntimeException(String.format("Error: The differential evolution algorithm needs at least a population of size 4, currently set to %d", populationSize));
+        }
+        if(numGenerations <= 0){
+            throw new RuntimeException(String.format("Error: The set number of generations = %d is not a valid for the algorithm",numGenerations));
+        }
+        if(mutationConstant < 0.0 || mutationConstant > 1.0){
+            throw new RuntimeException(String.format("Error: The set mutation constant = %f is not a valid for the algorithm",mutationConstant));
+        }
+        if(crossoverConstant < 0.0 || crossoverConstant > 1.0){
+            throw new RuntimeException(String.format("Error: The set crossover constant = %f is not a valid for the algorithm",crossoverConstant));
+        }
+        int indexBest = 0;
+        Random rand = new Random();
+        List<ClassifierScorePair> population = new ArrayList<>();
+        for (int j = 0; j < populationSize; j++) {
+            List<Hyperparameter> tuneParamsRand = new ArrayList<>();
+            for (Hyperparameter hyperparam : tuneParams) {
+                Hyperparameter copyHyperparam = new Hyperparameter(hyperparam);
+                copyHyperparam.pickRandom();
+                tuneParamsRand.add(copyHyperparam);
+            }
+            population.add(new ClassifierScorePair(clfClass, fixedParamString, tuneParamsRand, traindata));
+        }
+        for (int gen = 0; gen < numGenerations; gen++) {
+            for (int j = 0; j < populationSize; j++) {
+                int[] r = {0, 0, 0};
+                r[0] = rand.nextInt(populationSize);
+                while (r[0] == j) {
+                    r[0] = rand.nextInt(populationSize);
+                }
+                r[1] = rand.nextInt(populationSize);
+                while (r[1] == j || r[1] == r[0]) {
+                    r[1] = rand.nextInt(populationSize);
+                }
+                r[2] = rand.nextInt(populationSize);
+                while (r[2] == j || r[2] == r[0] || r[2] == r[1]) {
+                    r[2] = rand.nextInt(populationSize);
+                }
+                int randomFixedMutation = rand.nextInt(tuneParams.size());
+                List<Hyperparameter> mutatedParams = new ArrayList<>();
+                for (int i = 0; i < tuneParams.size(); i++) {
+                    if (rand.nextFloat() < crossoverConstant || randomFixedMutation == i) {
+                        double value = population.get(r[2]).getParams().get(i).getValue() +
+                                mutationConstant * (population.get(r[0]).getParams().get(i).getValue() -
+                                        population.get(r[1]).getParams().get(i).getValue());
+                        mutatedParams.add(new Hyperparameter(population.get(j).getParams().get(i), value));
+                        if (mutatedParams.get(i).checkOutOfBound()) {
+                            mutatedParams.get(i).pickRandom();
+                        }
+                    }
+                    else {
+                        mutatedParams.add(new Hyperparameter(population.get(j).getParams().get(i)));
+                    }
+                }
+                ClassifierScorePair mutation = new ClassifierScorePair(population.get(j), mutatedParams, traindata);
+                if(!Double.isNaN(mutation.getScore())){
+                    if (mutation.getScore() >= population.get(j).getScore() || Double.isNaN(population.get(j).getScore())){
+                        population.set(j, mutation);
+                        if (mutation.getScore() >= population.get(indexBest).getScore() || Double.isNaN(population.get(indexBest).getScore())){
+                            indexBest = j;
+                        }
+                    }
+                }
+            }
+        }
+        return population.get(indexBest).getClf();
+    }
+
+    /**
+     * Contains the description of a hyperparameter and is a helper class for the differential evolution
+     * <p>
+     * Currently only supports numeric parameters (integer or float).
+     * */
+    public static class Hyperparameter {
+
+        /**
+         * Name of the parameter (has to match with the weka/sklearn keyword)
+         */
+        private final String name;
+
+        /**
+         * true: Parameter is treated as integer | false: Parameter is treated as float
+         */
+        private final boolean isInt;
+
+        /**
+         * Lower bound of the parameter for hyperparameter tuning
+         */
+        private final Double min;
+
+        /**
+         * Upper bound of the parameter for hyperparameter tuning
+         */
+        private final Double max;
+
+        /**
+         * Value of the parameter
+         */
+        private Double value;
+
+        /**
+         * Constructor for tunable parameters including the boundary values.
+         */
+        public Hyperparameter(String name, boolean isInt, double min, double max) {
+            this.name = name;
+            this.isInt = isInt;
+            this.min = min;
+            this.max = max;
+            this.value = null;
+        }
+
+        /**
+         * Copy constructor.
+         */
+        public Hyperparameter(Hyperparameter other) {
+            this.name = other.name;
+            this.isInt = other.isInt;
+            this.min = other.min;
+            this.max = other.max;
+            this.value = other.value;
+        }
+
+        /**
+         * Copy constructor with a new value setter.
+         */
+        public Hyperparameter(Hyperparameter other, double newValue) {
+            this.name = other.name;
+            this.isInt = other.isInt;
+            this.min = other.min;
+            this.max = other.max;
+            this.setValue(newValue);
+        }
+
+        /**
+         * @return the value of the hyperparameter
+         */
+        public Double getValue() {
+            return this.value;
+        }
+
+        /**
+         * sets the value of the hyperparameter, sensitive to integer or float type parameters.
+         */
+        public void setValue(double value) {
+            if(this.isInt){
+                this.value = (double) Math.round(value);
+            }
+            else {
+                this.value = value;
+            }
+        }
+
+        /**
+         * @return the string representation of the hyperparameter as needed by the weka interface.
+         */
+        public String toString() {
+            if (this.isInt) {
+                return String.format("%s %d", this.name, Math.round(this.value));
+            }
+            return String.format("%s %.3f", this.name, this.value).replace(",", ".");
+        }
+
+        /**
+         * sets the value to a random value between the boundaries
+         */
+        public void pickRandom() {
+            Random rand = new Random();
+            setValue(this.min + (this.max - this.min) * rand.nextFloat());
+        }
+
+        /**
+         * @return true if the current value is out of the boundary values
+         */
+        public boolean checkOutOfBound() {
+            return (this.value < this.min || this.value > this.max);
+        }
+    }
+
+    /**
+     * Helper class for the differential evolution algorithm.
+     * Keeps a weka classifier object and additional information about the classifier,
+     * including: class name, parameters for hyperparameter tuning, defined fixed parameters and performance score.
+     */
+    private static class ClassifierScorePair {
+
+        /**
+         * Weka class name of the classifier
+         */
+        private final String name;
+
+        /**
+         * true: if classifier is: ScikitLearnClassifier | false: otherwise
+         */
+        private final boolean isSklearn;
+
+        /**
+         * Weka classifier
+         */
+        private Classifier clf;
+
+        /**
+         * List of hyperparameters for hyperparameter tuning
+         */
+        private final List<Hyperparameter> tuneParams;
+
+        /**
+         * String with the fixed hyperparameters
+         */
+        private final String fixedParamsString;
+
+        /**
+         * Performance score of the classifier
+         */
+        private final double score;
+
+        /**
+         * Constructor which also sets up, evaluates and builds the classifier according to the
+         * given hyperparameters on the given data set.
+         */
+        public ClassifierScorePair(String name, String fixedParamsString, List<Hyperparameter> tuneParams,
+                                   Instances data) {
+            this.name = name;
+            this.isSklearn = this.name.equals("weka.classifiers.sklearn.ScikitLearnClassifier");
+            this.tuneParams = tuneParams;
+            this.fixedParamsString = fixedParamsString;
+            this.clf = setupClassifier();
+            this.score = evaluateClassifier(data);
+            this.clf = buildClassifier(this.clf, data);
+        }
+
+        /**
+         * Copy constructor with updated tunable parameters which sets up, evaluates and builds the classifier
+         * according to the given hyperparameters on the given data set.
+         */
+        public ClassifierScorePair(ClassifierScorePair other, List<Hyperparameter> newTuneParameters, Instances data) {
+            this.name = other.name;
+            this.isSklearn = other.isSklearn;
+            this.tuneParams = newTuneParameters;
+            this.fixedParamsString = other.fixedParamsString;
+            this.clf = setupClassifier();
+            this.score = evaluateClassifier(data);
+            this.clf = buildClassifier(this.clf, data);
+        }
+
+        /**
+         * @return the classifier object
+         */
+        public Classifier getClf() {
+            return clf;
+        }
+
+        /**
+         * @return the performance score
+         */
+        public double getScore() {
+            return score;
+        }
+
+        /**
+         * @return the list of tuning hyperparameters
+         */
+        public List<Hyperparameter> getParams() {
+            return tuneParams;
+        }
+
+        /**
+         * Sets up a weka classifier for differential evolution
+         *
+         * @return classifier object
+         */
+        public Classifier setupClassifier() {
+            List<String> allParamStrings = new ArrayList<>(Arrays.asList(this.fixedParamsString.split(" ")));
+            for (Hyperparameter hyperparameter : this.tuneParams){
+                if(isSklearn){
+                    allParamStrings.add(hyperparameter.toString().replace(" ", "="));
+                }
+                else{
+                    allParamStrings.addAll(Arrays.asList(hyperparameter.toString().split(" ")));
+                }
+            }
+            String[] optionStrings;
+            if(isSklearn){
+                List<String> wekaParams = new ArrayList<>();
+                List<String> sklearnParams = new ArrayList<>();
+                for(String param : allParamStrings) {
+                    if (param.contains("=")) {
+                        sklearnParams.add(param);
+                    } else {
+                        wekaParams.add(param);
+                    }
+                }
+                if(!sklearnParams.isEmpty()){
+                    wekaParams.add("-parameters");
+                    wekaParams.add(String.join(",", sklearnParams));
+                }
+                optionStrings = wekaParams.toArray(new String[0]);
+            }
+            else{
+                optionStrings = allParamStrings.toArray(new String[0]);
+            }
+            Classifier clf = null;
+            try {
+                @SuppressWarnings("unchecked")
+                Class<Classifier> c = (Class<Classifier>) Class.forName(this.name);
+                clf = c.getDeclaredConstructor().newInstance();
+                ((OptionHandler) clf).setOptions(optionStrings);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(String.format("Error: class not found: %s", e.toString()));
+            } catch (InstantiationException e) {
+                throw new RuntimeException(String.format("Error: Instantiation Exception: %s", e.toString()));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(String.format("Error: Illegal Access Exception: %s", e.toString()));
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Error: Exception: %s", e.toString()));
+            }
+            return clf;
+        }
+
+        /**
+         * Evaluates the classifier
+         * <p>
+         * Using 3-fold cross validation and Matthews Correlation Coefficient as performance measure.
+         *
+         * @param data data set to evaluate the classifier on
+         * @return performance score (MCC)
+         */
+        private double evaluateClassifier(Instances data) {
+            Evaluation eval;
+            try {
+                eval = new Evaluation(data);
+                eval.crossValidateModel(this.clf, data, 3, new Random());
+            } catch (Exception e) {
+                throw new RuntimeException("error evaluating a classifier: " + e);
+            }
+            return eval.matthewsCorrelationCoefficient(1);
         }
     }
 }
