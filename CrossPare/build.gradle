@@ -31,6 +31,7 @@ dependencies {
     implementation group: 'nz.ac.waikato.cms.weka', name: 'alternatingDecisionTrees', version: '1.0.5'
     implementation group: 'nz.ac.waikato.cms.weka', name: 'probabilisticSignificanceAE', version: '1.0.2'
     implementation group: 'nz.ac.waikato.cms.weka', name: 'RBFNetwork', version: '1.0.8'
+    implementation group: 'nz.ac.waikato.cms.weka', name: 'wekaPython', version: '1.0.13'
     
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.5'
     implementation group: 'commons-io', name: 'commons-io', version: '2.4'
