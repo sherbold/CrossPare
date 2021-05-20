@@ -444,7 +444,6 @@ public class WekaUtils {
         if(crossoverConstant < 0.0 || crossoverConstant > 1.0){
             throw new RuntimeException(String.format("Error: The set crossover constant = %f is not a valid for the algorithm",crossoverConstant));
         }
-        int indexBest = 0;
         Random rand = new Random();
         List<ClassifierScorePair> population = new ArrayList<>();
         for (int j = 0; j < populationSize; j++) {
@@ -455,6 +454,13 @@ public class WekaUtils {
                 tuneParamsRand.add(copyHyperparam);
             }
             population.add(new ClassifierScorePair(clfClass, fixedParamString, tuneParamsRand, traindata));
+        }
+        int indexBest = 0;
+        for(int j = 0; j < populationSize; j++){
+            if((population.get(j).getScore() > population.get(indexBest).getScore())
+                    || Double.isNaN(population.get(indexBest).getScore())){
+                indexBest = j;
+            }
         }
         for (int gen = 0; gen < numGenerations; gen++) {
             for (int j = 0; j < populationSize; j++) {
@@ -489,16 +495,23 @@ public class WekaUtils {
                 }
                 ClassifierScorePair mutation = new ClassifierScorePair(population.get(j), mutatedParams, traindata);
                 if(!Double.isNaN(mutation.getScore())){
-                    if (mutation.getScore() >= population.get(j).getScore() || Double.isNaN(population.get(j).getScore())){
+                    if ((mutation.getScore() >= population.get(j).getScore()) || Double.isNaN(population.get(j).getScore())){
                         population.set(j, mutation);
-                        if (mutation.getScore() >= population.get(indexBest).getScore() || Double.isNaN(population.get(indexBest).getScore())){
+                        if ((mutation.getScore() >= population.get(indexBest).getScore()) || (Double.isNaN(population.get(indexBest).getScore()))){
                             indexBest = j;
                         }
                     }
                 }
             }
         }
-        return population.get(indexBest).getClf();
+        if(Double.isNaN(population.get(indexBest).getScore())){
+            List<Hyperparameter> emptyTuneParams = new ArrayList<>();
+            ClassifierScorePair defaultClassifier = new ClassifierScorePair(clfClass, fixedParamString, emptyTuneParams, traindata);
+            return defaultClassifier.getClf();
+        }
+        else{
+            return population.get(indexBest).getClf();
+        }
     }
 
     /**
@@ -592,7 +605,7 @@ public class WekaUtils {
             if (this.isInt) {
                 return String.format("%s %d", this.name, Math.round(this.value));
             }
-            return String.format("%s %.3f", this.name, this.value).replace(",", ".");
+            return String.format("%s %.6f", this.name, this.value).replace(",", ".");
         }
 
         /**
