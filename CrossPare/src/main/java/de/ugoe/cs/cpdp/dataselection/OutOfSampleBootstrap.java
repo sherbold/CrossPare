@@ -103,20 +103,6 @@ public class OutOfSampleBootstrap implements IPointWiseDataselectionStrategy {
                     trainNumBugs.add(testversioncopy.getNumBugs().get(index));
                 }
             }
-            if (traindata.attributeStats(traindata.classIndex()).nominalCounts[1] >= this.minDefects){
-                takeNewBootstrapSample = false;
-            }
-            else {
-                abortCounter += 1;
-                if (abortCounter >= abortLimit){
-                    throw new RuntimeException(
-                            String.format("Error while taking a bootstrap sample of %s: After %d iterations, " +
-                                            "no bootstrap sample containing at least %d defective files was created.",
-                                    trainversion.getVersion(), abortLimit, this.minDefects));
-                }
-                continue;
-            }
-
             List<Integer> leftovers = new ArrayList<>();
             for (int i = 0; i < datasetSize; i++) {
                 leftovers.add(i);
@@ -144,6 +130,20 @@ public class OutOfSampleBootstrap implements IPointWiseDataselectionStrategy {
                 }
                 if (testNumBugs != null) {
                     testNumBugs.add(testversioncopy.getNumBugs().get(index));
+                }
+            }
+            if (traindata.attributeStats(traindata.classIndex()).nominalCounts[1] >= this.minDefects &&
+                    testdata.attributeStats(testdata.classIndex()).nominalCounts[1] >= 1){
+                takeNewBootstrapSample = false;
+            }
+            else {
+                abortCounter += 1;
+                if (abortCounter >= abortLimit){
+                    throw new RuntimeException(
+                            String.format("Error while taking a bootstrap sample of %s: After %d iterations, " +
+                                            "no bootstrap sample containing at least %d defective files in the " +
+                                            "training data and at least 1 defective file in the test data was created.",
+                                    trainversion.getVersion(), abortLimit, this.minDefects));
                 }
             }
         }
