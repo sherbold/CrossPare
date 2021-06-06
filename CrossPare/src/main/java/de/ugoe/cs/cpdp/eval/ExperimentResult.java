@@ -1001,7 +1001,7 @@ public class ExperimentResult {
      * sets the balance
      * </p>
      *
-     * @param auc
+     * @param balance
      *            the balance
      */
     @SuppressWarnings("hiding")
@@ -1049,7 +1049,7 @@ public class ExperimentResult {
      * sets the effort as NofB20
      * </p>
      *
-     * @param aucec
+     * @param nofb20
      *            the effort as NofB20
      */
     @SuppressWarnings("hiding")
@@ -1073,7 +1073,7 @@ public class ExperimentResult {
      * sets the effort as RelB20
      * </p>
      *
-     * @param aucec
+     * @param relb20
      *            the effort as RelB20
      */
     @SuppressWarnings("hiding")
@@ -1097,7 +1097,7 @@ public class ExperimentResult {
      * sets the effort as NofI80
      * </p>
      *
-     * @param aucec
+     * @param nofi80
      *            the effort as NofI80
      */
     @SuppressWarnings("hiding")
@@ -1121,7 +1121,7 @@ public class ExperimentResult {
      * sets the effort as RelI80
      * </p>
      *
-     * @param aucec
+     * @param reli80
      *            the effort as RelI80
      */
     @SuppressWarnings("hiding")
@@ -1145,7 +1145,7 @@ public class ExperimentResult {
      * sets the effort as RelE80
      * </p>
      *
-     * @param aucec
+     * @param rele80
      *            the effort as RelE80
      */
     @SuppressWarnings("hiding")
@@ -1169,7 +1169,7 @@ public class ExperimentResult {
      * sets the cost as NECM15
      * </p>
      *
-     * @param aucec
+     * @param necm15
      *            the cost as NECM15
      */
     @SuppressWarnings("hiding")
@@ -1193,7 +1193,7 @@ public class ExperimentResult {
      * sets the cost as NECM20
      * </p>
      *
-     * @param aucec
+     * @param necm20
      *            the cost as NECM20
      */
     @SuppressWarnings("hiding")
@@ -1217,7 +1217,7 @@ public class ExperimentResult {
      * sets the cost as NECM25
      * </p>
      *
-     * @param aucec
+     * @param necm25
      *            the cost as NECM25
      */
     @SuppressWarnings("hiding")
