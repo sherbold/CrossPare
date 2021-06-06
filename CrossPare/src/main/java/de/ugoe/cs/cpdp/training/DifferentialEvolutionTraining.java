@@ -22,9 +22,9 @@ import weka.classifiers.Classifier;
  * <p>
  * The function parameters have to be divided by a ';' as follows:
  * <p>
- * "classname;fixed_parameter_string;tuning_parameters;mutationConstant;crossoverConstant;populationSize;numGenerations"
+ * "name;classname;fixed_parameter_string;tuning_parameters;mutationConstant;crossoverConstant;populationSize;numGenerations"
  * <p>
- * It's possible to give only 3 parameters: "classname;fixed_parameter_string;tuning_parameters". The algorithm's control parameters are then set to default.
+ * It's possible to give only 4 parameters: "name;classname;fixed_parameter_string;tuning_parameters". The algorithm's control parameters are then set to default.
  * <p>
  * The tunable hyperparameters have to be comma separated with the following scheme: "key min_value max_value".
  * <p>
@@ -34,9 +34,9 @@ import weka.classifiers.Classifier;
  * <pre>
  * {@code
  * <!-- example weka -->
- * <trainer name="DifferentialEvolutionTraining" param="weka.classifiers.trees.RandomForest;-I 100;-M 1 20,-K 0.0 1.0;0.9;0.5;10;10"/>
+ * <trainer name="DifferentialEvolutionTraining" param="RandomForest;weka.classifiers.trees.RandomForest;-I 100;-M 1 20,-K 0.0 1.0;0.9;0.5;10;10"/>
  * <!-- example sklearn -->
- * <trainer name="DifferentialEvolutionTraining" param="weka.classifiers.sklearn.ScikitLearnClassifier;-learner RandomForestClassifier n_estimators=100;min_samples_leaf 1 20,max_features 0.0 1.0;0.9;0.5;10;10"/>
+ * <trainer name="DifferentialEvolutionTraining" param="SklearnRandomForest;weka.classifiers.sklearn.ScikitLearnClassifier;-learner RandomForestClassifier n_estimators=100;min_samples_leaf 1 20,max_features 0.0 1.0;0.9;0.5;10;10"/>
  * }
  * </pre>
  * </p>
@@ -59,6 +59,11 @@ public class DifferentialEvolutionTraining implements ITrainingStrategy, IWekaCo
      * Classifiers class name
      */
     private String clfClass;
+
+    /**
+     * Classifiers description name
+     */
+    private String clfName;
 
     /**
      * List of hyperparameters for tuning
@@ -99,11 +104,12 @@ public class DifferentialEvolutionTraining implements ITrainingStrategy, IWekaCo
     public void setParameter(String parameters) {
         if (parameters != null && !parameters.isEmpty()) {
             String[] functionParameters = parameters.split(";");
-            if(functionParameters.length == 3 || functionParameters.length == 7){
-                this.clfClass = functionParameters[0];
-                this.fixedParamsString = functionParameters[1];
+            if(functionParameters.length == 4 || functionParameters.length == 8){
+                this.clfName = functionParameters[0];
+                this.clfClass = functionParameters[1];
+                this.fixedParamsString = functionParameters[2];
                 this.tuneParams = new ArrayList<>();
-                for (String hyperparameterString : functionParameters[2].split(",")) {
+                for (String hyperparameterString : functionParameters[3].split(",")) {
                     String[] p = hyperparameterString.split(" ");
                     if (p.length == 3) {
                         if (p[1].contains(".")) {
@@ -118,10 +124,10 @@ public class DifferentialEvolutionTraining implements ITrainingStrategy, IWekaCo
                     }
                 }
                 if (functionParameters.length == 7){
-                    this.mutationConstant = Double.parseDouble(functionParameters[3]);
-                    this.crossoverConstant = Double.parseDouble(functionParameters[4]);
-                    this.populationSize = Integer.parseInt(functionParameters[5]);
-                    this.numGenerations = Integer.parseInt(functionParameters[6]);
+                    this.mutationConstant = Double.parseDouble(functionParameters[4]);
+                    this.crossoverConstant = Double.parseDouble(functionParameters[5]);
+                    this.populationSize = Integer.parseInt(functionParameters[6]);
+                    this.numGenerations = Integer.parseInt(functionParameters[7]);
                 }
             }
             else{
@@ -161,6 +167,6 @@ public class DifferentialEvolutionTraining implements ITrainingStrategy, IWekaCo
      */
     @Override
     public String getName() {
-        return String.format("differential evolution on %s",this.clfClass);
+        return this.clfName;
     }
 }
