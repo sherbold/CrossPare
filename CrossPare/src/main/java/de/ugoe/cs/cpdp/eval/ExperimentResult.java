@@ -40,6 +40,36 @@ public class ExperimentResult {
      */
     int sizeTrainingData;
 
+	/**
+	 * number of instances of the training data before preprocessing steps
+	 */
+	int sizeTrainingOriginal;
+
+	/**
+	 * percentage of instances in the test data that are defective
+	 */
+	double biasTestData = Double.NaN;
+
+	/**
+	 * percentage of instances in the training data that are defective
+	 */
+	double biasTrainingData = Double.NaN;
+
+	/**
+	 * percentage of instances in the before-preprocessing training data that are defective
+	 */
+	double biasTrainingOriginal = Double.NaN;
+
+	/**
+	 * ratio of the effort of the largest percentile of defect artifacts by the overall amount of defect artifacts
+	 */
+	double prop1Defect = Double.NaN;
+
+	/**
+	 * ratio of the effort of the largest percentile of clean artifacts by the overall amount of clean artifacts
+	 */
+	double prop1Clean = Double.NaN;
+
     /**
      * error of the prediction
      */
@@ -70,20 +100,30 @@ public class ExperimentResult {
      */
     double mcc = Double.NaN;
 
+	/**
+	 * Balance between recall and probability of false detection
+	 */
+	double balance = Double.NaN;
+
     /**
      * Area under the curve of the prediction
      */
     double auc = Double.NaN;
 
     /**
-     * Balance between recall and probability of false detection
-     */
-    double balance = Double.NaN;
-
-    /**
      * Effort of the prediction
      */
     double aucec = Double.NaN;
+
+	/**
+	 * AUC of the Alberg diagram
+	 */
+	double aucAlberg = Double.NaN;
+
+	/**
+	 * Area under the curve of the ROC defined by recall and false positive rate in a specific region of interest
+	 */
+	double aucRoI = Double.NaN;
 
     /**
      * Number of bugs found if 20 percent of the code are reviewed
@@ -110,6 +150,11 @@ public class ExperimentResult {
      */
     double rele80 = Double.NaN;
 
+	/**
+	 * Normalized expected cost of misclassification with factor 10
+	 */
+	double necm10 = Double.NaN;
+
     /**
      * Normalized expected cost of misclassification with factor 15
      */
@@ -124,6 +169,11 @@ public class ExperimentResult {
      * Normalized expected cost of misclassification with factor 25
      */
     double necm25 = Double.NaN;
+
+	/**
+	 * Cost for quality assurance for all predicted artifacts
+	 */
+	double cost = Double.NaN;
 
     /**
      * Number of bugs that are found if the classification is used, i.e., all instances are reviewed that are predicted as defect-prone.
@@ -805,7 +855,155 @@ public class ExperimentResult {
         this.sizeTrainingData = sizeTrainingData;
     }
 
-    /**
+	/**
+	 * <p>
+	 * returns the number of instances of the unprocessed training data
+	 * </p>
+	 *
+	 * @return number of instances
+	 */
+	public int getSizeTrainingOriginal() {
+		return this.sizeTrainingOriginal;
+	}
+
+	/**
+	 * <p>
+	 * sets the number of instances of the unprocessed training data
+	 * </p>
+	 *
+	 * @param sizeTrainingOriginal
+	 *            number of instances
+	 */
+	@SuppressWarnings("hiding")
+	public void setSizeTrainingOriginal(int sizeTrainingOriginal) {
+		this.sizeTrainingOriginal = sizeTrainingOriginal;
+	}
+
+	/**
+	 * <p>
+	 * returns the percentage of instances in the test data that are defective
+	 * </p>
+	 *
+	 * @return the bias
+	 */
+	public double getBiasTestData() {
+		return this.biasTestData;
+	}
+
+	/**
+	 * <p>
+	 * sets the percentage of instances in the test data that are defective
+	 * </p>
+	 *
+	 * @param biasTestData
+	 *            the bias
+	 */
+	@SuppressWarnings("hiding")
+	public void setBiasTestData(double biasTestData) {
+		this.biasTestData = biasTestData;
+	}
+
+	/**
+	 * <p>
+	 * returns the percentage of instances in the training data that are defective
+	 * </p>
+	 *
+	 * @return the bias
+	 */
+	public double getBiasTrainingData() {
+		return this.biasTrainingData;
+	}
+
+	/**
+	 * <p>
+	 * sets the percentage of instances in the training data that are defective
+	 * </p>
+	 *
+	 * @param biasTrainingData
+	 *            the bias
+	 */
+	@SuppressWarnings("hiding")
+	public void setBiasTrainingData(double biasTrainingData) {
+		this.biasTrainingData = biasTrainingData;
+	}
+
+	/**
+	 * <p>
+	 * returns the percentage of instances in the unprocessed training data that are defective
+	 * </p>
+	 *
+	 * @return the bias
+	 */
+	public double getBiasTrainingOriginal() {
+		return this.biasTrainingOriginal;
+	}
+
+	/**
+	 * <p>
+	 * sets the percentage of instances in the unprocessed training data that are defective
+	 * </p>
+	 *
+	 * @param biasTrainingOriginal
+	 *            the bias
+	 */
+	@SuppressWarnings("hiding")
+	public void setBiasTrainingOriginal(double biasTrainingOriginal) {
+		this.biasTrainingOriginal = biasTrainingOriginal;
+	}
+
+	/**
+	 * <p>
+	 * returns the ratio of the effort of the largest percentile of defect artifacts 
+	 * by the overall amount of defect artifacts
+	 * </p>
+	 *
+	 * @return the ratio
+	 */
+	public double getProp1Defect() {
+		return this.prop1Defect;
+	}
+
+	/**
+	 * <p>
+	 * sets the ratio of the effort of the largest percentile of defect artifacts 
+	 * by the overall amount of defect artifacts
+	 * </p>
+	 *
+	 * @param prop1Defect
+	 *            the ratio
+	 */
+	@SuppressWarnings("hiding")
+	public void setProp1Defect(double prop1Defect) {
+		this.prop1Defect = prop1Defect;
+	}
+
+	/**
+	 * <p>
+	 * returns the ratio of the effort of the largest percentile of clean artifacts
+	 * by the overall amount of clean artifacts
+	 * </p>
+	 *
+	 * @return the ratio
+	 */
+	public double getProp1Clean() {
+		return this.prop1Clean;
+	}
+
+	/**
+	 * <p>
+	 * sets the ratio of the effort of the largest percentile of clean artifacts
+	 * by the overall amount of clean artifacts
+	 * </p>
+	 *
+	 * @param prop1Clean
+	 *            the ratio
+	 */
+	@SuppressWarnings("hiding")
+	public void setProp1Clean(double prop1Clean) {
+		this.prop1Clean = prop1Clean;
+	}
+
+	/**
      * <p>
      * returns the error
      * </p>
@@ -961,6 +1159,30 @@ public class ExperimentResult {
     	}
     }
 
+	/**
+	 * <p>
+	 * returns the balance
+	 * </p>
+	 *
+	 * @return the balance
+	 */
+	public double getBalance() {
+		return this.balance;
+	}
+
+	/**
+	 * <p>
+	 * sets the balance
+	 * </p>
+	 *
+	 * @param balance
+	 *            the balance
+	 */
+	@SuppressWarnings("hiding")
+	public void setBalance(double balance) {
+		this.balance = balance;
+	}
+
     /**
      * <p>
      * returns the AUC
@@ -987,30 +1209,6 @@ public class ExperimentResult {
 
     /**
      * <p>
-     * returns the balance
-     * </p>
-     *
-     * @return the balance
-     */
-    public double getBalance() {
-        return this.balance;
-    }
-
-    /**
-     * <p>
-     * sets the balance
-     * </p>
-     *
-     * @param balance
-     *            the balance
-     */
-    @SuppressWarnings("hiding")
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
-
-    /**
-     * <p>
      * returns the effort as AUCEC
      * </p>
      *
@@ -1032,6 +1230,54 @@ public class ExperimentResult {
     public void setAucec(double aucec) {
         this.aucec = aucec;
     }
+    
+	/**
+	 * <p>
+	 * returns the AUC of the Alberg diagram
+	 * </p>
+	 *
+	 * @return the Alberg AUC
+	 */
+	public double getAucAlberg() {
+		return this.aucAlberg;
+	}
+
+	/**
+	 * <p>
+	 * sets the AUC of the Alberg diagram
+	 * </p>
+	 *
+	 * @param aucAlberg
+	 *            the Alberg AUC
+	 */
+	@SuppressWarnings("hiding")
+	public void setAucAlberg(double aucAlberg) {
+		this.aucAlberg = aucAlberg;
+	}
+
+	/**
+	 * <p>
+	 * returns the AUC of the ROC defined by recall and false positive rate in a specific region of interest
+	 * </p>
+	 *
+	 * @return the AUC in region of interest
+	 */
+	public double getAucRoI() {
+		return this.aucRoI;
+	}
+
+	/**
+	 * <p>
+	 * sets the AUC of the ROC defined by recall and false positive rate in a specific region of interest
+	 * </p>
+	 *
+	 * @param aucRoI
+	 *            the AUC in region of interest
+	 */
+	@SuppressWarnings("hiding")
+	public void setAucRoI(double aucRoI) {
+		this.aucRoI = aucRoI;
+	}
 
     /**
      * <p>
@@ -1153,6 +1399,30 @@ public class ExperimentResult {
         this.rele80 = rele80;
     }
 
+	/**
+	 * <p>
+	 * returns the cost as NECM10
+	 * </p>
+	 *
+	 * @return the cost as NECM10
+	 */
+	public double getNecm10() {
+		return this.necm10;
+	}
+
+	/**
+	 * <p>
+	 * sets the cost as NECM10
+	 * </p>
+	 *
+	 * @param necm10
+	 *            the cost as NECM10
+	 */
+	@SuppressWarnings("hiding")
+	public void setNecm10(double necm10) {
+		this.necm10 = necm10;
+	}
+
     /**
      * <p>
      * returns the cost as NECM15
@@ -1224,6 +1494,30 @@ public class ExperimentResult {
     public void setNecm25(double necm25) {
         this.necm25 = necm25;
     }
+
+	/**
+	 * <p>
+	 * returns the cost for quality assurance for all predicted artifacts
+	 * </p>
+	 *
+	 * @return the cost
+	 */
+	public double getCost() {
+		return this.cost;
+	}
+
+	/**
+	 * <p>
+	 * sets the cost for quality assurance for all predicted artifacts
+	 * </p>
+	 *
+	 * @param cost
+	 *            the cost
+	 */
+	@SuppressWarnings("hiding")
+	public void setCost(double cost) {
+		this.cost = cost;
+	}
     
     /**
      * <p>

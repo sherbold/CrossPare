@@ -162,6 +162,12 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`classifier`,");
         preparedSql.append("`testsize`,");
         preparedSql.append("`trainsize`,");
+        preparedSql.append("`trainsizeOriginal`,");
+        preparedSql.append("`biasTest`,");
+        preparedSql.append("`biasTraining`,");
+        preparedSql.append("`biasTrainingOriginal`,");
+        preparedSql.append("`prop1Defect`,");
+        preparedSql.append("`prop1Clean`,");
         preparedSql.append("`error`,");
         preparedSql.append("`recall`,");
         preparedSql.append("`precision`,");
@@ -171,14 +177,18 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`balance`,");
         preparedSql.append("`auc`,");
         preparedSql.append("`aucec`,");
+        preparedSql.append("`aucAlberg`,");
+        preparedSql.append("`aucRoI`,");
         preparedSql.append("`nofb20`,");
         preparedSql.append("`relb20`,");
         preparedSql.append("`nofi80`,");
         preparedSql.append("`reli80`,");
         preparedSql.append("`rele80`,");
+        preparedSql.append("`necm10`,");
         preparedSql.append("`necm15`,");
         preparedSql.append("`necm20`,");
         preparedSql.append("`necm25`,");
+        preparedSql.append("`cost`,");
         preparedSql.append("`nofbPredicted`,");
         preparedSql.append("`nofbMissed`,");
         preparedSql.append("`tpr`,");
@@ -262,11 +272,15 @@ public class MySQLResultStorage implements IResultStorage {
         preparedSql.append("`lowerSizeNtoMImp50`,");
         preparedSql.append("`upperSizeNtoMImp50`) VALUES ");
         preparedSql.append("(");
-        for(int i=0; i<103; i++) {
+        for(int i=0; i<113; i++) {
         	preparedSql.append("?,");
         }
         preparedSql.append("?)");
-
+        /*LOGGER.warn(String.format("%d\n%f    %f    %f\n%f    %f\n%f    %f    %f    %f\n%f", result.getSizeTrainingOriginal(),
+                result.getBiasTestData(), result.getBiasTrainingData(), result.getBiasTrainingOriginal(),
+                result.getProp1Defect(), result.getProp1Clean(),
+                result.getAucAlberg(), result.getAucRoI(), result.getNecm10(), result.getCost(),
+                (result.getTp()+result.getFp())));*/
         try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql.toString());) {
         	int i=1;
             stmt.setString(i++, result.getConfigurationName());
@@ -274,23 +288,33 @@ public class MySQLResultStorage implements IResultStorage {
             stmt.setString(i++, result.getClassifier());
             stmt.setInt(i++, result.getSizeTestData());
             stmt.setInt(i++, result.getSizeTrainingData());
+            stmt.setInt(i++, result.getSizeTrainingOriginal());
+            stmt.setDouble(i++, result.getBiasTestData());
+            stmt.setDouble(i++, result.getBiasTrainingData());
+            stmt.setDouble(i++, result.getBiasTrainingOriginal());
+            stmt.setDouble(i++, result.getProp1Defect());
+            stmt.setDouble(i++, result.getProp1Clean());
             stmt.setDouble(i++, result.getError());
             stmt.setDouble(i++, result.getRecall());
             stmt.setDouble(i++, result.getPrecision());
             stmt.setDouble(i++, result.getFscore());
             stmt.setDouble(i++, result.getGscore());
             stmt.setDouble(i++, result.getMcc());
-            stmt.setDouble(i++, result.getAuc());
             stmt.setDouble(i++, result.getBalance());
+            stmt.setDouble(i++, result.getAuc());
+            stmt.setDouble(i++, result.getAucAlberg());
+            stmt.setDouble(i++, result.getAucRoI());
             stmt.setDouble(i++, result.getAucec());
             stmt.setDouble(i++, result.getNofb20());
             stmt.setDouble(i++, result.getRelb20());
             stmt.setDouble(i++, result.getNofi80());
             stmt.setDouble(i++, result.getReli80());
             stmt.setDouble(i++, result.getRele80());
+            stmt.setDouble(i++, result.getNecm10());
             stmt.setDouble(i++, result.getNecm15());
             stmt.setDouble(i++, result.getNecm20());
             stmt.setDouble(i++, result.getNecm25());
+            stmt.setDouble(i++, result.getCost());
             stmt.setDouble(i++, result.getNofbPredicted());
             stmt.setDouble(i++, result.getNofbMissed());
             stmt.setDouble(i++, result.getTpr());
@@ -470,23 +494,33 @@ public class MySQLResultStorage implements IResultStorage {
             "`classifier` varchar(50) NOT NULL," +
             "`testsize` int(11) DEFAULT NULL," +
             "`trainsize` int(11) DEFAULT NULL," +
+            "`trainsizeOriginal` int(11) DEFAULT NULL," +
+            "`biasTest` double DEFAULT NULL," +
+            "`biasTraining` double DEFAULT NULL," +
+            "`biasTrainingOriginal` double DEFAULT NULL," +
+            "`prop1Defect` double DEFAULT NULL," +
+            "`prop1Clean` double DEFAULT NULL," +
             "`error` double DEFAULT NULL," +
             "`recall` double DEFAULT NULL," +
             "`precision` double DEFAULT NULL," +
             "`fscore` double DEFAULT NULL," +
             "`gscore` double DEFAULT NULL," +
             "`mcc` double DEFAULT NULL," +
+            "`balance` double DEFAULT NULL," +
             "`auc` double DEFAULT NULL," +
-            "`balance` double DEFAULT NULL," + 
             "`aucec` double DEFAULT NULL," +
+            "`aucAlberg` double DEFAULT NULL," +
+            "`aucRoI` double DEFAULT NULL," +
             "`nofb20` double DEFAULT NULL," +
             "`relb20` double DEFAULT NULL," +
             "`nofi80` double DEFAULT NULL," +  
             "`reli80` double DEFAULT NULL," +
-            "`rele80` double DEFAULT NULL," +  
+            "`rele80` double DEFAULT NULL," +
+            "`necm10` double DEFAULT NULL," +
             "`necm15` double DEFAULT NULL," +
             "`necm20` double DEFAULT NULL," +  
             "`necm25` double DEFAULT NULL," +
+            "`cost` double DEFAULT NULL," +
             "`nofbPredicted` double DEFAULT NULL," + 
             "`nofbMissed` double DEFAULT NULL," +
             "`tpr` double DEFAULT NULL," +
