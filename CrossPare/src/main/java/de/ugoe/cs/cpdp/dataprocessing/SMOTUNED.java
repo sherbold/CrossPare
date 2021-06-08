@@ -80,17 +80,22 @@ public class SMOTUNED implements IProcessesingStrategy, ISetWiseProcessingStrate
     /**
      * maximal ratio of the final amount of majority class instances to the overall instances (1.0 = no undersampling)
      */
-    final double undersampleRate = 0.5;
+    double undersampleRate = 0.5;
 
     /**
-     * Parameters are fixed. String is ignored.
+     * The undersample ratio can be set as parameter.
+     *
+     * The parameter is the ratio the majority class is sampled down to. If the majority class ratio
+     * is already under that parameter nothing happens. Therefore a value of 1.0 means no undersampling is done.
      *
      * @param parameters
-     *            ignored
+     *            the undersample ratio
      */
     @Override
     public void setParameter(String parameters) {
-        // dummy
+        if (parameters != null && !parameters.isEmpty()) {
+            this.undersampleRate = Double.parseDouble(parameters);
+        }
     }
 
     /*

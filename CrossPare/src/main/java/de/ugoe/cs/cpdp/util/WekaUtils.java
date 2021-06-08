@@ -438,7 +438,7 @@ public class WekaUtils {
         if(numGenerations <= 0){
             throw new RuntimeException(String.format("Error: The set number of generations = %d is not a valid for the algorithm",numGenerations));
         }
-        if(mutationConstant < 0.0 || mutationConstant > 1.0){
+        if(mutationConstant < 0.0 || mutationConstant > 2.0){
             throw new RuntimeException(String.format("Error: The set mutation constant = %f is not a valid for the algorithm",mutationConstant));
         }
         if(crossoverConstant < 0.0 || crossoverConstant > 1.0){
