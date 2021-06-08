@@ -276,11 +276,7 @@ public class MySQLResultStorage implements IResultStorage {
         	preparedSql.append("?,");
         }
         preparedSql.append("?)");
-        /*LOGGER.warn(String.format("%d\n%f    %f    %f\n%f    %f\n%f    %f    %f    %f\n%f", result.getSizeTrainingOriginal(),
-                result.getBiasTestData(), result.getBiasTrainingData(), result.getBiasTrainingOriginal(),
-                result.getProp1Defect(), result.getProp1Clean(),
-                result.getAucAlberg(), result.getAucRoI(), result.getNecm10(), result.getCost(),
-                (result.getTp()+result.getFp())));*/
+        
         try(PreparedStatement stmt = this.connectionPool.getConnection().prepareStatement(preparedSql.toString());) {
         	int i=1;
             stmt.setString(i++, result.getConfigurationName());
