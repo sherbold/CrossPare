@@ -29,6 +29,7 @@ import de.ugoe.cs.cpdp.dataprocessing.ISetWiseProcessingStrategy;
 import de.ugoe.cs.cpdp.dataprocessing.IVersionProcessingStrategy;
 import de.ugoe.cs.cpdp.dataselection.IPointWiseDataselectionStrategy;
 import de.ugoe.cs.cpdp.dataselection.ISetWiseDataselectionStrategy;
+import de.ugoe.cs.cpdp.dataselection.OutOfSampleBootstrap;
 import de.ugoe.cs.cpdp.dataselection.TestAsTraining;
 import de.ugoe.cs.cpdp.eval.IEvaluationStrategy;
 import de.ugoe.cs.cpdp.loader.IVersionLoader;
@@ -239,6 +240,9 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                                 this.config.getExperimentName(), versionCount, testVersionCount,
                                 testVersion.getVersion(), dataselector.getClass().getName()));
                     trainversion = dataselector.apply(testversion, trainversion);
+                    if (dataselector instanceof OutOfSampleBootstrap){
+                        trainversionOriginal = new SoftwareVersion(trainversion);
+                    }
                 }
                 for (IProcessesingStrategy processor : this.config.getPostProcessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise postprocessor %s",
