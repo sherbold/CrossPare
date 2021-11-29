@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
+    <loader name="MynbouFolderLoader" datalocation="testdata/mynbou" param="SM_file.* SM_class.*_sum" relative="false" classtype="numeric"/>
+    <executionStrategy name="WithinProjectPreviousReleasesExperiment" param="1" />
+    <trainVersionfilter name="MinInstanceNumberFilter" param="100" />
+    <trainVersionfilter name="MinClassNumberFilter" param="5" />
+    <trainVersionProcessor name="BugDateFilter" />
+    <setwisepreprocessor name="MakeClassBinary" param="" />
+    <setwisepreprocessor name="LogarithmTransform" param="" />
+    <setwiseselector name="LACE2" param="0.4" />
+    <pointwiseselector name="TurhanFilter" param="1" />
+    <trainer name="WekaTraining" param="NB weka.classifiers.bayes.NaiveBayes" />
+    <eval name="NormalWekaEvaluation" param="" />
+    <storage name="MySQLResultStorage" param="" />
+</config>
