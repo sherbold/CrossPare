@@ -110,6 +110,9 @@ public class EffortMetricCalculator {
         if( scores==null ) {
             return -1;
         }
+        if( totalBugs==0 ) {
+            return -1;
+        }
         // Calculate the Riemann integral
         // y-axis = relative number of bugs found
         // x-axis = relative effort related overall project size
@@ -134,6 +137,9 @@ public class EffortMetricCalculator {
         if( scores==null ) {
             return -1;
         }
+        if( totalBugs==0 ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         double aucAlberg = 0.0;
         double percentagePerModule = 1.0 / (double) scores.length;
@@ -155,6 +161,9 @@ public class EffortMetricCalculator {
      */
     public double getAUCwRoI() {
         if( scores==null ) {
+            return -1;
+        }
+        if( totalBugs==0 ) {
             return -1;
         }
         int numInstances = scores.length;
@@ -240,6 +249,9 @@ public class EffortMetricCalculator {
         if( scores==null ) {
             return -1;
         }
+        if( totalBugs==0 ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         double relativeEffort = 0.0;
         for (ScoreEffortPair score : scores) {
@@ -263,6 +275,9 @@ public class EffortMetricCalculator {
      */
     public double getNofi80() {
         if( scores==null ) {
+            return -1;
+        }
+        if( totalBugs==0 ) {
             return -1;
         }
         double relativeBugsFound = 0.0;
@@ -289,6 +304,9 @@ public class EffortMetricCalculator {
         if( scores==null ) {
             return -1;
         }
+        if( totalBugs==0 ) {
+            return -1;
+        }
         double relativeBugsFound = 0.0;
         int numInstances = 0;
         for (ScoreEffortPair score : scores) {
@@ -311,6 +329,9 @@ public class EffortMetricCalculator {
      */
     public double getRele80() {
         if( scores==null ) {
+            return -1;
+        }
+        if( totalBugs==0 ) {
             return -1;
         }
         double relativeBugsFound = 0.0;

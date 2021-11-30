@@ -158,18 +158,17 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     continue;
                 }
 
-                // Setup testdata and training data                
-                SoftwareVersion testversion = new SoftwareVersion(testVersion);
+                // Setup testdata and training data
                 SetUniqueList<SoftwareVersion> trainversionSet =
                     SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
                 for (SoftwareVersion trainingVersion : versions) {
-                    if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
-                        if (trainingVersion != testversion) {
-                            if (isTrainingVersion(trainingVersion, testversion, versions)) {
-                                SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
-                            	for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
-                            		processor.apply(testversion, trainversion);
-                            	}
+                    if (trainingVersion != testVersion) {
+                        SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
+                        for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
+                            processor.apply(testVersion, trainversion);
+                        }
+                        if (CrosspareUtils.isVersion(trainversion, versions, this.config.getTrainingVersionFilters())) {
+                            if (isTrainingVersion(trainversion, testVersion, versions)) {
                                 trainversionSet.add(trainversion);
                             }
                         }
@@ -183,6 +182,7 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                     versionCount++;
                     continue;
                 }
+                SoftwareVersion testversion = new SoftwareVersion(testVersion);
                 SoftwareVersion trainversionOriginal = CrosspareUtils.makeSingleVersionSet(trainversionSet);
                 for (ISetWiseProcessingStrategy processor : this.config.getSetWisePreprocessors()) {
                 	LOGGER.info(String.format("[%s] [%02d/%02d] %s: applying setwise preprocessor %s",

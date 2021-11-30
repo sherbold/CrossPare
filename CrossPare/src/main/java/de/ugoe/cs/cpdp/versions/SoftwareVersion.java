@@ -230,4 +230,32 @@ public class SoftwareVersion implements Comparable<SoftwareVersion> {
         }
         return projectStrCmp;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof SoftwareVersion)) {
+            return false;
+        }
+        final SoftwareVersion other = (SoftwareVersion) obj;
+
+        final boolean same_project  = this.project.equals(other.project);
+        final boolean same_version  = this.version.equals(other.version);
+        final boolean same_date     = this.releaseDate.equals(other.releaseDate);
+        if ( same_project && same_version && same_date ){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + this.project.hashCode();
+        hash = 31 * hash + this.version.hashCode();
+        hash = 31 * hash + this.releaseDate.hashCode();
+        return hash;
+    }
+
 }

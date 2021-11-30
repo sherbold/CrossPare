@@ -18,10 +18,12 @@ import java.util.List;
 
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.IParameterizable;
+import de.ugoe.cs.cpdp.dataprocessing.IVersionProcessingStrategy;
+import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
 /**
- * Experiment workflow where the n previous versions of a project are used for training. 
+ * Experiment workflow where the n previous valid versions of a project are used for training.
  * 
  * @author Steffen Herbold
  */
@@ -61,7 +63,22 @@ public class WithinProjectPreviousReleasesExperiment extends AbstractCrossProjec
         
         boolean isSameProject = trainingVersion.getProject().equals(testVersion.getProject());
         boolean isWithinPreviousReleases = testIndex>trainIndex && (testIndex-trainIndex)<=numPreviousReleases;
-        
+
+        if( !config.getTrainingVersionFilters().isEmpty() && testIndex>trainIndex && (testIndex-trainIndex)>numPreviousReleases ) {
+            int validPreviousReleasesCount = 0;
+            for ( int i=trainIndex; i<testIndex; i++ ) {
+                SoftwareVersion otherTrainingVersion = new SoftwareVersion(versions.get(i));
+                for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
+                    processor.apply(testVersion, otherTrainingVersion);
+                }
+                if ( CrosspareUtils.isVersion(otherTrainingVersion, versions, this.config.getTrainingVersionFilters()) ) {
+                    validPreviousReleasesCount += 1;
+                }
+            }
+            if( validPreviousReleasesCount <= numPreviousReleases ){
+                isWithinPreviousReleases = true;
+            }
+        }
         return isSameProject && isWithinPreviousReleases;
     }
 
