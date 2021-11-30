@@ -162,13 +162,13 @@ public abstract class AbstractCrossProjectExperiment implements IExecutionStrate
                 SetUniqueList<SoftwareVersion> trainversionSet =
                     SetUniqueList.setUniqueList(new LinkedList<SoftwareVersion>());
                 for (SoftwareVersion trainingVersion : versions) {
-                    if (CrosspareUtils.isVersion(trainingVersion, versions, this.config.getTrainingVersionFilters())) {
-                        if (trainingVersion != testVersion) {
-                            if (isTrainingVersion(trainingVersion, testVersion, versions)) {
-                                SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
-                            	for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
-                            		processor.apply(testVersion, trainversion);
-                            	}
+                    if (trainingVersion != testVersion) {
+                        SoftwareVersion trainversion = new SoftwareVersion(trainingVersion);
+                        for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
+                            processor.apply(testVersion, trainversion);
+                        }
+                        if (CrosspareUtils.isVersion(trainversion, versions, this.config.getTrainingVersionFilters())) {
+                            if (isTrainingVersion(trainversion, testVersion, versions)) {
                                 trainversionSet.add(trainversion);
                             }
                         }

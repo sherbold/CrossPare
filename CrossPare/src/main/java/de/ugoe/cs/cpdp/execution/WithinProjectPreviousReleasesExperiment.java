@@ -18,6 +18,7 @@ import java.util.List;
 
 import de.ugoe.cs.cpdp.ExperimentConfiguration;
 import de.ugoe.cs.cpdp.IParameterizable;
+import de.ugoe.cs.cpdp.dataprocessing.IVersionProcessingStrategy;
 import de.ugoe.cs.cpdp.util.CrosspareUtils;
 import de.ugoe.cs.cpdp.versions.SoftwareVersion;
 
@@ -66,7 +67,11 @@ public class WithinProjectPreviousReleasesExperiment extends AbstractCrossProjec
         if( !config.getTrainingVersionFilters().isEmpty() && testIndex>trainIndex && (testIndex-trainIndex)>numPreviousReleases ) {
             int validPreviousReleasesCount = 0;
             for ( int i=trainIndex; i<testIndex; i++ ) {
-                if ( CrosspareUtils.isVersion(versions.get(i), versions, this.config.getTrainingVersionFilters()) ) {
+                SoftwareVersion otherTrainingVersion = new SoftwareVersion(versions.get(i));
+                for(IVersionProcessingStrategy processor : this.config.getTrainingVersionProcessors()) {
+                    processor.apply(testVersion, otherTrainingVersion);
+                }
+                if ( CrosspareUtils.isVersion(otherTrainingVersion, versions, this.config.getTrainingVersionFilters()) ) {
                     validPreviousReleasesCount += 1;
                 }
             }

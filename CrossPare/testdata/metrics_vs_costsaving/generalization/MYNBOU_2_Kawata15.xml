@@ -2,9 +2,9 @@
 <config xmlns="experimentconfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="experimentconfig experimentconfig.xsd">
     <loader name="MynbouFolderLoader" datalocation="testdata/mynbou" param="SM_file.* SM_class.*_sum" relative="false" classtype="numeric"/>
     <executionStrategy name="WithinProjectPreviousReleasesExperiment" param="1" />
+    <trainVersionProcessor name="BugDateFilter" />
     <trainVersionfilter name="MinInstanceNumberFilter" param="100" />
     <trainVersionfilter name="MinClassNumberFilter" param="5" />
-    <trainVersionProcessor name="BugDateFilter" />
     <setwisepreprocessor name="MakeClassBinary" param="" />
     <pointwiseselector name="DBSCANFilter" param="" />
     <trainer name="WekaTraining" param="RF weka.classifiers.trees.RandomForest -CVPARAM I 5 25 5" />
